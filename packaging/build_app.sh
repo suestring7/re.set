@@ -5,7 +5,9 @@
 #   bash packaging/build_app.sh
 #
 # Output:  dist/re.set.app   (ready to zip and distribute)
-# Requires: Python 3.10+ in PATH (Homebrew or system, NOT /opt/homebrew hardcoded)
+# Requires: Python 3.10+ in PATH (Homebrew or system, NOT /opt/homebrew hardcoded).
+#           If py2app still fails on codesign, use Python 3.12 or 3.13 for the venv
+#           (e.g. PYTHON=/opt/homebrew/bin/python3.12 bash packaging/build_app.sh).
 
 set -e
 REPO="$(cd "$(dirname "$0")/.."; pwd)"
