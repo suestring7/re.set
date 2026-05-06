@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<script src="/shared.js"></script>
+<title>re.set — Log Work Session</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F7F7F9;--card:#fff;--acc:#B794F4;--acc2:#7C3AED;
+  --text:#111827;--muted:#9CA3AF;--line:#E5E7EB;
+  --mono:"SF Mono","Fira Code",monospace;
+}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,sans-serif;font-size:13px;color:var(--text)}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px 24px;width:100%;max-width:370px}
+h2{font-size:15px;font-weight:700;margin-bottom:18px;color:var(--text)}
+
+.field{margin-bottom:14px}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+input[type=text],input[type=number]{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+  font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);
+  outline:none;transition:border-color .15s;
+}
+input:focus{border-color:var(--acc)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:600;padding:4px 11px;
+  border-radius:99px;border:1.5px solid var(--line);
+  background:var(--bg);color:var(--muted);cursor:pointer;transition:all .15s;
+}
+.chip:hover{border-color:var(--acc);color:var(--text)}
+.chip.sel{color:#fff;border-color:transparent}
+/* Type manager */
+.type-manager{margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+.tm-row{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.tm-color{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;flex-shrink:0;outline:none;-webkit-appearance:none;overflow:hidden}
+.tm-color::-webkit-color-swatch-wrapper{padding:0}
+.tm-color::-webkit-color-swatch{border:none;border-radius:50%}
+.tm-label{flex:1;padding:3px 8px;border:1px solid var(--line);border-radius:5px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text);outline:none}
+.tm-label:focus{border-color:var(--acc)}
+.tm-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:0 2px}
+.tm-del:hover{color:#DC2626}
+.tm-add{width:100%;padding:5px;border:1px dashed var(--line);border-radius:5px;background:none;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:3px}
+.tm-add:hover{border-color:var(--acc);color:var(--acc)}
+.lbl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.manage-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit;padding:0}
+.manage-btn:hover{color:var(--acc)}
+
+.btn-row{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.btn-cancel{background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+.btn-cancel:hover{border-color:var(--acc);color:var(--text)}
+.btn-submit{background:var(--acc2);color:#fff}
+.btn-submit:hover{opacity:.9}
+.btn-submit:disabled{opacity:.4;cursor:default}
+
+.done{text-align:center;padding:30px 0;display:none}
+.done-icon{font-size:32px;margin-bottom:8px}
+.done-text{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form-body">
+    <h2 id="title">记录工作时段</h2>
+
+    <div class="field">
+      <div class="lbl-row">
+        <label id="lbl-type">活动类型</label>
+        <button class="manage-btn" id="tm-toggle" onclick="toggleTypeManager()">管理</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div id="type-manager" class="type-manager" style="display:none"></div>
+    </div>
+
+    <div class="field">
+      <label id="lbl-wc">这段时间在做什么</label>
+      <input type="text" id="wc" placeholder="简单描述一下…" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label id="lbl-fm">专注时长（分钟）</label>
+      <input type="number" id="fm" min="0" placeholder="0">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-cancel" id="btn-cancel" onclick="fetch('/api/close-popup',{method:'POST'})"></button>
+      <button class="btn btn-submit" id="btn-submit" onclick="submit()"></button>
+    </div>
+  </div>
+
+  <div class="done" id="done-body">
+    <div class="done-icon">✓</div>
+    <div class="done-text" id="done-text">已记录</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+let ACT_TYPES = [], lang = 'zh', selType = null, _tmOpen = false;
+
+const T = {
+  zh:{title:'记录工作时段',lblType:'活动类型',lblWc:'这段时间在做什么',lblFm:'专注时长（分钟）',cancel:'取消',submit:'记录',done:'已记录 ✓',tmDone:'完成',wc_ph:'简单描述一下…'},
+  en:{title:'Log Work Session',lblType:'Activity',lblWc:'What were you working on?',lblFm:'Focus Duration (min)',cancel:'Cancel',submit:'Log',done:'Logged ✓',tmDone:'Done',wc_ph:'Brief description…'},
+};
+const t = k => T[lang][k] || k;
+
+async function init() {
+  try {
+    const sr = await fetch('/api/status');
+    const s = await sr.json();
+    lang = s.lang || 'zh';
+    ACT_TYPES = await RS.loadActivityTypes();
+    const sug = s.suggested_focus_minutes || 0;
+    if (sug > 0) document.getElementById('fm').value = sug;
+  } catch {
+    ACT_TYPES = await RS.loadActivityTypes();
+  }
+  applyLang();
+  renderChips();
+}
+
+function applyLang() {
+  document.getElementById('title').textContent = t('title');
+  document.getElementById('lbl-type').textContent = t('lblType');
+  document.getElementById('lbl-wc').textContent = t('lblWc');
+  document.getElementById('lbl-fm').textContent = t('lblFm');
+  document.getElementById('wc').placeholder = t('wc_ph');
+  document.getElementById('btn-cancel').textContent = t('cancel');
+  document.getElementById('btn-submit').textContent = t('submit');
+  const tog = document.getElementById('tm-toggle');
+  if (tog) tog.textContent = _tmOpen ? t('tmDone') : (lang==='en'?'Manage':'管理');
+}
+
+function renderChips() {
+  const row = document.getElementById('chips');
+  row.innerHTML = '';
+  ACT_TYPES.forEach(tp => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (selType === tp.id ? ' sel' : '');
+    btn.textContent = tp.label;
+    if (selType === tp.id) btn.style.background = tp.color;
+    btn.onclick = () => { selType = selType === tp.id ? null : tp.id; renderChips(); };
+    row.appendChild(btn);
+  });
+}
+
+/* ── Type manager ── */
+function toggleTypeManager() {
+  _tmOpen = !_tmOpen;
+  const el = document.getElementById('type-manager');
+  el.style.display = _tmOpen ? 'block' : 'none';
+  if (_tmOpen) renderTypeManager();
+  document.getElementById('tm-toggle').textContent = _tmOpen ? t('tmDone') : (lang==='en'?'Manage':'管理');
+}
+
+function renderTypeManager() {
+  const el = document.getElementById('type-manager');
+  RS.renderTypeManager(el, ACT_TYPES, async () => {
+    await RS.saveActivityTypes(ACT_TYPES);
+    renderChips();
+  }, {
+    lang,
+    onAfterDelete: (id) => { if (selType === id) selType = null; },
+  });
+}
+
+async function submit() {
+  const wc = document.getElementById('wc').value.trim();
+  const fm = Math.max(0, parseInt(document.getElementById('fm').value) || 0);
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  try {
+    await fetch('/api/away-checkin', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({work_content: wc, focus_minutes: fm, activity_type: selType}),
+    });
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('done-body').style.display = 'block';
+    document.getElementById('done-text').textContent = t('done');
+    setTimeout(async () => {
+      try { await fetch('/api/close-popup', {method:'POST'}); } catch {}
+    }, 700);
+  } catch {
+    btn.disabled = false;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

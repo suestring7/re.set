@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>re.set</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.user.reset.breakreminder</string>
+
+    <key>CFBundleName</key>
+    <string>re.set</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>re.set</string>
+
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleSignature</key>
+    <string>????</string>
+
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+
+    <!-- Status-bar-only app: no Dock icon, no app switcher entry -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <key>NSHighResolutionCapable</key>
+    <true/>
+
+    <key>NSSupportsAutomaticGraphicsSwitching</key>
+    <true/>
+
+    <!-- Allow event access for Quartz idle detection -->
+    <key>NSAppleEventsUsageDescription</key>
+    <string>re.set needs to detect user activity to time breaks accurately.</string>
+</dict>
+</plist>

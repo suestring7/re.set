@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:244px;height:96px;overflow:hidden;border-radius:18px;
+  background:rgba(247,247,249,.96);font-family:-apple-system,sans-serif}
+.w{display:flex;align-items:center;height:100%;padding:14px 16px;gap:12px;
+   border:1px solid #E5E7EB;border-radius:18px}
+.dot{width:10px;height:10px;border-radius:50%;border:1px solid #B794F4;
+  flex-shrink:0;animation:b 1.6s ease-in-out infinite}
+@keyframes b{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+.info{line-height:1.55;flex:1}
+.lbl{font-size:11px;color:#9CA3AF}
+.row{display:flex;align-items:baseline;gap:4px}
+.num{font-family:"SF Mono","Fira Code",monospace;font-size:22px;color:#B794F4}
+.u{font-size:12px;color:#9CA3AF}
+.postpone{background:none;border:1px solid #E5E7EB;border-radius:8px;
+  padding:4px 9px;font-size:11px;font-weight:600;color:#9CA3AF;
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.postpone:hover{border-color:#B794F4;color:#7C3AED}
+.postpone:disabled{opacity:.35;cursor:default}
+.postpone.maxed{border-color:#FCA5A5;color:#DC2626}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="dot"></div>
+  <div class="info">
+    <div class="lbl">Break in</div>
+    <div class="row"><span class="num" id="c">60</span><span class="u">s</span></div>
+  </div>
+  <button class="postpone" id="btn" onclick="postpone()">+5m</button>
+</div>
+<script>
+let n = 60;
+let postponed = 0;
+const MAX = 3;
+const el = document.getElementById('c');
+const btn = document.getElementById('btn');
+
+setInterval(() => { if(n > 0){ n--; el.textContent = n; } }, 1000);
+
+async function postpone() {
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/postpone-warning', { method: 'POST' });
+    const d = await r.json();
+    if (d.success) {
+      postponed = d.postpones_used;
+      n = 60;
+      el.textContent = n;
+      if (postponed >= MAX) {
+        btn.textContent = '✗';
+        btn.classList.add('maxed');
+      } else {
+        btn.disabled = false;
+        btn.textContent = `+5m (${MAX - postponed} left)`;
+      }
+    } else {
+      btn.textContent = '✗';
+      btn.classList.add('maxed');
+    }
+  } catch(e) {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

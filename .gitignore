@@ -1,0 +1,36 @@
+# User data — never commit
+break_reminder_state.json
+break_reminder_state_*.json
+work_log.txt
+break_reminder.log
+activity_types.json
+config.json
+history/
+
+# Py2app
+build/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+venv/
+.venv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+*.icloud
+
+# Editor
+.cursor/
+.vscode/
+*.swp
+*.swo

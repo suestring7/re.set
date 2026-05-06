@@ -1,0 +1,20 @@
+#!/bin/bash
+# re.set Break Reminder — app bundle launcher
+#
+# NOTE: Do NOT redirect stdout/stderr here.
+# When launched by launchd, StandardOutPath/StandardErrorPath in the plist
+# handles logging. When double-clicked, output goes to Console.app.
+
+WORKSPACE="$(cd "$(dirname "$0")/../../.."; pwd)"
+PYTHON="/opt/homebrew/bin/python3"
+SCRIPT="$WORKSPACE/break_reminder.py"
+
+# ── Single-instance guard ──────────────────────────────────────────────────
+# If port 18030 is already listening, the app is already running.
+# Exit silently — the status bar icon is already visible.
+if nc -z 127.0.0.1 18030 2>/dev/null; then
+    exit 0
+fi
+
+# ── Launch (exec replaces shell with Python, no orphan shell process) ──────
+exec "$PYTHON" "$SCRIPT"

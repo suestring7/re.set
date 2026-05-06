@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<script src="/shared.js"></script>
+<title>re.set — Records</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F7F7F9;--card:#fff;--acc:#B794F4;--acc2:#7C3AED;
+  --text:#111827;--sub:#374151;--muted:#9CA3AF;--line:#E5E7EB;
+  --green:#059669;--amber:#D97706;--red:#DC2626;
+  --mono:"SF Mono","Fira Code",monospace;--r:8px;
+}
+html,body{width:100%;height:100%;background:var(--bg);font-family:-apple-system,sans-serif;font-size:13px;color:var(--text);overflow:hidden}
+body{display:flex;flex-direction:column}
+
+/* ── NAV BAR ── */
+.nav{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.nav-arrow{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;color:var(--muted);transition:all .15s}
+.nav-arrow:hover{border-color:var(--acc);color:var(--acc)}
+.nav-arrow:disabled{opacity:.3;cursor:default}
+.nav-date{font-size:14px;font-weight:700;color:var(--text);min-width:140px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s}
+.nav-date:hover{background:var(--bg)}
+.nav-today{font-size:11px;font-weight:600;color:var(--acc2);background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:99px;padding:3px 10px;cursor:pointer;margin-left:4px}
+.spacer{flex:1}
+.view-tabs{display:flex;gap:4px}
+.vtab{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.vtab.active{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* ── SCORE HEADER ── */
+.score-row{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score-big{font-family:var(--mono);font-size:30px;font-weight:300;color:var(--acc2);line-height:1}
+.score-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.sep-v{width:1px;height:36px;background:var(--line)}
+.cats-inline{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.cat-g{display:flex;align-items:center;gap:5px}
+.cat-tag{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:1px 7px;border-radius:99px}
+.ct-s{background:rgba(5,150,105,.1);color:var(--green)}.ct-c{background:rgba(217,119,6,.1);color:var(--amber)}.ct-t{background:rgba(220,38,38,.1);color:var(--red)}
+.cat-dots{display:flex;gap:3px}
+.cat-dot{width:6px;height:6px;border-radius:50%;border:1.5px solid var(--line)}
+.cat-dot.done{background:var(--acc);border-color:var(--acc)}
+.all-met{font-size:11px;font-weight:600;color:var(--green)}
+
+/* ── SCROLL AREA ── */
+.scroll{flex:1;overflow-y:auto;padding:16px}
+
+/* ── EMPTY ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;gap:8px}
+.empty-icon{font-size:36px}.empty-text{font-size:13px;color:var(--muted)}
+
+/* ══ VIEW 1: EVENT TIMELINE ══ */
+.timeline{position:relative;padding-left:26px}
+.timeline::before{content:'';position:absolute;left:6px;top:10px;bottom:10px;width:1px;background:var(--line)}
+.ev{position:relative;margin-bottom:14px}
+.ev-dot{position:absolute;left:-26px;top:12px;width:12px;height:12px;border-radius:50%;background:var(--card);border:2px solid var(--acc);z-index:1}
+.ev-dot.away{border-color:var(--line);background:var(--line)}
+.ecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.ecard.away-card{border-style:dashed}
+.ec-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.etime{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--muted)}
+.ebadge{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:1px 7px;border-radius:99px}
+.act-pill{font-size:11px;padding:1px 8px;border-radius:99px;font-weight:600}
+.score-pill{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc2);background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.15);padding:1px 7px;border-radius:99px;margin-left:auto}
+.ex-name{font-size:13px;font-weight:600;margin-bottom:3px}
+.wc{font-size:12px;color:var(--sub);font-style:italic;margin-bottom:5px}
+.chips-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:10.5px;color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:1px 7px;border-radius:99px}
+
+/* ── START / END TIME ── */
+.edit-time-range{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.edit-time-sep{font-size:11px;color:var(--muted)}
+.edit-time-hint{font-size:10px;color:var(--muted);margin-left:2px;cursor:pointer;text-decoration:underline dotted}
+.edit-time-hint:hover{color:var(--acc)}
+
+/* ── HOVER + CLICK TO EDIT ── */
+.ecard:not(.ecard-editing){cursor:pointer;transition:border-color .18s,box-shadow .18s}
+.ecard:not(.ecard-editing):hover{border-color:var(--acc)!important;box-shadow:0 2px 12px rgba(0,0,0,.06),0 0 0 2.5px rgba(183,148,244,.18)}
+.ecard-editing{border-color:var(--acc)!important;border-left-width:3px!important;cursor:default}
+.edit-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.edit-time{font-family:var(--mono);font-size:12px;font-weight:600;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);outline:none;width:90px}
+.edit-time:focus{border-color:var(--acc)}
+.edit-dur{font-family:var(--mono);font-size:12px;font-weight:600;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);outline:none;width:70px}
+.edit-dur:focus{border-color:var(--acc)}
+.edit-dur-unit{font-size:11px;color:var(--muted);margin-left:-2px}
+.edit-overlap-err{font-size:11px;color:var(--red);margin-left:6px;display:none}
+.edit-overlap-err.show{display:inline}
+.edit-cancel-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:0;transition:color .15s}
+.edit-cancel-btn:hover{color:var(--red)}
+.edit-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.edit-type-chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);cursor:pointer;transition:all .15s}
+.edit-type-chip:hover{border-color:var(--acc);color:var(--text)}
+.edit-type-chip.sel{color:#fff;border-color:transparent}
+.edit-wc{width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;margin-bottom:10px}
+.edit-wc:focus{border-color:var(--acc)}
+.edit-actions{display:flex;justify-content:flex-end}
+.edit-save-btn{padding:5px 14px;background:var(--acc2);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.edit-save-btn:hover{opacity:.85}
+
+/* ══ VIEW 2: 24H PROPORTIONAL ══ */
+.view24{padding:8px 0}
+.h24-track{position:relative;height:56px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.h24-tick-row{display:flex;justify-content:space-between;padding:0 0 4px;color:var(--muted);font-size:10px;font-family:var(--mono)}
+.h24-block{position:absolute;top:4px;height:48px;border-radius:4px;opacity:.85;transition:opacity .15s;cursor:default}
+.h24-block:hover{opacity:1}
+.h24-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
+.leg-dot{width:8px;height:8px;border-radius:2px}
+
+/* Pie chart */
+.pie-row{display:flex;gap:20px;align-items:flex-start;margin-top:16px}
+.pie-wrap{flex-shrink:0;position:relative;width:120px;height:120px}
+.pie-wrap canvas{width:120px;height:120px}
+.pie-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pie-cval{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text)}
+.pie-clbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.pie-legend{flex:1;display:flex;flex-direction:column;gap:7px}
+.pie-leg-item{display:flex;align-items:center;gap:7px}
+.pie-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.pie-leg-label{font-size:12px;color:var(--sub);flex:1}
+.pie-leg-val{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ══ VIEW 4: STACKED BAR CHART ══ */
+.bar-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.bar-toggle{display:flex;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px}
+.bar-toggle-btn{background:none;border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.bar-toggle-btn.active{background:var(--card);color:var(--acc2);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bar-range-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.bar-range-btn.active{border-color:var(--acc);color:var(--acc2)}
+.bar-spacer{flex:1}
+.bar-wrap{overflow-x:auto;padding-bottom:4px}
+.bar-chart{display:flex;align-items:flex-end;gap:0;min-height:160px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.bar-stack{display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden;min-height:4px;width:100%;transition:height .3s}
+.bar-seg{width:100%;transition:height .3s}
+.bar-lbl{font-size:9px;color:var(--muted);margin-top:4px;text-align:center;font-family:var(--mono);white-space:nowrap}
+.bar-lbl.today{color:var(--acc2);font-weight:700}
+.bar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+
+/* ══ VIEW 3: HEATMAP ══ */
+.heatmap{padding:4px 0}
+.hm-month-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.hm-month-title{font-size:13px;font-weight:700;color:var(--text)}
+.hm-arrow{background:none;border:1px solid var(--line);border-radius:5px;padding:2px 8px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s}
+.hm-arrow:hover{border-color:var(--acc);color:var(--acc)}
+.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.hm-day-header{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding-bottom:4px}
+.hm-cell{aspect-ratio:1;border-radius:4px;cursor:pointer;transition:all .15s;border:1px solid transparent;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,.8);font-weight:700}
+.hm-cell.empty-day{background:transparent;cursor:default}
+.hm-cell.no-data{background:var(--line)}
+.hm-cell:not(.empty-day):not(.no-data):hover{border-color:var(--acc2);transform:scale(1.08)}
+.hm-cell.selected{border-color:var(--acc2);transform:scale(1.08)}
+
+/* ── BOTTOM STATS ── */
+.bottom-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.bstat{display:flex;flex-direction:column;gap:1px}
+.bstat-val{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text)}
+.bstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div class="nav">
+  <button class="nav-arrow" id="btn-prev" onclick="navigate(-1)">‹</button>
+  <div class="nav-date ns" id="nav-date" onclick="goToday()">—</div>
+  <button class="nav-today" id="btn-today" onclick="goToday()" style="display:none">Today</button>
+  <button class="nav-arrow" id="btn-next" onclick="navigate(1)" disabled>›</button>
+  <div class="spacer"></div>
+  <div class="view-tabs">
+    <button class="vtab active ns" onclick="setView('events')" id="vtab-events">≡</button>
+    <button class="vtab ns" onclick="setView('h24')" id="vtab-h24">24h</button>
+    <button class="vtab ns" onclick="setView('bars')" id="vtab-bars">▮▮</button>
+    <button class="vtab ns" onclick="setView('heatmap')" id="vtab-heatmap">▦</button>
+  </div>
+</div>
+
+<!-- SCORE HEADER -->
+<div class="score-row ns">
+  <div>
+    <div class="score-big" id="score-big">0</div>
+    <div class="score-lbl" id="score-lbl">pts today</div>
+  </div>
+  <div class="sep-v"></div>
+  <div class="cats-inline" id="cats-inline">—</div>
+</div>
+
+<!-- MAIN SCROLL -->
+<div class="scroll" id="scroll">
+  <div class="empty" id="empty-state" style="display:none">
+    <div class="empty-icon">🌿</div>
+    <div class="empty-text" id="empty-text">今天还没有记录</div>
+  </div>
+
+  <!-- View 1: Events -->
+  <div id="view-events">
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <!-- View 2: 24h -->
+  <div id="view-h24" style="display:none">
+    <div class="view24">
+      <div class="h24-tick-row" id="h24-ticks"></div>
+      <div class="h24-track" id="h24-track"></div>
+      <div class="h24-legend" id="h24-legend"></div>
+      <div class="pie-row" id="pie-row">
+        <div class="pie-wrap"><canvas id="pie-canvas" width="240" height="240"></canvas>
+          <div class="pie-center"><div class="pie-cval" id="pie-cval">0</div><div class="pie-clbl" id="pie-clbl">min</div></div>
+        </div>
+        <div class="pie-legend" id="pie-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 4: Stacked bars -->
+  <div id="view-bars" style="display:none">
+    <div class="bar-toolbar">
+      <div class="bar-toggle">
+        <button class="bar-toggle-btn active" id="bar-mode-score" onclick="setBarMode('score')" id="bar-mode-score-btn">Score</button>
+        <button class="bar-toggle-btn" id="bar-mode-focus" onclick="setBarMode('focus')">Focus</button>
+      </div>
+      <div class="bar-spacer"></div>
+      <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">7d</button>
+      <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">30d</button>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+    <div class="bar-legend" id="bar-legend"></div>
+  </div>
+
+  <!-- View 3: Heatmap -->
+  <div id="view-heatmap" style="display:none">
+    <div class="heatmap">
+      <div class="hm-month-nav">
+        <button class="hm-arrow ns" onclick="hmNavigate(-1)">‹</button>
+        <div class="hm-month-title ns" id="hm-month-title">—</div>
+        <button class="hm-arrow ns" onclick="hmNavigate(1)" id="hm-next">›</button>
+      </div>
+      <div class="hm-grid" id="hm-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM STATS -->
+<div class="bottom-bar ns" id="bottom-bar"></div>
+
+<script>
+'use strict';
+
+/* ── i18n ── */
+const TXT = {
+  zh:{
+    events:'事件',h24:'24小时',bars:'分布',heatmap:'热力图',
+    today:'今天',
+    scoreLbl:'今日积分',
+    empty:'今天还没有记录',
+    away:'离开 / 洗手间',
+    resetTip:'计时已重置',
+    allMet:'✅ 今日保底全部达标',
+    catS:'拉伸',catC:'核心',catT:'力量',
+    statFocus:'专注',statBreaks:'打卡',statAway:'离开',
+    focusFmt:(h,m)=>h?`${h}h ${m}m`:`${m}min`,
+    sets:'组',
+    pieLbl:'总分钟',
+    actLabel:'活动类型',
+    dayHeaders:['一','二','三','四','五','六','日'],
+  },
+  en:{
+    events:'Events',h24:'24h',bars:'Bars',heatmap:'Month',
+    today:'Today',
+    scoreLbl:'pts today',
+    empty:"No records today",
+    away:'Away / Restroom',
+    resetTip:'Timer reset',
+    allMet:'✅ All daily goals met',
+    catS:'Stretch',catC:'Core',catT:'Strength',
+    statFocus:'Focus',statBreaks:'Check-ins',statAway:'Away',
+    focusFmt:(h,m)=>h?`${h}h ${m}m`:`${m}m`,
+    sets:'sets',
+    pieLbl:'total min',
+    actLabel:'Activity',
+    dayHeaders:['Mo','Tu','We','Th','Fr','Sa','Su'],
+  },
+};
+let _ACT_TYPES = [{id:'work',label:'Work',color:'#6366F1'},{id:'entertainment',label:'Entertainment',color:'#EC4899'},{id:'life',label:'Life',color:'#10B981'}];
+function ACT_COLORS(id) { return RS.ACT_COLORS(_ACT_TYPES, id); }
+function ACT_LABEL(id)  { return RS.ACT_LABEL(_ACT_TYPES, id); }
+async function loadActivityTypes() {
+  _ACT_TYPES = await RS.loadActivityTypes();
+}
+const CAT_COLORS={stretch:'#059669',core:'#D97706',strength:'#DC2626'};
+
+let lang='zh', curDate=todayStr(), curView='events', hmYear=0, hmMonth=0;
+let histList={}, curData=null;
+
+const t=(k,...a)=>{const v=TXT[lang][k];return typeof v==='function'?v(...a):(v??k)};
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fmtDate(iso){
+  const d=new Date(iso+'T12:00:00');
+  const mZH=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const dZH=['周日','周一','周二','周三','周四','周五','周六'];
+  if(lang==='zh') return`${mZH[d.getMonth()]}${d.getDate()}日 ${dZH[d.getDay()]}`;
+  return d.toLocaleDateString('en',{month:'short',day:'numeric',weekday:'short'});
+}
+
+/* ── VIEW SWITCHING ── */
+function setView(v){
+  curView=v;
+  ['events','h24','bars','heatmap'].forEach(n=>{
+    document.getElementById(`view-${n}`).style.display=n===v?'':'none';
+    document.getElementById(`vtab-${n}`).classList.toggle('active',n===v);
+  });
+  if(v==='heatmap') renderHeatmap();
+  else if(v==='h24' && curData) render24h(curData);
+  else if(v==='bars') renderBars();
+}
+
+/* ── DATE NAVIGATION ── */
+function navigate(dir){
+  const dates=Object.keys(histList).sort();
+  const idx=dates.indexOf(curDate);
+  const next=dates[idx+dir];
+  if(next){curDate=next;loadDate(curDate);}
+}
+function goToday(){curDate=todayStr();loadDate(curDate);}
+function updateNavButtons(){
+  const dates=Object.keys(histList).sort();
+  const idx=dates.indexOf(curDate);
+  document.getElementById('btn-prev').disabled=idx<=0;
+  document.getElementById('btn-next').disabled=idx>=dates.length-1;
+  document.getElementById('nav-date').textContent=fmtDate(curDate);
+  const isToday=curDate===todayStr();
+  document.getElementById('btn-today').style.display=isToday?'none':'inline-block';
+  document.getElementById('btn-today').textContent=t('today');
+}
+
+/* ── SCORE + CATS HEADER ── */
+function renderHeader(data){
+  document.getElementById('score-big').textContent=data.total_score||0;
+  document.getElementById('score-lbl').textContent=t('scoreLbl');
+  const counts=data.category_counts||{};
+  const mins=data.daily_minimums||{stretch:3,core:3,strength:2};
+  const ci=document.getElementById('cats-inline');
+  const nm={stretch:t('catS'),core:t('catC'),strength:t('catT')};
+  const cls={stretch:'ct-s',core:'ct-c',strength:'ct-t'};
+  const cats=['stretch','core','strength'];
+  if(data.all_minimums_met){
+    // Show "all met" badge + each category's actual count on the right
+    const countsHtml=cats.map(cat=>{
+      const d=counts[cat]||0,to=mins[cat]||0;
+      return`<div class="cat-g"><span class="cat-tag ${cls[cat]}">${nm[cat]}</span><span style="font-size:10px;color:var(--green);font-weight:600">${d}/${to}</span></div>`;
+    }).join('');
+    ci.innerHTML=`<span class="all-met">${t('allMet')}</span><span style="display:inline-flex;gap:10px;margin-left:12px">${countsHtml}</span>`;
+    return;
+  }
+  ci.innerHTML=cats.map(cat=>{
+    const d=counts[cat]||0,to=mins[cat]||0;
+    const dots=Array.from({length:to},(_,i)=>`<span class="cat-dot${i<d?' done':''}"></span>`).join('');
+    return`<div class="cat-g"><span class="cat-tag ${cls[cat]}">${nm[cat]}</span><span class="cat-dots">${dots}</span><span style="font-size:10px;color:var(--muted)">${d}/${to}</span></div>`;
+  }).join('');
+}
+
+/* ── BOTTOM STATS ── */
+function renderBottom(data){
+  const ckins=data.checkins||[];
+  const fm=data.focus_minutes||0;
+  const h=Math.floor(fm/60),m=fm%60;
+  const nB=ckins.filter(c=>c.event_type!=='restroom').length;
+  const nA=ckins.filter(c=>c.event_type==='restroom').length;
+  document.getElementById('bottom-bar').innerHTML=[
+    {val:t('focusFmt',h,m),lbl:t('statFocus')},
+    {val:nB,lbl:t('statBreaks')},
+    {val:nA,lbl:t('statAway')},
+  ].map((s,i)=>`${i?'<div style="width:1px;height:28px;background:var(--line)"></div>':''}<div class="bstat"><div class="bstat-val">${s.val}</div><div class="bstat-lbl">${s.lbl}</div></div>`).join('');
+}
+
+/* ══ VIEW 1: EVENT TIMELINE ══ */
+let _editIdx = -1;                // which checkin is in edit mode
+let _editAct = null;              // activity type being edited
+
+/* Return inferred [startTime, endTime] strings for checkin at index i
+   within the sorted array. startTime = previous record's time (or same if first).
+   endTime = this record's time. Used to auto-fill edit fields. */
+function inferTimeRange(sorted, i) {
+  const cur = sorted[i];
+  const endTime = cur.time || '';
+  // startTime = time of previous record (if any), else endTime - focus_minutes
+  let startTime = '';
+  if (i > 0 && sorted[i-1].time) {
+    startTime = sorted[i-1].time;
+  } else if (endTime && cur.focus_minutes > 0) {
+    const [h,m] = endTime.split(':').map(Number);
+    const st = h*60 + m - cur.focus_minutes;
+    if (st >= 0) startTime = `${String(Math.floor(st/60)).padStart(2,'0')}:${String(st%60).padStart(2,'0')}`;
+  }
+  return [startTime, endTime];
+}
+
+function renderEvents(data){
+  const raw=data.checkins||[];
+  // Sort by time ascending (records without a time go to end)
+  const ckins=[...raw].sort((a,b)=>{
+    if(!a.time && !b.time) return 0;
+    if(!a.time) return 1;
+    if(!b.time) return -1;
+    return a.time.localeCompare(b.time);
+  });
+  const tl=document.getElementById('timeline');
+  const em=document.getElementById('empty-state');
+  document.getElementById('empty-text').textContent=t('empty');
+  if(!ckins.length){em.style.display='flex';tl.innerHTML='';return;}
+  em.style.display='none';
+
+  tl.innerHTML=ckins.map((c,i)=>{
+    const isAway=c.event_type==='restroom'||c.event_type==='away_return';
+    const ex=c.exercise, act=c.activity_type;
+    const ss=c.score||0;
+    const fm=c.focus_minutes||0;
+    const isEditing=(_editIdx===i);
+    // Left border color = activity type color (or muted for away/no type)
+    const borderCol=act?ACT_COLORS(act):'var(--line)';
+
+    /* ── EDIT MODE ── */
+    if(isEditing){
+      const [inferStart, inferEnd] = inferTimeRange(ckins, i);
+      const storedStart = c.start_time || '';
+      const storedEnd   = c.end_time   || c.time || '';
+      const showStart   = storedStart || inferStart;
+      const showEnd     = storedEnd   || inferEnd;
+      const typeChips=_ACT_TYPES.map(tp=>{
+        const isSel=_editAct===tp.id;
+        return`<span class="edit-type-chip${isSel?' sel':''}"
+          style="${isSel?`background:${tp.color}`:''}"
+          onclick="event.stopPropagation();_editAct=_editAct==='${tp.id}'?null:'${tp.id}';renderEvents(curData)">${tp.label}</span>`;
+      }).join('');
+      const fillHint = lang==='zh'?'自动填充':'auto-fill';
+      return`<div class="ev">
+        <div class="ev-dot${isAway?' away':''}" style="${act&&!isAway?`border-color:${ACT_COLORS(act)}`:''}" ></div>
+        <div class="ecard ecard-editing" style="border-left:3px solid ${borderCol}">
+          <div class="edit-time-range">
+            <input class="edit-time" id="ets-${i}" type="time" value="${showStart}"
+              title="${lang==='zh'?'开始时间':'Start time'}"
+              placeholder="--:--"
+              onclick="event.stopPropagation()">
+            <span class="edit-time-sep">→</span>
+            <input class="edit-time" id="ete-${i}" type="time" value="${showEnd}"
+              title="${lang==='zh'?'结束时间':'End time'}"
+              placeholder="--:--"
+              onclick="event.stopPropagation()">
+            <span class="edit-time-hint" onclick="event.stopPropagation();autoFillTimes(${i})"
+              title="${lang==='zh'?'从相邻记录推断时间':'Infer from neighbours'}">${fillHint}</span>
+            <span class="edit-overlap-err" id="eov-${i}">${lang==='zh'?'时间块重叠':'Overlap!'}</span>
+            <button class="edit-cancel-btn" onclick="event.stopPropagation();cancelEdit()">×</button>
+          </div>
+          <div class="edit-row" style="margin-bottom:8px">
+            <input class="edit-dur" id="edur-${i}" type="number" min="0" max="480" step="5"
+              value="${fm}" onclick="event.stopPropagation()">
+            <span class="edit-dur-unit">${lang==='zh'?'分钟':'min'}</span>
+          </div>
+          <div class="edit-type-row">${typeChips}</div>
+          <input class="edit-wc" id="ewc-${i}" type="text"
+            value="${(c.work_content||'').replace(/"/g,'&quot;')}"
+            placeholder="${lang==='zh'?'这段时间在做什么…':'What were you working on?'}"
+            onclick="event.stopPropagation()">
+          <div class="edit-actions" style="justify-content:space-between">
+            <button class="edit-save-btn" style="background:var(--red)"
+              onclick="event.stopPropagation();deleteRecord(${i})">${lang==='zh'?'删除':'Delete'}</button>
+            <button class="edit-save-btn" onclick="event.stopPropagation();saveEdit(${i})">${lang==='zh'?'保存':'Save'}</button>
+          </div>
+        </div></div>`;
+    }
+
+    /* ── VIEW MODE: click anywhere to edit ── */
+    const dotStyle=act&&!isAway?`border-color:${ACT_COLORS(act)}`:'';
+
+    const actP = act ? `'${act}'` : 'null';
+    if(isAway) return`<div class="ev">
+      <div class="ev-dot away"></div>
+      <div class="ecard away-card" style="border-left:3px solid ${borderCol}"
+           onclick="startEdit(${i},${actP})">
+        <div class="ec-top">
+          <span class="etime">${c.time||''}</span>
+          <span class="ebadge" style="background:rgba(156,163,175,.1);color:var(--muted)">↩</span>
+          <span style="font-size:12px;color:var(--muted)">${t('away')}</span>
+          <span class="score-pill">+${ss||1}</span>
+        </div>
+        ${c.work_content?`<div class="wc">"${c.work_content}"</div>`:''}
+      </div></div>`;
+
+    const exName=ex?(lang==='en'&&ex.name_en?ex.name_en:ex.name):'';
+    const exId=ex?ex.id:'';
+    const cat=ex?ex.category:'';
+    const catName=lang==='zh'?(cat==='stretch'?'拉伸':cat==='core'?'核心':'力量'):(cat==='stretch'?'Stretch':cat==='core'?'Core':'Strength');
+    const catBadge=cat?`<span class="ebadge" style="background:${CAT_COLORS[cat]||'#ccc'}1a;color:${CAT_COLORS[cat]||'#999'}">${catName}</span>`:'';
+    // Activity type shown via border color — no text badge
+    const chips=[];
+    if(fm>0) chips.push(`<span class="chip">${RS.fmtMin(fm, lang)}</span>`);
+    if(ex?.sets) chips.push(`<span class="chip">${ex.sets}${t('sets')}×${ex.duration_per_set}s</span>`);
+
+    return`<div class="ev">
+      <div class="ev-dot" style="${dotStyle}"></div>
+      <div class="ecard" style="border-left:3px solid ${borderCol}"
+           onclick="startEdit(${i},${actP})">
+        <div class="ec-top">
+          <span class="etime">${c.time||''}</span>
+          ${catBadge}
+          <span class="score-pill">+${ss}</span>
+        </div>
+        ${exName?`<div class="ex-name">${exName}<span style="font-size:10px;color:var(--muted);margin-left:6px;font-family:var(--mono)">${exId}</span></div>`:''}
+        ${c.work_content?`<div class="wc">"${c.work_content}"</div>`:''}
+        ${chips.length?`<div class="chips-row">${chips.join('')}</div>`:''}
+      </div></div>`;
+  }).join('');
+}
+
+function startEdit(idx, act){
+  if(_editIdx===idx) return;
+  _editIdx=idx; _editAct=act||null;
+  renderEvents(curData);
+  requestAnimationFrame(()=>{
+    const el=document.getElementById(`ets-${idx}`);
+    if(el) el.focus();
+  });
+}
+
+function autoFillTimes(idx){
+  const ckins=[...curData.checkins||[]].sort((a,b)=>{
+    if(!a.time&&!b.time)return 0; if(!a.time)return 1; if(!b.time)return-1;
+    return a.time.localeCompare(b.time);
+  });
+  const [s,e]=inferTimeRange(ckins, idx);
+  const se=document.getElementById(`ets-${idx}`);
+  const ee=document.getElementById(`ete-${idx}`);
+  if(se&&s) se.value=s;
+  if(ee&&e) ee.value=e;
+}
+
+function cancelEdit(){
+  _editIdx=-1; _editAct=null;
+  renderEvents(curData);
+}
+
+function timeToMinutes(t){if(!t)return-1;const[h,m]=t.split(':').map(Number);return h*60+m;}
+
+async function saveEdit(idx){
+  const startEl=document.getElementById(`ets-${idx}`);
+  const endEl  =document.getElementById(`ete-${idx}`);
+  const durEl  =document.getElementById(`edur-${idx}`);
+  const wcEl   =document.getElementById(`ewc-${idx}`);
+  const errEl  =document.getElementById(`eov-${idx}`);
+  if(!wcEl) return;
+
+  const newStart = startEl?.value||'';
+  const newEnd   = endEl?.value  ||'';
+  // Use end time as the canonical "time" field (matches existing convention)
+  const newTime  = newEnd || newStart;
+  const newDur   = Math.max(0,parseInt(durEl?.value||0)||0);
+
+  // Overlap check using start/end if both provided
+  if(newStart && newEnd){
+    const st=timeToMinutes(newStart), en=timeToMinutes(newEnd);
+    const ckins=curData.checkins||[];
+    let hasOverlap=false;
+    for(let j=0;j<ckins.length;j++){
+      if(j===idx) continue;
+      const oc=ckins[j];
+      if(!oc.time) continue;
+      const oEn=timeToMinutes(oc.end_time||oc.time);
+      const oSt=oc.start_time?timeToMinutes(oc.start_time):oEn-(oc.focus_minutes||0);
+      if(st<oEn && oSt<en){hasOverlap=true;break;}
+    }
+    if(errEl) errEl.classList.toggle('show',hasOverlap);
+    if(hasOverlap) return;
+  }
+  if(errEl) errEl.classList.remove('show');
+
+  try{
+    const res=await fetch('/api/records/edit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        date:curDate, index:idx,
+        time:newTime,
+        start_time:newStart||null,
+        end_time:newEnd||null,
+        work_content:wcEl.value,
+        activity_type:_editAct||null,
+        focus_minutes:newDur,
+      }),
+    });
+    const r=await res.json();
+    if(r.success){
+      _editIdx=-1; _editAct=null;
+      await loadDate(curDate);
+    }
+  }catch(e){console.error(e);}
+}
+
+async function deleteRecord(idx){
+  try{
+    const res=await fetch('/api/records/delete',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({date:curDate, index:idx}),
+    });
+    const r=await res.json();
+    if(r.success){ _editIdx=-1; _editAct=null; await loadDate(curDate); }
+  }catch(e){console.error(e);}
+}
+
+/* ══ VIEW 2: 24H PROPORTIONAL ══ */
+function timeToMin(t){if(!t)return-1;const[h,m]=t.split(':').map(Number);return h*60+m;}
+
+function render24h(data){
+  const ckins=(data.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
+  // Ticks
+  const ticks=document.getElementById('h24-ticks');
+  ticks.innerHTML=[0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
+
+  // Track blocks
+  const track=document.getElementById('h24-track');
+  track.innerHTML=ckins.map(c=>{
+    const start=timeToMin(c.time);
+    if(start<0)return'';
+    const fm=Math.max(c.focus_minutes||15,15);
+    const left=(start/1440)*100;
+    const w=Math.max((fm/1440)*100,1.5);
+    const act=c.activity_type||'other';
+    const col=ACT_COLORS(act);
+    const label=c.work_content||ACT_LABEL(act)||'';
+    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}" title="${c.time} ${label} +${c.score}pts"></div>`;
+  }).join('');
+
+  // Pie chart (canvas)
+  const byAct={};
+  ckins.forEach(c=>{
+    const act=c.activity_type||'other';
+    byAct[act]=(byAct[act]||0)+(c.focus_minutes||0);
+  });
+  const totalMin=Object.values(byAct).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('pie-cval').textContent=totalMin;
+  document.getElementById('pie-clbl').textContent=t('pieLbl');
+
+  const canvas=document.getElementById('pie-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,240,240);
+  let angle=-Math.PI/2;
+  const cx=120,cy=120,r=100,ir=60;
+  const entries=Object.entries(byAct).filter(([,v])=>v>0);
+  entries.forEach(([act,min])=>{
+    const sweep=(min/totalMin)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,angle,angle+sweep);ctx.closePath();
+    ctx.fillStyle=ACT_COLORS(act);ctx.fill();
+    angle+=sweep;
+  });
+  // Donut hole
+  ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+
+  // Legend
+  const legend=document.getElementById('pie-legend');
+  legend.innerHTML=entries.map(([act,min])=>`
+    <div class="pie-leg-item">
+      <div class="pie-leg-dot" style="background:${ACT_COLORS(act)}"></div>
+      <div class="pie-leg-label">${ACT_LABEL(act)}</div>
+      <div class="pie-leg-val">${min}m</div>
+    </div>`).join('');
+
+  // 24h legend
+  const h24leg=document.getElementById('h24-legend');
+  h24leg.innerHTML=entries.map(([act,])=>`
+    <div class="leg-item">
+      <div class="leg-dot" style="background:${ACT_COLORS(act)}"></div>
+      <span>${ACT_LABEL(act)}</span>
+    </div>`).join('');
+}
+
+/* ══ VIEW 3: HEATMAP ══ */
+function scoreToColor(score){
+  if(!score) return'var(--line)';
+  const intensity=Math.min(score/50,1);
+  const r=Math.round(183+(124-183)*intensity);
+  const g=Math.round(148+(58-148)*intensity);
+  const b=Math.round(244+(237-244)*intensity);
+  return`rgb(${r},${g},${b})`;
+}
+
+function renderHeatmap(){
+  const now=new Date();
+  if(!hmYear){hmYear=now.getFullYear();hmMonth=now.getMonth();}
+  const mNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const mNamesZH=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('hm-month-title').textContent=
+    lang==='zh'?`${hmYear}年 ${mNamesZH[hmMonth]}`:`${mNames[hmMonth]} ${hmYear}`;
+  document.getElementById('hm-next').disabled=
+    hmYear>now.getFullYear()||(hmYear===now.getFullYear()&&hmMonth>=now.getMonth());
+
+  const grid=document.getElementById('hm-grid');
+  const headers=t('dayHeaders');
+  let html=headers.map(d=>`<div class="hm-day-header">${d}</div>`).join('');
+
+  const firstDay=new Date(hmYear,hmMonth,1);
+  // ISO: Mon=0,...,Sun=6
+  let startOffset=(firstDay.getDay()+6)%7;
+  for(let i=0;i<startOffset;i++) html+=`<div class="hm-cell empty-day"></div>`;
+
+  const daysInMonth=new Date(hmYear,hmMonth+1,0).getDate();
+  const todayISO=todayStr();
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=`${hmYear}-${String(hmMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFuture=iso>todayISO;
+    const data=histList[iso];
+    const score=data?.total_score||0;
+    const bg=isFuture?'transparent':scoreToColor(score);
+    const isSelected=iso===curDate;
+    const cls=`hm-cell${isFuture?' empty-day':score?' ':' no-data'}${isSelected?' selected':''}`;
+    const scoreLabel=score&&!isFuture?score:'';
+    html+=`<div class="${cls}" style="background:${bg}" title="${iso}: ${score}pts" onclick="hmSelectDay('${iso}')">${scoreLabel}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function hmNavigate(dir){
+  hmMonth+=dir;
+  if(hmMonth<0){hmMonth=11;hmYear--;}
+  if(hmMonth>11){hmMonth=0;hmYear++;}
+  renderHeatmap();
+}
+function hmSelectDay(iso){
+  if(iso>todayStr())return;
+  curDate=iso;
+  loadDate(curDate);
+  setView('events');
+}
+
+/* ══ VIEW 4: STACKED BAR CHART ══ */
+let _barMode  = 'score';   // 'score' | 'focus'
+let _barRange = 7;         // 7 | 30
+
+function setBarMode(m){
+  _barMode = m;
+  document.getElementById('bar-mode-score').classList.toggle('active', m==='score');
+  document.getElementById('bar-mode-focus').classList.toggle('active', m==='focus');
+  renderBars();
+}
+
+function setBarRange(r){
+  _barRange = r;
+  document.getElementById('bar-range-7').classList.toggle('active', r===7);
+  document.getElementById('bar-range-30').classList.toggle('active', r===30);
+  renderBars();
+}
+
+async function renderBars(){
+  // Build date list: last N days ending today
+  const today = todayStr();
+  const dates = [];
+  for(let i = _barRange - 1; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+
+  // Fetch missing dates we don't have detailed data for (only check-in details matter for focus mode)
+  // For score mode we can use histList summary; for focus mode we need checkin details.
+  const dayData = {};
+  if(_barMode === 'score'){
+    // histList already has total_score per day
+    for(const d of dates) dayData[d] = histList[d] || {total_score:0, checkins:[]};
+  } else {
+    // Need full checkin data for per-activity focus minutes
+    await Promise.all(dates.map(async d => {
+      try{
+        const r = await fetch(`/api/history/date?d=${d}`);
+        dayData[d] = await r.json();
+      }catch(e){ dayData[d] = {total_score:0, checkins:[]}; }
+    }));
+  }
+
+  const narrow = _barRange === 30;
+  const barW   = narrow ? 20 : 36;   // px per bar column
+  const maxH   = 160;
+
+  // Compute max value for scaling
+  let maxVal = 1;
+  for(const d of dates){
+    const dd = dayData[d] || {};
+    if(_barMode === 'score'){
+      maxVal = Math.max(maxVal, dd.total_score || 0);
+    } else {
+      const byAct = actSumByDay(dd);
+      const total = Object.values(byAct).reduce((a,b)=>a+b,0);
+      maxVal = Math.max(maxVal, total);
+    }
+  }
+
+  function actSumByDay(dd){
+    const m = {};
+    (dd.checkins||[]).forEach(c=>{
+      if(c.event_type==='restroom'||c.event_type==='away_return') return;
+      const a = c.activity_type||'other';
+      m[a] = (m[a]||0) + (c.focus_minutes||0);
+    });
+    return m;
+  }
+
+  // Collect all activity types seen
+  const actSet = new Set();
+  if(_barMode === 'focus'){
+    for(const d of dates) Object.keys(actSumByDay(dayData[d]||{})).forEach(a=>actSet.add(a));
+    if(!actSet.size) actSet.add('other');
+  }
+
+  const chart = document.getElementById('bar-chart');
+  const legend = document.getElementById('bar-legend');
+
+  // Render bars
+  const cols = dates.map(d=>{
+    const dd = dayData[d] || {};
+    const isToday = d === today;
+    const dayLabel = (()=>{
+      const dt = new Date(d+'T12:00:00');
+      if(narrow) return String(dt.getDate());
+      const days = lang==='zh'?['日','一','二','三','四','五','六']:['Su','Mo','Tu','We','Th','Fr','Sa'];
+      return `${String(dt.getMonth()+1)}/${String(dt.getDate())} ${days[dt.getDay()]}`;
+    })();
+
+    let segsHtml = '';
+    let total = 0;
+
+    if(_barMode === 'score'){
+      const score = dd.total_score || 0;
+      total = score;
+      const h = Math.round((score / maxVal) * maxH);
+      const col = scoreToColor(score);
+      segsHtml = `<div class="bar-seg" style="height:${h}px;background:${col}"></div>`;
+    } else {
+      const byAct = actSumByDay(dd);
+      total = Object.values(byAct).reduce((a,b)=>a+b,0);
+      const h = Math.round((total / maxVal) * maxH);
+      // Build segments bottom-to-top (column-reverse flex will flip)
+      segsHtml = [...actSet].filter(a=>byAct[a]>0).map(a=>{
+        const segH = Math.round((byAct[a]/maxVal)*maxH);
+        return `<div class="bar-seg" style="height:${segH}px;background:${ACT_COLORS(a)}" title="${ACT_LABEL(a)}: ${byAct[a]}m"></div>`;
+      }).join('');
+      if(!segsHtml) segsHtml = `<div class="bar-seg" style="height:2px;background:var(--line)"></div>`;
+    }
+
+    const tooltip = _barMode==='score'
+      ? `${d}: ${total}pts`
+      : `${d}: ${total}min`;
+
+    return `<div class="bar-col" style="width:${barW}px" title="${tooltip}" onclick="hmSelectDay('${d}')">
+      <div class="bar-stack" style="height:${maxH}px;width:${barW - (narrow?4:6)}px">${segsHtml}</div>
+      <div class="bar-lbl${isToday?' today':''}">${dayLabel}</div>
+    </div>`;
+  }).join('');
+
+  chart.style.gap = narrow ? '2px' : '4px';
+  chart.innerHTML = cols;
+
+  // Legend
+  if(_barMode === 'focus' && actSet.size > 0){
+    legend.innerHTML = [...actSet].map(a=>
+      `<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(a)}"></div><span>${ACT_LABEL(a)}</span></div>`
+    ).join('');
+  } else if(_barMode === 'score'){
+    legend.innerHTML = `<div style="font-size:11px;color:var(--muted)">${lang==='zh'?'颜色深度表示得分高低':'Color intensity = score'}</div>`;
+  } else {
+    legend.innerHTML = '';
+  }
+}
+
+/* ── DATA LOADING ── */
+async function loadDate(iso){
+  _editIdx=-1; _editAct=null;   // reset edit state on date change
+  try{
+    const r=await fetch(`/api/history/date?d=${iso}`);
+    curData=await r.json();
+    renderHeader(curData);
+    renderBottom(curData);
+    renderEvents(curData);
+    if(curView==='h24') render24h(curData);
+    if(curView==='bars') renderBars();
+    if(curView==='heatmap') renderHeatmap();
+    updateNavButtons();
+  }catch(e){console.error(e);}
+}
+
+async function loadHistList(){
+  try{
+    const r=await fetch('/api/history/list');
+    histList=await r.json();
+    // make sure today is in list
+    if(!histList[todayStr()]) histList[todayStr()]={total_score:0,focus_minutes:0,checkins:0};
+    // also set heatmap to current month
+    const now=new Date();
+    hmYear=now.getFullYear();hmMonth=now.getMonth();
+  }catch(e){}
+}
+
+async function init(){
+  try{const r=await fetch('/api/config');const cfg=await r.json();lang=cfg.lang||'zh';}catch(e){}
+  await Promise.all([loadActivityTypes(), loadHistList()]);
+  await loadDate(curDate);
+  updateNavButtons();
+}
+
+init();
+</script>
+</body>
+</html>

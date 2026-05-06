@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="/shared.js"></script>
+<title>re.set — Break</title>
+<style>
+/* ── Reset ── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+/* ── Tokens ── */
+:root{
+  --bg:    #F7F7F9;
+  --card:  #FFFFFF;
+  --acc:   #B794F4;
+  --acc2:  #7C3AED;
+  --text:  #111827;
+  --sub:   #374151;
+  --muted: #9CA3AF;
+  --line:  #E5E7EB;
+  --mono: "SF Mono","Fira Code","Consolas",monospace;
+  --r: 10px;
+}
+
+/* ── Base ── */
+html{ width:100%; height:100%; }
+body{
+  width:100%; min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;
+  font-size:15px; line-height:1.5;
+  overflow-y:auto;
+  /* Center the .page column both horizontally AND vertically */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ── Inputs: explicitly allow text entry ── */
+input{
+  user-select:text!important;
+  -webkit-user-select:text!important;
+  -webkit-user-modify:read-write!important;
+  cursor:text;
+}
+
+/* Non-interactive helper */
+.ns{user-select:none;-webkit-user-select:none;cursor:default}
+
+/* ── Page column (centered, max-width) ── */
+.page{
+  width:100%; max-width:660px;
+  padding:32px 28px 44px;
+  display:flex; flex-direction:column; gap:18px;
+  /* allow scrolling if screen is short */
+  flex-shrink:0;
+}
+
+/* ── Fixed close ── */
+.close-btn{
+  position:fixed;top:20px;right:20px;z-index:999;
+  background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);
+  color:var(--muted);font-size:13px;font-family:inherit;
+  padding:6px 14px;cursor:pointer;
+  transition:all .15s;
+}
+.close-btn:hover{border-color:#111;color:#111}
+
+/* ── Top bar ── */
+.topbar{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+}
+.clock{font-size:36px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.date-str{font-size:13px;color:var(--muted)}
+.spacer{flex:1}
+.score-pill{
+  font-size:13px;font-weight:600;color:var(--acc2);
+  background:rgba(183,148,244,.12);
+  border:1px solid rgba(183,148,244,.3);
+  border-radius:99px;padding:4px 12px;
+}
+.lang-btn{
+  background:none;border:1px solid var(--line);border-radius:6px;
+  font-size:12px;font-weight:700;color:var(--muted);font-family:inherit;
+  padding:4px 10px;cursor:pointer;transition:all .15s;
+}
+.lang-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ── Progress ── */
+.progress-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prog-label{font-size:12px;color:var(--muted)}
+.prog-group{display:inline-flex;align-items:center;gap:5px}
+.prog-tag{font-size:11px;font-weight:700;letter-spacing:.4px;padding:2px 7px;border-radius:99px}
+.prog-tag.stretch {background:rgba(16,185,129,.1); color:#059669}
+.prog-tag.core    {background:rgba(245,158,11,.1);  color:#D97706}
+.prog-tag.strength{background:rgba(239,68,68,.1);   color:#DC2626}
+.prog-dots{display:inline-flex;gap:3px}
+.prog-dot{width:6px;height:6px;border-radius:50%;border:1px solid var(--line)}
+.prog-dot.done{background:var(--acc);border-color:var(--acc)}
+.prog-sep{color:var(--line);margin:0 2px}
+.prog-all{font-size:12px;color:#059669;font-weight:600}
+
+/* ── Card ── */
+.card{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:24px 28px;
+}
+.card-title{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.divider{height:1px;background:var(--line);margin:18px 0}
+
+/* ── Selection: exercise cards ── */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.ex-card{
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:16px 14px;cursor:pointer;
+  transition:border-color .15s,background .15s;
+}
+.ex-card:hover{border-color:var(--acc);background:rgba(183,148,244,.04)}
+.ex-card.selected{border-color:var(--acc);background:rgba(183,148,244,.08)}
+.ex-id{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1.2px;display:block;margin-bottom:7px}
+.ex-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.3}
+.ex-meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.ex-cat-tag{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:99px;display:inline-block}
+.ex-cat-tag.stretch {background:rgba(16,185,129,.1); color:#059669}
+.ex-cat-tag.core    {background:rgba(245,158,11,.1);  color:#D97706}
+.ex-cat-tag.strength{background:rgba(239,68,68,.1);   color:#DC2626}
+.ex-cat-tag.bottle  {background:rgba(124,58,237,.1);  color:#7C3AED}
+.ex-pts{font-size:11px;color:var(--muted);margin-left:6px}
+
+.card-footer-links{display:flex;gap:14px;align-items:center}
+.link-btn{
+  background:none;border:none;font-size:13px;color:var(--muted);
+  font-family:inherit;cursor:pointer;padding:0;
+  text-decoration:underline;text-underline-offset:2px;
+}
+.link-btn:hover{color:var(--text)}
+.link-btn.accent{color:var(--acc2)}
+.link-btn.accent:hover{color:var(--acc)}
+
+/* ── Circuit view ── */
+.circuit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.circuit-ex-badge{display:flex;align-items:baseline;gap:9px}
+.circuit-ex-id{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.5px}
+.circuit-ex-name{font-size:17px;font-weight:700;color:var(--text)}
+
+/* Timer — big monospace number */
+.timer-display{
+  font-family:var(--mono);
+  font-size:80px;font-weight:300;letter-spacing:5px;
+  text-align:center;color:var(--text);
+  padding:28px 0 20px;line-height:1;
+  transition:color .3s;
+}
+.timer-display.waiting{color:var(--acc)}  /* timer hit 0 - ready to advance */
+.timer-display.all-done{color:#059669}
+
+/* Progress dots */
+.dots-row{display:flex;gap:12px;justify-content:center;padding:4px 0 14px}
+.s-dot{
+  width:10px;height:10px;border-radius:50%;
+  border:1.5px solid var(--line);background:transparent;
+  transition:all .25s;
+}
+.s-dot.active{border-color:var(--acc);transform:scale(1.25)}
+.s-dot.done  {background:var(--acc);border-color:var(--acc);transform:scale(1)}
+
+.set-status{font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;font-family:var(--mono);letter-spacing:.5px;height:18px}
+.circuit-desc{font-size:13px;color:var(--sub);line-height:1.65;text-align:center;margin-bottom:22px;padding:0 8px}
+
+/* Buttons */
+.primary-btn{
+  width:100%;padding:14px;
+  background:var(--acc);border:none;border-radius:var(--r);
+  color:#fff;font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:opacity .15s,background .2s,color .2s;
+  letter-spacing:.3px;
+}
+.primary-btn:hover{opacity:.88}
+.primary-btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed;opacity:1}
+
+/* Outline variant — shown while timer still running */
+.primary-btn.soft{
+  background:transparent;border:1.5px solid var(--line);
+  color:var(--muted);
+}
+.primary-btn.soft:hover{border-color:var(--acc);color:var(--acc);opacity:1}
+/* When timer just hit 0 — "ready" state */
+.primary-btn.ready{
+  background:transparent;border:1.5px solid var(--acc);
+  color:var(--acc);
+}
+.primary-btn.ready:hover{background:var(--acc);color:#fff;opacity:1}
+
+/* ── Away view ── */
+.away-header{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;text-align:center}
+.away-elapsed{font-family:var(--mono);font-size:64px;font-weight:300;color:var(--acc2);letter-spacing:.06em;text-align:center;line-height:1;margin:24px 0 8px}
+.away-label{font-size:14px;color:var(--muted);text-align:center;margin-bottom:32px}
+.away-return-form{margin-top:16px}
+.away-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.away-chip{border:1.5px solid var(--line);border-radius:20px;padding:5px 16px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card);transition:all .15s}
+.away-chip.sel{color:#fff;border-color:transparent}
+
+/* ── Check-in view ── */
+.eye-row{display:flex;align-items:center;gap:10px;padding:12px 0}
+.eye-mono{font-family:var(--mono);font-size:20px;color:var(--text)}
+.eye-done-badge{font-size:12px;font-weight:600;color:#059669;background:rgba(16,185,129,.1);padding:3px 10px;border-radius:99px}
+
+/* Input label */
+.field-group{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.field-group label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px}
+
+/* Text input — explicit cursor pointer area, no blocking styles */
+input[type="text"]{
+  width:100%;
+  background:var(--bg);border:1.5px solid var(--line);border-radius:var(--r);
+  color:var(--text);padding:12px 16px;font-size:15px;font-family:inherit;
+  outline:none;transition:border-color .15s;
+  /* prevent any parent from blocking selection */
+  pointer-events:all;
+}
+input[type="text"]:focus{border-color:var(--acc)}
+input[type="text"]::placeholder{color:var(--muted)}
+
+.field-row{display:flex;align-items:flex-end;gap:16px;margin-bottom:22px}
+.field-inline{display:flex;align-items:center;gap:9px}
+.field-inline span{font-size:14px;color:var(--muted)}
+input[type="number"]{
+  width:72px;text-align:center;
+  background:var(--bg);border:1.5px solid var(--line);border-radius:var(--r);
+  color:var(--text);padding:12px 0;font-size:15px;font-family:inherit;
+  outline:none;transition:border-color .15s;
+  pointer-events:all;
+}
+input[type="number"]:focus{border-color:var(--acc)}
+
+.score-est-box{
+  margin-left:auto;flex-shrink:0;
+  background:rgba(183,148,244,.08);
+  border:1px solid rgba(183,148,244,.2);border-radius:var(--r);
+  padding:10px 16px;text-align:right;
+}
+.score-est-label{font-size:11px;color:var(--muted);margin-bottom:3px}
+.score-est-val{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--acc2)}
+
+/* Activity type chips */
+.type-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:600;font-family:inherit;
+  padding:5px 12px;border-radius:99px;cursor:pointer;
+  border:1.5px solid var(--line);background:var(--bg);
+  color:var(--muted);transition:all .15s;
+}
+.type-chip:hover{border-color:var(--acc);color:var(--text)}
+.type-chip.selected{color:#fff;border-color:transparent}
+.type-chip.add-chip{border-style:dashed;font-size:11px}
+
+/* Type manager panel */
+.type-manager{
+  margin-top:10px;padding:12px;background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;
+}
+.tm-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:7px;
+}
+.tm-color{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--line);
+  cursor:pointer;padding:0;flex-shrink:0;outline:none;
+  -webkit-appearance:none;overflow:hidden;
+}
+.tm-color::-webkit-color-swatch-wrapper{padding:0}
+.tm-color::-webkit-color-swatch{border:none;border-radius:50%}
+.tm-label{
+  flex:1;padding:4px 8px;border:1px solid var(--line);border-radius:6px;
+  font-size:12px;font-family:inherit;background:var(--card);color:var(--text);
+  outline:none;
+}
+.tm-label:focus{border-color:var(--acc)}
+.tm-del{
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  font-size:16px;line-height:1;padding:0 2px;transition:color .15s;
+}
+.tm-del:hover{color:var(--red)}
+.tm-add{
+  width:100%;padding:6px;border:1px dashed var(--line);border-radius:6px;
+  background:none;font-size:12px;color:var(--muted);cursor:pointer;
+  font-family:inherit;transition:all .15s;margin-top:4px;
+}
+.tm-add:hover{border-color:var(--acc);color:var(--acc)}
+
+.complete-btn{
+  width:100%;padding:14px;
+  background:var(--acc);border:none;border-radius:var(--r);
+  color:#fff;font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:opacity .15s;letter-spacing:.3px;
+  pointer-events:all;
+}
+.complete-btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.complete-btn:not(:disabled):hover{opacity:.88}
+
+/* ── Overlays ── */
+.overlay{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(247,247,249,.96);
+  display:flex;align-items:center;justify-content:center;
+  animation:fi .25s ease;
+}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.success-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.success-check{
+  width:80px;height:80px;border-radius:50%;
+  border:2px solid var(--acc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;color:var(--acc);
+  animation:pop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-size:24px;font-weight:700;color:var(--text)}
+.success-pts{font-family:var(--mono);font-size:32px;color:var(--acc2);font-weight:600}
+.success-total{font-size:14px;color:var(--muted)}
+.exit-msg{font-size:18px;color:var(--muted)}
+
+/* ── Responsive ── */
+@media(max-width:580px){
+  .cards-grid{grid-template-columns:1fr}
+  .timer-display{font-size:60px}
+  .field-row{flex-direction:column;align-items:stretch}
+  .score-est-box{margin-left:0;text-align:left}
+  .topbar{gap:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- Fixed close button -->
+<button class="close-btn ns" onclick="emergencyExit()">✕ Exit</button>
+
+<div class="page">
+
+  <!-- Top bar -->
+  <div class="topbar ns">
+    <span class="clock" id="clock">--:--</span>
+    <span class="date-str" id="date-str"></span>
+    <span class="spacer"></span>
+    <span class="score-pill" id="score-pill">0 pts</span>
+    <button class="lang-btn" id="lang-btn" onclick="toggleLang()">EN</button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar ns" id="progress-bar">
+    <span class="prog-label">Loading...</span>
+  </div>
+
+  <!-- ════ VIEW: Selection ════ -->
+  <div class="card" id="v-selection">
+    <div class="card-title ns" data-i="exerciseLabel">选择本次动作</div>
+    <div class="cards-grid" id="cards-grid">
+      <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted)" data-i="loading">Loading...</div>
+    </div>
+    <div class="card-footer-links ns">
+      <button class="link-btn" onclick="skipToCheckin()" data-i="skipEx">跳过动作</button>
+      <span style="color:var(--line)">·</span>
+      <button class="link-btn accent" onclick="doPause()" data-i="pauseBtn">暂停 / 去洗手间</button>
+    </div>
+  </div>
+
+  <!-- ════ VIEW: Circuit Training ════ -->
+  <div class="card" id="v-circuit" style="display:none">
+    <div class="circuit-header">
+      <button class="link-btn ns" onclick="backToSelection()" data-i="backBtn">← 返回</button>
+      <div class="circuit-ex-badge ns">
+        <span class="circuit-ex-id" id="c-id">T01</span>
+        <span class="circuit-ex-name" id="c-name">扶桌深蹲</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Countdown number -->
+    <div class="timer-display ns" id="c-timer">00:30</div>
+
+    <!-- Set progress dots -->
+    <div class="dots-row ns" id="c-dots"></div>
+
+    <!-- Status text: "Set 1 / 2" or "1/2 done" -->
+    <div class="set-status ns" id="c-status"></div>
+
+    <!-- Description -->
+    <div class="circuit-desc ns" id="c-desc"></div>
+
+    <!-- Single advancing button -->
+    <button class="primary-btn" id="c-btn" onclick="handleCircuit()">▶  开始</button>
+  </div>
+
+  <!-- ════ VIEW: Away ════ -->
+  <div class="card" id="v-away" style="display:none">
+    <div class="away-header" data-i="awayHeader">离开中</div>
+    <div class="away-elapsed" id="away-elapsed">00:00</div>
+    <div class="away-label" data-i="awayLabel">记录这段时间做了什么</div>
+    <button class="primary-btn" id="away-back-btn" onclick="showAwayReturn()" data-i="awayBackBtn">
+      我回来了，记录一下
+    </button>
+    <!-- Inline return form, shown after clicking "I'm back" -->
+    <div class="away-return-form" id="away-return-form" style="display:none">
+      <div class="divider" style="margin:16px 0"></div>
+      <div class="away-chips" id="away-chips"></div>
+      <div class="field-group" style="margin-bottom:14px">
+        <input type="text" id="away-wc"
+               placeholder="做了什么…"
+               data-i-ph="awayWcPh"
+               onclick="this.focus()">
+      </div>
+      <button class="complete-btn" id="away-submit-btn" onclick="submitReturn()" data-i="awaySubmitBtn">
+        记录并继续
+      </button>
+    </div>
+  </div>
+
+  <!-- ════ VIEW: Check-in ════ -->
+  <div class="card" id="v-checkin" style="display:none">
+    <div class="card-title ns" data-i="checkinLabel">记录这段专注</div>
+
+    <!-- Eye rest row -->
+    <div class="eye-row">
+      <span class="ns" style="font-size:20px">👁</span>
+      <span class="ns" style="font-size:14px;color:var(--sub)" data-i="eyeLabel">眺望 6m 外</span>
+      <span class="eye-mono ns" id="eye-display">00:20</span>
+      <button class="link-btn ns" id="eye-skip-btn" onclick="skipEye()" data-i="eyeSkip">跳过 →</button>
+      <span class="eye-done-badge ns" id="eye-done-badge" style="display:none" data-i="eyeDone">✓ 完成</span>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Activity type chips -->
+    <div class="field-group" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label data-i="actLabel" style="margin-bottom:0">活动类型</label>
+        <button class="link-btn ns" onclick="toggleTypeManager()" id="tm-toggle" style="font-size:11px">管理</button>
+      </div>
+      <div id="type-chips" style="display:flex;gap:7px;flex-wrap:wrap"></div>
+      <div id="type-manager" class="type-manager" style="display:none"></div>
+    </div>
+
+    <!-- Work content input -->
+    <div class="field-group">
+      <label data-i="workLabel">这段时间在做什么</label>
+      <input type="text" id="work-content"
+             placeholder="写方案、开会、写代码..."
+             data-i-ph="workPh"
+             autocomplete="off"
+             onclick="this.focus()"
+             oninput="checkReady()">
+    </div>
+
+    <!-- Focus time + score estimate -->
+    <div class="field-row">
+      <div class="field-group" style="margin:0">
+        <label data-i="focusLabel">专注时长</label>
+        <div class="field-inline">
+          <input type="number" id="focus-time" value="0" min="0" max="480" step="5"
+                 onclick="this.focus()" oninput="this._edited=true;checkReady()">
+          <span data-i="focusUnit">分钟</span>
+        </div>
+        <div id="focus-time-fmt" style="font-size:11px;color:var(--muted);margin-top:5px;min-height:14px"></div>
+      </div>
+      <div class="score-est-box ns">
+        <div class="score-est-label" data-i="estLabel">预计获得</div>
+        <div class="score-est-val" id="score-est">+6</div>
+      </div>
+    </div>
+
+    <button class="complete-btn" id="complete-btn" disabled onclick="doCheckin()" data-i="completeBtn">
+      完成打卡 ✓
+    </button>
+  </div>
+
+</div><!-- /page -->
+
+<!-- Success overlay -->
+<div class="overlay" id="ov-success" style="display:none">
+  <div class="success-inner">
+    <div class="success-check ns">✓</div>
+    <div class="success-title ns" data-i="successTitle">打卡成功</div>
+    <div class="success-pts ns" id="suc-pts">+9</div>
+    <div class="success-total ns" id="suc-total">今日累计 42 pts</div>
+  </div>
+</div>
+
+<!-- Exit overlay -->
+<div class="overlay" id="ov-exit" style="display:none">
+  <div class="exit-msg ns" data-i="exitMsg">正在退出...</div>
+</div>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════
+   TRANSLATIONS
+════════════════════════════════════════ */
+const T = {
+  zh: {
+    exerciseLabel: '选择本次动作',
+    loading:       '加载中...',
+    loadErr:       '加载失败，请检查后端是否运行',
+    skipEx:        '跳过动作',
+    pauseBtn:      '暂停 / 去洗手间',
+    awayHeader:    '离开中',
+    awayLabel:     '记录这段时间做了什么',
+    awayBackBtn:   '我回来了，记录一下',
+    awayWcPh:      '做了什么…',
+    awaySubmitBtn: '记录并继续',
+    backBtn:       '← 返回',
+    checkinLabel:  '记录这段专注',
+    eyeLabel:      '眺望 6m 外',
+    eyeSkip:       '跳过 →',
+    eyeDone:       '✓ 完成',
+    workLabel:     '这段时间在做什么',
+    workPh:        '写方案、开会、写代码...',
+    focusLabel:    '专注时长',
+    focusUnit:     '分钟',
+    estLabel:      '预计获得',
+    completeBtn:   '完成打卡 ✓',
+    submitting:    '提交中...',
+    successTitle:  '打卡成功',
+    exitMsg:       '正在退出...',
+    todayPts:      (n) => `${n} 分`,
+    sucTotal:      (n) => `今日累计 ${n} 分`,
+    sucPts:        (n) => `+${n} 分`,
+    progressLabel: '今日保底',
+    allMet:        '✅ 今日保底已全部达标',
+    langToggle:    'EN',
+    startBtn:        '▶  开始第 1 组',
+    completeSetBtn:  (cur, total) => `✓  完成第 ${cur} 组`,
+    nextSetBtn:      (done, total) => `▶  开始第 ${done + 1} 组`,
+    finishBtn:       '✓  完成全部动作',
+    setRunning:    (cur, total) => `第 ${cur} 组 / 共 ${total} 组`,
+    setDoneN:      (done, total) => `${done}/${total} 组已完成`,
+    setAllDone:    '全部完成 ✓',
+    catStretch: '拉伸', catCore: '核心', catStrength: '力量', catBottle: '矿泉水瓶',
+    setsInfo:   (s,d) => `${s} 组 × ${d}s`,
+  },
+  en: {
+    exerciseLabel: 'Choose an Exercise',
+    loading:       'Loading...',
+    loadErr:       'Failed to load. Is backend running?',
+    skipEx:        'Skip exercise',
+    pauseBtn:      'Pause / Restroom',
+    awayHeader:    'Away',
+    awayLabel:     'Log what you did',
+    awayBackBtn:   "I'm back — log it",
+    awayWcPh:      'What did you do?',
+    awaySubmitBtn: 'Log & Continue',
+    backBtn:       '← Back',
+    checkinLabel:  'Log Your Focus',
+    eyeLabel:      'Look 6 m away',
+    eyeSkip:       'Skip →',
+    eyeDone:       '✓ Done',
+    workLabel:     'What were you working on?',
+    workPh:        'Writing, meetings, coding...',
+    focusLabel:    'Focus duration',
+    focusUnit:     'min',
+    estLabel:      'Est. score',
+    completeBtn:   'Complete Check-In ✓',
+    submitting:    'Submitting...',
+    successTitle:  'Done',
+    exitMsg:       'Closing...',
+    todayPts:      (n) => `${n} pts`,
+    sucTotal:      (n) => `Today total: ${n} pts`,
+    sucPts:        (n) => `+${n} pts`,
+    progressLabel: 'Daily goals',
+    allMet:        '✅ All daily goals met',
+    langToggle:    '中文',
+    startBtn:        '▶  Start Set 1',
+    completeSetBtn:  (cur, total) => `✓  Complete Set ${cur}`,
+    nextSetBtn:      (done, total) => `▶  Start Set ${done + 1}`,
+    finishBtn:       '✓  Finish All Sets',
+    setRunning:    (cur, total) => `Set ${cur} of ${total}`,
+    setDoneN:      (done, total) => `${done}/${total} sets done`,
+    setAllDone:    'All sets done ✓',
+    catStretch: 'Stretch', catCore: 'Core', catStrength: 'Strength', catBottle: 'Bottle',
+    setsInfo:   (s,d) => `${s} × ${d}s`,
+  },
+};
+
+/* ════════════════════════════════════════
+   LANGUAGE
+════════════════════════════════════════ */
+let lang = localStorage.getItem('br_lang') || 'zh';
+const t = (k, ...a) => { const v = T[lang][k]; return typeof v==='function' ? v(...a) : (v ?? k); };
+
+function applyLang() {
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const v = T[lang][el.dataset.i];
+    if (v && typeof v !== 'function') el.textContent = v;
+  });
+  document.querySelectorAll('[data-i-ph]').forEach(el => {
+    const v = T[lang][el.dataset.iPh];
+    if (v) el.placeholder = v;
+  });
+  document.getElementById('lang-btn').textContent = t('langToggle');
+  updateScoreEst();
+  if (status) renderProgress(status);
+  renderTypeChips();
+  const tmToggle = document.getElementById('tm-toggle');
+  if (tmToggle) tmToggle.textContent = lang==='en'?'Manage':'管理';
+  updateCircuitBtn();   // refresh button text
+}
+
+function toggleLang() {
+  lang = lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('br_lang', lang);
+  applyLang();
+  if (exercises.length) renderCards(exercises);
+}
+
+/* ════════════════════════════════════════
+   APP STATE
+════════════════════════════════════════ */
+const isSnoozed = new URLSearchParams(location.search).get('snoozed') === 'true';
+
+let status    = null;
+let exercises = [];
+let selectedEx = null;
+let exSkipped    = false;
+let selectedType = null;
+let ACT_TYPES    = [];   // loaded from /api/activity-types
+let _tmOpen      = false;
+
+/* ── Activity types (dynamic) ── */
+async function loadActivityTypes() {
+  ACT_TYPES = await RS.loadActivityTypes();
+}
+
+function actColor(id) {
+  return RS.ACT_COLORS(ACT_TYPES, id);
+}
+
+function renderTypeChips() {
+  const row = document.getElementById('type-chips');
+  if (!row) return;
+  row.innerHTML = '';
+  ACT_TYPES.forEach(tp => {
+    const btn = document.createElement('button');
+    btn.className = 'type-chip ns' + (selectedType === tp.id ? ' selected' : '');
+    btn.textContent = tp.label;
+    if (selectedType === tp.id) btn.style.background = tp.color;
+    btn.onclick = () => {
+      selectedType = selectedType === tp.id ? null : tp.id;
+      renderTypeChips();
+      updateScoreEst();
+    };
+    row.appendChild(btn);
+  });
+}
+
+/* ── Type manager (inline edit) ── */
+function toggleTypeManager() {
+  _tmOpen = !_tmOpen;
+  const el = document.getElementById('type-manager');
+  if (!el) return;
+  el.style.display = _tmOpen ? 'block' : 'none';
+  if (_tmOpen) renderTypeManager();
+  const btn = document.getElementById('tm-toggle');
+  if (btn) btn.textContent = _tmOpen ? (lang==='en'?'Done':'完成') : (lang==='en'?'Manage':'管理');
+}
+
+function renderTypeManager() {
+  const el = document.getElementById('type-manager');
+  if (!el) return;
+  RS.renderTypeManager(el, ACT_TYPES, async () => {
+    await RS.saveActivityTypes(ACT_TYPES);
+    renderTypeChips();
+  }, {
+    lang,
+    onAfterDelete: (deletedId) => {
+      if (selectedType === deletedId) selectedType = null;
+    },
+  });
+}
+
+/* ── Circuit state ── */
+let circuitPhase    = 'idle';   // idle | running | done
+let setsTotal       = 0;
+let setsDone        = 0;        // number of completed sets
+let setSecondsLeft  = 0;
+let setTimerRunning = false;
+let setInterval_    = null;
+
+/* ── Eye timer state ── */
+let eyeTimerSeconds = 20; /* from /api/config */
+let eyeDone      = false;
+let eyeSeconds   = 20;
+let eyeInterval_ = null;
+
+/* ════════════════════════════════════════
+   CLOCK
+════════════════════════════════════════ */
+function updateClock() {
+  const n  = new Date();
+  const hh = String(n.getHours()).padStart(2,'0');
+  const mm = String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${hh}:${mm}`;
+  const dZH = ['周日','周一','周二','周三','周四','周五','周六'];
+  const dEN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('date-str').textContent = lang === 'zh'
+    ? `${n.getMonth()+1}月${n.getDate()}日 ${dZH[n.getDay()]}`
+    : `${dEN[n.getDay()]} ${n.getMonth()+1}/${n.getDate()}`;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+/* ════════════════════════════════════════
+   DAILY PROGRESS
+════════════════════════════════════════ */
+function renderProgress(st) {
+  const counts = st.category_counts || {};
+  const mins   = st.daily_minimums  || {stretch:3, core:3, strength:2};
+  document.getElementById('score-pill').textContent = t('todayPts', st.total_score || 0);
+
+  const bar = document.getElementById('progress-bar');
+  if (st.all_minimums_met) {
+    bar.innerHTML = `<span class="prog-all ns">${t('allMet')}</span>`;
+    return;
+  }
+
+  const catNames = { stretch: t('catStretch'), core: t('catCore'), strength: t('catStrength') };
+  const groups = ['stretch','core','strength'].map(cat => {
+    const done = counts[cat] || 0, total = mins[cat] || 0;
+    const dots = Array.from({length: total}, (_, i) =>
+      `<span class="prog-dot${i < done ? ' done' : ''}"></span>`).join('');
+    return `<span class="prog-group">
+      <span class="prog-tag ${cat} ns">${catNames[cat]}</span>
+      <span class="prog-dots">${dots}</span>
+      <span style="font-size:11px;color:var(--muted)">${done}/${total}</span>
+    </span>`;
+  });
+
+  bar.innerHTML =
+    `<span class="prog-label ns">${t('progressLabel')}</span>` +
+    groups.join('<span class="prog-sep ns">·</span>');
+}
+
+/* ════════════════════════════════════════
+   EXERCISE CARDS
+════════════════════════════════════════ */
+function catClass(ex) { return ex.subcategory === 'bottle' ? 'bottle' : ex.category; }
+function catLabel(ex) {
+  if (ex.subcategory === 'bottle') return t('catBottle');
+  return t('cat' + ex.category.charAt(0).toUpperCase() + ex.category.slice(1));
+}
+
+function renderCards(exs) {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+  exs.forEach(ex => {
+    const d = document.createElement('div');
+    d.className = 'ex-card ns';
+    d.dataset.id = ex.id;
+    const setsInfo = t('setsInfo', ex.sets || 1, ex.duration_per_set || 30);
+    d.innerHTML = `
+      <span class="ex-id">${ex.id}</span>
+      <div class="ex-name">${lang==='en' && ex.name_en ? ex.name_en : ex.name}</div>
+      <div class="ex-meta">${setsInfo}</div>
+      <span class="ex-cat-tag ${catClass(ex)}">${catLabel(ex)}</span>
+      <span class="ex-pts">+${ex.score}${lang==='zh'?'分':'pts'}</span>
+    `;
+    d.addEventListener('click', () => selectCard(ex, d));
+    grid.appendChild(d);
+  });
+}
+
+function selectCard(ex, el) {
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedEx = ex;
+  exSkipped  = false;
+  enterCircuit(ex);
+}
+
+/* ════════════════════════════════════════
+   CIRCUIT TRAINING — STATE MACHINE
+
+   Flow:  idle → [click "Start Set 1"] →
+          running set 1 (timer counts) →
+          [click "Start Set 2" / "Finish All"] →
+          running set 2 / done →
+          … → all done → goToCheckin()
+
+   Button is clickable at ANY time:
+   • While timer running  → outline/soft style
+   • After timer hits 0   → solid "ready" style
+════════════════════════════════════════ */
+function enterCircuit(ex) {
+  clearInterval(setInterval_);
+  circuitPhase    = 'idle';
+  setsTotal       = ex.sets || 2;
+  setsDone        = 0;
+  setSecondsLeft  = ex.duration_per_set || 30;
+  setTimerRunning = false;
+
+  document.getElementById('c-id').textContent   = ex.id;
+  document.getElementById('c-name').textContent = lang==='en' && ex.name_en ? ex.name_en : ex.name;
+  document.getElementById('c-desc').textContent = ex.description;
+
+  renderCircuitDots();
+  renderCircuitTimer(ex.duration_per_set || 30);
+  document.getElementById('c-status').textContent = '';
+  updateCircuitBtn();
+  showView('circuit');
+}
+
+/* Render dot row */
+function renderCircuitDots() {
+  const row = document.getElementById('c-dots');
+  row.innerHTML = '';
+  for (let i = 0; i < setsTotal; i++) {
+    const d = document.createElement('span');
+    d.className = 's-dot' +
+      (i < setsDone ? ' done' : (i === setsDone && circuitPhase === 'running') ? ' active' : '');
+    row.appendChild(d);
+  }
+}
+
+/* Format seconds → MM:SS */
+function fmt(sec) {
+  const m = String(Math.floor(Math.max(0,sec)/60)).padStart(2,'0');
+  const s = String(Math.max(0,sec)%60).padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+function renderCircuitTimer(sec) {
+  const el = document.getElementById('c-timer');
+  el.textContent = fmt(sec);
+  el.className = 'timer-display ns' +
+    (circuitPhase === 'running' && sec <= 0 ? ' waiting' : '');
+}
+
+function updateCircuitStatus() {
+  const el = document.getElementById('c-status');
+  if (circuitPhase === 'idle') {
+    el.textContent = '';
+  } else if (circuitPhase === 'running') {
+    el.textContent = t('setRunning', setsDone + 1, setsTotal);
+  }
+}
+
+function updateCircuitBtn() {
+  const btn = document.getElementById('c-btn');
+  if (!btn) return;
+
+  if (circuitPhase === 'idle') {
+    btn.textContent = t('startBtn');
+    btn.className   = 'primary-btn';
+    btn.disabled    = false;
+    return;
+  }
+
+  if (circuitPhase === 'running') {
+    const curSet    = setsDone + 1;
+    const isLast    = curSet >= setsTotal;
+    const timerDone = setSecondsLeft <= 0;
+    if (timerDone) {
+      // Timer finished — prompt the user to confirm and move on
+      btn.textContent = isLast ? t('finishBtn') : t('nextSetBtn', setsDone, setsTotal);
+      btn.className   = 'primary-btn ready';
+    } else {
+      // Timer still running — button confirms completion of this set
+      btn.textContent = isLast ? t('finishBtn') : t('completeSetBtn', curSet, setsTotal);
+      btn.className   = 'primary-btn soft';
+    }
+    btn.disabled = false;
+  }
+}
+
+/* Main button handler */
+function handleCircuit() {
+  if (circuitPhase === 'idle') {
+    circuitPhase = 'running';
+    kickTimer();
+    return;
+  }
+
+  if (circuitPhase === 'running') {
+    clearInterval(setInterval_);
+    setTimerRunning = false;
+    setsDone++;
+
+    if (setsDone >= setsTotal) {
+      // All done → go to checkin
+      circuitPhase = 'done';
+      renderCircuitDots();
+      renderCircuitTimer(0);
+      const statusEl = document.getElementById('c-status');
+      statusEl.textContent = t('setAllDone');
+      const btn = document.getElementById('c-btn');
+      btn.disabled    = true;
+      btn.className   = 'primary-btn';
+      btn.textContent = t('setAllDone');
+      setTimeout(goToCheckin, 900);
+    } else {
+      // Immediately start next set (single click — no "between" pause)
+      circuitPhase = 'running';
+      renderCircuitDots();
+      kickTimer();
+    }
+  }
+}
+
+/* Start/restart the per-set countdown */
+function kickTimer() {
+  clearInterval(setInterval_);
+  setTimerRunning = true;
+  setSecondsLeft  = selectedEx.duration_per_set || 30;
+  renderCircuitDots();
+  updateCircuitStatus();
+  updateCircuitBtn();
+  renderCircuitTimer(setSecondsLeft);
+
+  setInterval_ = setInterval(() => {
+    setSecondsLeft--;
+    renderCircuitTimer(setSecondsLeft);
+    if (setSecondsLeft <= 0) {
+      clearInterval(setInterval_);
+      setTimerRunning = false;
+      updateCircuitBtn();  // switch to "ready" style
+    }
+  }, 1000);
+}
+
+function backToSelection() {
+  clearInterval(setInterval_);
+  circuitPhase = 'idle';
+  selectedEx   = null;
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('selected'));
+  showView('selection');
+}
+
+/* ════════════════════════════════════════
+   CHECK-IN VIEW
+════════════════════════════════════════ */
+async function goToCheckin() {
+  clearInterval(setInterval_);
+  selectedType = null;
+  _tmOpen = false;
+  const tm = document.getElementById('type-manager');
+  if (tm) tm.style.display = 'none';
+  showView('checkin');
+  renderTypeChips();
+  startEyeTimer();
+  // Refresh the suggested focus time at the moment the user reaches check-in
+  // (more accurate than the value set at page-load, which might be minutes old)
+  try {
+    const s = await fetch('/api/status').then(r => r.json());
+    const fm = document.getElementById('focus-time');
+    if (fm && !fm._edited) {
+      const sug = s.suggested_focus_minutes || 0;
+      fm.value = sug;
+      fm.max   = sug > 0 ? sug : 480;
+    }
+  } catch {}
+  checkReady();
+}
+
+function skipToCheckin() {
+  exSkipped  = true;
+  selectedEx = null;
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('selected'));
+  goToCheckin();
+}
+
+/* ── Eye timer ── */
+function startEyeTimer() {
+  eyeDone   = false;
+  eyeSeconds = eyeTimerSeconds;
+  clearInterval(eyeInterval_);
+  document.getElementById('eye-display').style.display   = '';
+  document.getElementById('eye-skip-btn').style.display  = '';
+  document.getElementById('eye-done-badge').style.display = 'none';
+  renderEye(eyeTimerSeconds);
+
+  eyeInterval_ = setInterval(() => {
+    eyeSeconds--;
+    renderEye(eyeSeconds);
+    if (eyeSeconds <= 0) {
+      clearInterval(eyeInterval_);
+      markEyeDone();
+    }
+  }, 1000);
+}
+
+function renderEye(sec) {
+  document.getElementById('eye-display').textContent = fmt(sec);
+}
+
+function skipEye() {
+  clearInterval(eyeInterval_);
+  markEyeDone();
+}
+
+function markEyeDone() {
+  eyeDone = true;
+  document.getElementById('eye-display').style.display    = 'none';
+  document.getElementById('eye-skip-btn').style.display   = 'none';
+  document.getElementById('eye-done-badge').style.display = 'inline';
+  checkReady();
+}
+
+/* ── Score preview ── */
+function updateScoreEst() {
+  const raw = document.getElementById('focus-time')?.value ?? '0';
+  const fm  = Math.max(0, parseInt(raw, 10) || 0);
+  let w = 1.0;
+  if (selectedType) {
+    const tp = ACT_TYPES.find(t => t.id === selectedType);
+    if (tp != null && tp.weight != null) {
+      const x = parseFloat(tp.weight);
+      if (!isNaN(x)) w = Math.max(0.1, Math.min(3.0, x));
+    }
+  }
+  const fs = Math.floor(fm * w / 5);
+  const xs = selectedEx ? selectedEx.score : 0;
+  document.getElementById('score-est').textContent = `+${fs + xs}`;
+}
+
+/* ── Enable/disable complete button ── */
+function checkReady() {
+  updateScoreEst();
+  const fmRaw = parseInt(document.getElementById('focus-time').value ?? '0', 10);
+  const fmtEl = document.getElementById('focus-time-fmt');
+  if (fmtEl) {
+    fmtEl.textContent = !isNaN(fmRaw) && fmRaw >= 60 ? RS.fmtMin(fmRaw, lang) : '';
+  }
+  const wc    = document.getElementById('work-content').value.trim();
+  const fm    = fmRaw;
+  // focus time can be 0 (e.g. quick restroom log); only require non-negative number
+  const fmOk  = !isNaN(fm) && fm >= 0;
+  const ready = (selectedEx || exSkipped) && eyeDone && wc.length > 0 && fmOk;
+  document.getElementById('complete-btn').disabled = !ready;
+}
+
+/* ════════════════════════════════════════
+   CHECKIN SUBMIT
+════════════════════════════════════════ */
+async function doCheckin() {
+  const btn = document.getElementById('complete-btn');
+  if (btn.disabled) return;
+  const wc = document.getElementById('work-content').value.trim();
+  const fm = parseInt(document.getElementById('focus-time').value || 30, 10) || 30;
+  btn.disabled = true;
+  btn.textContent = t('submitting');
+
+  try {
+    const res  = await fetch('/api/checkin', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({exercise: selectedEx, work_content: wc, focus_minutes: fm, activity_type: selectedType}),
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('suc-pts').textContent   = t('sucPts', data.session_score);
+      document.getElementById('suc-total').textContent = t('sucTotal', data.total_score);
+      document.getElementById('ov-success').style.display = 'flex';
+      setTimeout(() => {
+        fetch('/api/close', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({emergency: false}),
+        }).catch(()=>{});
+      }, 900);
+    }
+  } catch {
+    btn.disabled = false;
+    btn.textContent = t('completeBtn');
+  }
+}
+
+/* ════════════════════════════════════════
+   AWAY MODE (pause)
+════════════════════════════════════════ */
+let awayReturnType = 'restroom';
+let awayTimerInterval = null;
+
+function initAwayView() {
+  showView('away');
+  renderAwayChips();
+  updateAwayElapsed();
+  awayTimerInterval = setInterval(updateAwayElapsed, 60000);
+}
+
+async function updateAwayElapsed() {
+  try {
+    const s = await fetch('/api/status').then(r => r.json());
+    const secs = s.away_seconds || 0;
+    const m = Math.floor(secs / 60);
+    const se = secs % 60;
+    const el = document.getElementById('away-elapsed');
+    if (el) el.textContent = `${String(m).padStart(2,'0')}:${String(se).padStart(2,'0')}`;
+  } catch {}
+}
+
+function renderAwayChips() {
+  const c = document.getElementById('away-chips');
+  if (!c) return;
+  const restroomLabel = lang === 'zh' ? '洗手间' : 'Restroom';
+  const types = [{id:'restroom', label: restroomLabel, color:'#B794F4'}, ...ACT_TYPES];
+  c.innerHTML = types.map(tp => {
+    const isSel = awayReturnType === tp.id;
+    return `<span class="away-chip${isSel?' sel':''}"
+      style="${isSel ? `background:${tp.color};border-color:${tp.color}` : `border-color:${tp.color}66;color:${tp.color}`}"
+      onclick="awayReturnType='${tp.id}';renderAwayChips()">${tp.label}</span>`;
+  }).join('');
+}
+
+function showAwayReturn() {
+  document.getElementById('away-back-btn').style.display = 'none';
+  document.getElementById('away-return-form').style.display = 'block';
+  const wcEl = document.getElementById('away-wc');
+  if (wcEl) { wcEl.placeholder = T[lang].awayWcPh || '做了什么…'; wcEl.focus(); }
+}
+
+async function submitReturn() {
+  const wc = (document.getElementById('away-wc')?.value || '').trim();
+  const btn = document.getElementById('away-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = T[lang].submitting || '…'; }
+  try {
+    await fetch('/api/return-log', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({activity_type: awayReturnType, work_content: wc}),
+    });
+    // Backend closes the break window; clear local interval
+    clearInterval(awayTimerInterval);
+  } catch {
+    if (btn) { btn.disabled = false; btn.textContent = T[lang].awaySubmitBtn || '记录并继续'; }
+  }
+}
+
+async function doPause() {
+  try { await fetch('/api/pause', {method:'POST'}); } catch {}
+  // Python backend will reload this window at ?away=1 — no need to call /api/close
+}
+
+/* ════════════════════════════════════════
+   EMERGENCY EXIT
+════════════════════════════════════════ */
+function emergencyExit() {
+  document.getElementById('ov-exit').style.display = 'flex';
+  setTimeout(() => {
+    fetch('/api/close', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({emergency:true}),
+    }).catch(()=>{});
+  }, 250);
+}
+
+/* ════════════════════════════════════════
+   VIEW SWITCHER
+════════════════════════════════════════ */
+function showView(name) {
+  ['selection','circuit','checkin','away'].forEach(v => {
+    document.getElementById(`v-${v}`).style.display = v === name ? '' : 'none';
+  });
+}
+
+/* ════════════════════════════════════════
+   KEYBOARD
+════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  // Emergency shortcut — works from anywhere
+  if (e.shiftKey && e.ctrlKey && e.altKey && e.key.toLowerCase() === 'q') {
+    emergencyExit(); return;
+  }
+  // Never intercept normal typing inside inputs
+  const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+  if (isInput) return;
+
+  // Block common system shortcuts when not in an input
+  if ((e.metaKey || e.ctrlKey) && ['w','q','n','t'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+  if (e.key === 'Escape') e.preventDefault();
+  // NOTE: no capture:true — bubble phase only, so inputs see events first
+});
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+async function init() {
+  applyLang();
+  try {
+    const cfg = await fetch('/api/config').then(r => r.json());
+    eyeTimerSeconds = cfg.eye_timer_seconds || 20;
+  } catch {
+    eyeTimerSeconds = 20;
+  }
+  await loadActivityTypes();
+
+  // ── Away mode: shown when Pause is clicked ──
+  if (new URLSearchParams(window.location.search).get('away') === '1') {
+    initAwayView();
+    return;
+  }
+
+  try {
+    const [sr, er] = await Promise.all([fetch('/api/status'), fetch('/api/exercises')]);
+    status    = await sr.json();
+    exercises = await er.json();
+    // Pre-fill focus duration with elapsed time since last check-in
+    const fm = document.getElementById('focus-time');
+    if (fm && !fm._edited) {
+      const sug = status.suggested_focus_minutes || 0;
+      fm.value = sug;
+      fm.max   = sug > 0 ? sug : 480;
+    }
+    if (status.skip_exercise) {
+      // Restroom was just logged — jump directly to check-in (no exercise needed)
+      setTimeout(() => { showView('checkin'); renderTypeChips(); startEyeTimer(); checkReady(); }, 50);
+    }
+    renderProgress(status);
+    renderCards(exercises);
+    updateScoreEst();
+  } catch {
+    document.getElementById('cards-grid').innerHTML =
+      `<div style="grid-column:1/-1;padding:24px;text-align:center;color:#DC2626;font-size:14px">
+        ${t('loadErr')}
+      </div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
