@@ -1,132 +1,170 @@
 # re.set — Break Reminder
 
-A macOS break-reminder app that nudges you to step away from the screen, log a micro-workout, and record focus sessions — all from the menu bar.
+A macOS menu-bar app that reminds you to take breaks, log micro-workouts, and track focus sessions — no account, no server, everything local.
 
 ---
 
 ## Features
 
-- **Smart timer** — 30-minute countdown that only runs while you are actively using the computer (idle time pauses it).
-- **Full-screen break overlay** — exercise cards, 20-second eye rest, focus-session log, and a completion check-in button.
-- **Circuit training mode** — per-set countdown timer for each exercise, with visual progress dots.
-- **Pause / away tracking** — click "暂停" (Pause) to lock the screen; when you return, log where you went (Restroom, Work, Life…).
+- **Smart timer** — countdown that only runs while you're actively typing/clicking; idle time doesn't count.
+- **Break overlay** — exercise cards, 20-second eye rest, focus-session log, and a check-in button.
+- **Circuit training mode** — per-set countdown with visual progress dots and three exercise categories (stretch · core · strength).
+- **Away tracking** — pause the timer when you step away; log where you went on return.
 - **End-of-day / Clock Out** — stops reminders and finalises the daily score.
-- **Records panel** — day-by-day timeline, monthly heatmap, pie chart, and inline record editing.
-- **Custom activity types** — user-defined labels and colours for work sessions.
+- **Records panel** — day timeline, monthly heatmap, 24-hour chart, bar chart, and inline record editing.
+- **Custom activity types** — user-defined labels, colours, and focus-score weights.
 - **Bilingual UI** — Chinese / English, switchable from the menu bar.
 
 ---
 
-## Requirements
+## Installation
 
-| Requirement | Version |
+### Option A — Pre-built app (recommended)
+
+Download the latest DMG for your chip from the [Releases](../../releases) page:
+
+| File | For |
 |---|---|
-| macOS | 12 Monterey or later |
-| Python | 3.10 or later (Homebrew recommended) |
-| PyObjC | Installed by `install.sh` |
+| `re.set-vX.Y.Z-apple-silicon.dmg` | M1 / M2 / M3 / M4 Macs |
+| `re.set-vX.Y.Z-intel.dmg` | Intel Macs |
 
----
+Mount the DMG, drag **re.set.app** to `~/Applications` (or `/Applications`), then:
 
-## Quick Install
+```
+Right-click → Open
+```
+(Required once on first launch because the app is not notarized.)
+
+### Option B — Build from source
+
+**Requirements:** macOS 12+, Python 3.10+, pip
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/re.set.git
+git clone https://github.com/suestring7/re.set.git
 cd re.set
 bash install.sh
 ```
 
-`install.sh` will:
-1. Verify Python 3 is present at `/opt/homebrew/bin/python3`.
-2. Install the four required PyObjC packages.
-3. Make the app bundle executable.
-4. Register a **LaunchAgent** so re.set starts automatically at login.
+`install.sh` builds a self-contained `.app` via py2app, copies it to `~/Applications`, and installs a **LaunchAgent** so re.set starts automatically at login.
 
-After running the script the app is live — look for the **leaf icon** in the macOS menu bar.
-
-> **Python path note**: if your Python 3 lives somewhere other than `/opt/homebrew/bin/python3` (check with `which python3`), open `install.sh` and change the `PYTHON=` line before running.
+After running, look for the leaf icon in the menu bar.
 
 ---
 
-## Manual Start (without auto-start)
-
-Double-click **re.set.app** in the project folder.
-
-Or from the terminal:
+## Manual Start / Stop
 
 ```bash
-/opt/homebrew/bin/python3 break_reminder.py
-```
+# Start without auto-start
+open ~/Applications/re.set.app
 
----
+# Or run directly from source (no build needed)
+python3 main_macos.py
 
-## Uninstall
-
-```bash
+# Uninstall (removes LaunchAgent, leaves your history intact)
 bash uninstall.sh
 ```
 
-This removes the LaunchAgent and kills the running process. Your history and work logs are left untouched.
+---
+
+## Menu Bar Reference
+
+| Item | Action |
+|---|---|
+| `下次休息：24:15` | Time until next break (live countdown) |
+| **暂停计时 / Pause Timer** | Pauses timer, opens away-tracking mode |
+| **回来了，记录一下 / I'm back** | Log the away period on return |
+| **记录工作时段** | Manually log a focus session |
+| **立即触发休息** | Trigger a break right now |
+| **查看今日记录** | Open the records panel |
+| **休息间隔** | Change interval (15 / 20 / 25 / 30 / 45 / 60 min) |
+| **下班了 / End of Day** | Stop reminders, finalise daily score |
+| **语言** | Switch Chinese ↔ English |
+| **退出** | Quit |
+
+**Stuck break window?** Press **Shift + Ctrl + Option + Q**, then click the bottom-left corner of the screen.
 
 ---
 
-## File Overview
+## Project Structure
 
 ```
 re.set/
-├── break_reminder.py         # Backend: HTTP server, timer, macOS integration
-├── break_reminder_ui.html    # Break overlay UI (full-screen)
-├── records_ui.html           # Records panel (history, heatmap, pie chart)
-├── away_form.html            # "Log Work Session" mini-form
-├── return_form.html          # "I'm back" return-from-pause form
-├── exercises.json            # Exercise library (37 exercises, circuit params)
-├── re.set.app/               # macOS .app bundle for double-click launch
-├── install.sh                # One-command installer
-└── uninstall.sh              # Uninstaller
+├── core/                     # Pure Python — no OS imports, portable to any platform
+│   ├── models/               # Exercise, CheckIn, DailyRecord, ActivityType, AppConfig
+│   ├── services/             # PersistenceService, ExerciseService, scoring functions
+│   ├── timer/                # BreakTimer (threading-based, PlatformAdapter protocol)
+│   ├── utils/                # Observable[T], date helpers
+│   └── viewmodels/           # AppViewModel, RecordsViewModel, PreferencesViewModel
+│
+├── platform/
+│   ├── macos/                # MacOSAdapter (Quartz idle), controller, HTTP server
+│   └── windows/              # Stub — future Windows port
+│
+├── ui/                       # HTML/JS UI served over localhost (shared across platforms)
+│   ├── break_reminder_ui.html
+│   ├── records_ui.html
+│   ├── preferences.html
+│   ├── away_form.html
+│   ├── return_form.html
+│   ├── warning.html
+│   ├── shared.js
+│   ├── exercises.json        # 37 exercises across stretch / core / strength
+│   └── activity_types.json   # Default activity type definitions
+│
+├── tests/                    # Unit tests (pytest)
+│   ├── test_scoring.py
+│   └── test_exercise_service.py
+│
+├── main_macos.py             # Entry point (macOS)
+├── break_reminder.py         # Original monolith — kept runnable during refactor
+├── setup.py                  # py2app build config
+├── install.sh                # Build + install to ~/Applications + LaunchAgent
+└── uninstall.sh
 ```
 
-Files created at runtime (excluded from git):
+Runtime files (excluded from git, stored in `~/Library/Application Support/re.set/`):
 
 ```
 history/                      # Per-day JSON archives
 break_reminder_state.json     # Today's live state
-activity_types.json           # Custom activity types
+activity_types.json           # User's custom activity types
 config.json                   # Interval and language prefs
-work_log.txt                  # Human-readable session log
-break_reminder.log            # App log
+work_log.txt                  # Human-readable daily log
 ```
 
 ---
 
-## Menu Bar Usage
+## Building Releases
 
-| Item | Action |
-|---|---|
-| Timer (e.g. `下次休息：24:15`) | Shows time until next break |
-| **暂停计时 / Pause Timer** | Locks screen, pauses timer |
-| **回来了，记录一下 / I'm back** | Opens return form to log the away period |
-| **记录工作时段** | Manually log a focus session |
-| **立即触发休息** | Trigger a break right now |
-| **查看今日记录** | Open the records panel |
-| **休息间隔** | Change the interval (15 / 20 / 25 / 30 / 45 / 60 min) |
-| **下班了 / End of Day** | Stop reminders and finalise score |
-| **语言** | Switch Chinese ↔ English |
-| **退出** | Quit re.set |
+Releases are built automatically by GitHub Actions on every version tag:
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+This builds both an Intel DMG and an Apple Silicon DMG in parallel and publishes them as assets on a GitHub Release. See [`.github/workflows/release.yml`](.github/workflows/release.yml).
 
 ---
 
-## Emergency Exit (hidden)
+## Running Tests
 
-If the break window ever gets stuck: **Shift + Ctrl + Option + Q**, then click once in the **bottom-left corner** of the screen.
+```bash
+python -m pytest tests/
+```
 
 ---
 
-## Sharing with Others
+## Architecture
 
-1. Push this repo to GitHub (the `.gitignore` already excludes all personal data).
-2. Share the repo URL.
-3. Others clone and run `bash install.sh`.
+re.set uses a **Python MVVM** pattern designed for cross-platform portability:
 
-No account, no server, no subscription — everything runs locally.
+- **`core/`** — pure Python, zero OS-specific imports. Runs identically on macOS and Windows.
+- **`platform/macos/`** — thin adapter layer: Quartz idle detection, `NSStatusItem` menu bar, `WKWebView` windows.
+- **`ui/`** — HTML/JS served over `localhost:18030` by an embedded HTTP server. No changes needed for other platforms.
+- **`platform/windows/`** — stub for a future Windows port (pystray + `ctypes` idle + `webbrowser.open()`).
+
+Dependency direction is strictly one-way: `platform/` → `core/`, never reversed.
 
 ---
 
