@@ -27,9 +27,9 @@ from core.timer.break_timer import BreakTimer
 from core.viewmodels.app_viewmodel import AppViewModel
 from core.viewmodels.preferences_viewmodel import PreferencesViewModel
 from core.viewmodels.records_viewmodel import RecordsViewModel
-from platform.macos.adapter import MacOSAdapter
-from platform.macos.controller import MacOSController
-from platform.macos.http_server import create_server
+from platforms.macos.adapter import MacOSAdapter
+from platforms.macos.controller import MacOSController
+from platforms.macos.http_server import create_server
 
 
 def _is_already_running() -> bool:

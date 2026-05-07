@@ -96,7 +96,7 @@ re.set/
 │   ├── utils/                # Observable[T], date helpers
 │   └── viewmodels/           # AppViewModel, RecordsViewModel, PreferencesViewModel
 │
-├── platform/
+├── platforms/
 │   ├── macos/                # MacOSAdapter (Quartz idle), controller, HTTP server
 │   └── windows/              # Stub — future Windows port
 │
@@ -160,9 +160,9 @@ python -m pytest tests/
 re.set uses a **Python MVVM** pattern designed for cross-platform portability:
 
 - **`core/`** — pure Python, zero OS-specific imports. Runs identically on macOS and Windows.
-- **`platform/macos/`** — thin adapter layer: Quartz idle detection, `NSStatusItem` menu bar, `WKWebView` windows.
+- **`platforms/macos/`** — thin adapter layer: Quartz idle detection, `NSStatusItem` menu bar, `WKWebView` windows.
 - **`ui/`** — HTML/JS served over `localhost:18030` by an embedded HTTP server. No changes needed for other platforms.
-- **`platform/windows/`** — stub for a future Windows port (pystray + `ctypes` idle + `webbrowser.open()`).
+- **`platforms/windows/`** — stub for a future Windows port (pystray + `ctypes` idle + `webbrowser.open()`).
 
 Dependency direction is strictly one-way: `platform/` → `core/`, never reversed.
 
