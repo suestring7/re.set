@@ -1,0 +1,83 @@
+name: Build & Release
+
+# Trigger: push a tag like v1.2.0 → builds both arches and publishes a release.
+# Manual trigger (workflow_dispatch) builds both but skips the release step.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build — ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-13        # last Intel GitHub-hosted runner
+            label: Intel (x86_64)
+            artifact: intel
+          - runner: macos-latest    # Apple Silicon (arm64), currently macOS 15
+            label: Apple Silicon (arm64)
+            artifact: apple-silicon
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            py2app \
+            pyobjc-framework-Cocoa \
+            pyobjc-framework-Quartz \
+            pyobjc-framework-WebKit
+
+      - name: Build .app bundle
+        run: python setup.py py2app
+
+      - name: Package as DMG
+        run: |
+          TAG="${GITHUB_REF_NAME:-dev}"
+          NAME="re.set-${TAG}-${{ matrix.artifact }}.dmg"
+          hdiutil create \
+            -volname "re.set" \
+            -srcfolder dist/re.set.app \
+            -ov -format UDZO \
+            "dist/${NAME}"
+          echo "DMG=dist/${NAME}" >> "$GITHUB_ENV"
+          echo "DMG_NAME=${NAME}"  >> "$GITHUB_ENV"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DMG_NAME }}
+          path: ${{ env.DMG }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download both DMGs
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.dmg
+          generate_release_notes: true
