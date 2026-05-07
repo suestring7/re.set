@@ -81,6 +81,10 @@ def resource_path(name: str) -> Path:
         rd = _bundle_resource_dir()
         if rd is not None:
             return rd / name
+    # Prefer ui/ sub-directory; fall back to SCRIPT_DIR for legacy dev layout
+    ui_path = SCRIPT_DIR / "ui" / name
+    if ui_path.exists():
+        return ui_path
     return SCRIPT_DIR / name
 
 def app_support_dir() -> Path:
@@ -127,6 +131,7 @@ DEFAULT_ACTIVITY_TYPES = [
     {"id": "work",          "label": "Work",          "color": "#6366F1", "weight": 1.0},
     {"id": "entertainment", "label": "Entertainment", "color": "#EC4899", "weight": 1.0},
     {"id": "life",          "label": "Life",          "color": "#10B981", "weight": 1.0},
+    {"id": "restroom",      "label": "Restroom",      "color": "#B794F4", "weight": 0.0, "parent_id": "life"},
 ]
 
 def load_activity_types() -> list:
@@ -151,7 +156,7 @@ def load_activity_types() -> list:
             w = float(tp.get("weight", 1.0))
         except (TypeError, ValueError):
             w = 1.0
-        w = max(0.1, min(3.0, w))
+        w = max(-5.0, min(5.0, w))
         out.append({**tp, "weight": w})
     return out if out else list(DEFAULT_ACTIVITY_TYPES)
 
@@ -167,9 +172,9 @@ def activity_focus_score_points(fm: int, act_type) -> int:
                     weight = float(tp.get("weight", 1.0))
                 except (TypeError, ValueError):
                     weight = 1.0
-                weight = max(0.1, min(3.0, weight))
+                weight = max(-5.0, min(5.0, weight))
                 break
-    return max(0, int(fm * weight / 5))
+    return int(fm * weight / 5)
 
 def save_activity_types(types: list) -> None:
     ACTIVITY_TYPES_FILE.write_text(
@@ -249,7 +254,7 @@ def _L(key):
 # ── Config persistence ────────────────────────────────────────────────────────
 def load_config() -> dict:
     try:
-        return json.loads(CONFIG_FILE.read_text()) if CONFIG_FILE.exists() else {}
+        return json.loads(CONFIG_FILE.read_text(encoding="utf-8")) if CONFIG_FILE.exists() else {}
     except Exception:
         return {}
 
@@ -737,7 +742,7 @@ class WindowController(NSObject):
             threading.Thread(target=handle_pause, daemon=True).start()
 
     def showReturnForm_(self, _):
-        pw, ph = 420.0, 360.0
+        pw, ph = 420.0, 540.0
         sw = NSScreen.mainScreen().frame().size.width
         sh = NSScreen.mainScreen().frame().size.height
         pf = NSMakeRect((sw - pw) / 2, (sh - ph) / 2, pw, ph)
@@ -1157,9 +1162,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         w = float(tp.get("weight", 1.0))
                     except (TypeError, ValueError):
                         w = 1.0
-                    w = max(0.1, min(3.0, w))
-                    cleaned.append({"id": str(tp["id"]), "label": str(tp["label"]),
-                                     "color": str(tp["color"]), "weight": w})
+                    w = max(-5.0, min(5.0, w))
+                    entry = {"id": str(tp["id"]), "label": str(tp["label"]),
+                             "color": str(tp["color"]), "weight": w}
+                    if tp.get("parent_id"):
+                        entry["parent_id"] = str(tp["parent_id"])
+                    cleaned.append(entry)
             if cleaned:
                 save_activity_types(cleaned)
         self._json({"success": True})
@@ -1281,7 +1289,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
         types = self._body()
         if not isinstance(types, list):
             self.send_response(400); self.end_headers(); return
-        # Basic validation: each entry must have id, label, color
         cleaned = []
         for tp in types:
             if isinstance(tp, dict) and tp.get("id") and tp.get("label") and tp.get("color"):
@@ -1289,9 +1296,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     w = float(tp.get("weight", 1.0))
                 except (TypeError, ValueError):
                     w = 1.0
-                w = max(0.1, min(3.0, w))
-                cleaned.append({"id": str(tp["id"]), "label": str(tp["label"]),
-                                 "color": str(tp["color"]), "weight": w})
+                w = max(-5.0, min(5.0, w))
+                entry = {"id": str(tp["id"]), "label": str(tp["label"]),
+                         "color": str(tp["color"]), "weight": w}
+                if tp.get("parent_id"):
+                    entry["parent_id"] = str(tp["parent_id"])
+                cleaned.append(entry)
         save_activity_types(cleaned)
         self._json({"success": True, "count": len(cleaned)})
 
@@ -1300,7 +1310,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         result = {}
         for f in HISTORY_DIR.glob("*.json"):
             try:
-                d = json.loads(f.read_text())
+                d = json.loads(f.read_text(encoding="utf-8"))
                 result[f.stem] = {
                     "total_score":  d.get("total_score", 0),
                     "focus_minutes": d.get("focus_minutes", 0),
@@ -1323,7 +1333,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         p = HISTORY_DIR / f"{date_str}.json"
         if p.exists():
             try:
-                d = json.loads(p.read_text())
+                d = json.loads(p.read_text(encoding="utf-8"))
                 d["lang"] = _g.get("lang", "zh")
                 return self._json(d)
             except Exception:
@@ -1497,6 +1507,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         body     = self._body()
         act_type = body.get("activity_type") or None
         wc       = str(body.get("work_content", "")).strip()
+        before   = body.get("before_leave")   # optional {activity_type, work_content, focus_minutes}
         with _lock:
             away_secs = int(time.time() - _g.get("away_start_ts", time.time()))
             fm = max(0, away_secs // 60)
@@ -1508,6 +1519,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
             _g["warning_shown"]  = False
             _g["snooze_available"] = True
         state = load_state()
+        # Log the pre-leave work session if provided
+        if before and isinstance(before, dict):
+            bl_fm   = max(0, int(before.get("focus_minutes", 0) or 0))
+            bl_wc   = str(before.get("work_content", "")).strip()
+            bl_type = before.get("activity_type") or None
+            bl_fs   = activity_focus_score_points(bl_fm, bl_type)
+            bl_rec  = {"time": datetime.now().strftime("%H:%M"),
+                       "exercise": None, "work_content": bl_wc,
+                       "focus_minutes": bl_fm, "score": bl_fs,
+                       "activity_type": bl_type, "event_type": "before_leave"}
+            state["total_score"]   = state.get("total_score", 0) + bl_fs
+            state["focus_minutes"] = state.get("focus_minutes", 0) + bl_fm
+            state["checkins"].append(bl_rec)
+            write_log_entry(state, bl_rec)
+        # Log the away period
         rec = {"time": datetime.now().strftime("%H:%M"),
                "exercise": None, "work_content": wc,
                "focus_minutes": fm, "score": 1,
@@ -1519,7 +1545,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         write_log_entry(state, rec)
         _log(f"Return log: {act_type}, {fm}min")
         self._json({"success": True, "away_minutes": fm})
-        close_kiosk()  # close the away overlay
+        close_kiosk()
 
     def _api_away_checkin(self):
         """Log a work session from the away-form (no exercise)."""

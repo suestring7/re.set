@@ -1,0 +1,33 @@
+[
+  {
+    "id": "work",
+    "label": "Work",
+    "color": "#b1dd8c",
+    "weight": 1.0
+  },
+  {
+    "id": "entertainment",
+    "label": "Entertainment",
+    "color": "#f9d3e0",
+    "weight": 0.1
+  },
+  {
+    "id": "life",
+    "label": "Life",
+    "color": "#caf0fe",
+    "weight": 1.0
+  },
+  {
+    "id": "self_improvement",
+    "label": "Self Improvement",
+    "color": "#d9cafe",
+    "weight": 2.0
+  },
+  {
+    "id": "restroom",
+    "label": "Restroom",
+    "color": "#B794F4",
+    "weight": 0.0,
+    "parent_id": "life"
+  }
+]

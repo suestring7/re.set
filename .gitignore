@@ -3,13 +3,17 @@ break_reminder_state.json
 break_reminder_state_*.json
 work_log.txt
 break_reminder.log
-activity_types.json
+/activity_types.json
 config.json
 history/
 
 # Py2app
 build/
 dist/
+re.set.app/
+
+# Temp files (atomic-save scratch)
+*.tmp
 
 # Python
 __pycache__/

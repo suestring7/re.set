@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="/shared.js"></script>
+<title>re.set — Return Log</title>
+<style>
+:root { --acc:#B794F4; --acc2:#7C3AED; --bg:#F7F7F9; --card:#fff; --text:#1a1a1a; --muted:#888; --line:#E5E7EB; }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { background:var(--bg); font-family:-apple-system,system-ui,sans-serif; font-size:13px; color:var(--text); }
+body { display:flex; flex-direction:column; align-items:center; padding:16px; overflow-y:auto; min-height:100vh; }
+
+.card { background:var(--card); border:1px solid #e8e8ec; border-radius:14px; padding:20px 22px 18px; width:100%; max-width:380px; }
+h2 { font-size:15px; font-weight:700; letter-spacing:.02em; margin-bottom:4px; }
+.away-time { font-size:36px; font-weight:300; font-family:monospace; color:var(--acc); letter-spacing:.06em; margin:8px 0 16px; }
+
+/* Sections */
+.section { margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.section:last-of-type { border-bottom:none; margin-bottom:0; }
+.section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--acc2); margin-bottom:10px; }
+.field-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:5px; }
+
+/* Chips */
+.chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.chip { border:1.5px solid var(--line); border-radius:99px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; background:var(--card); transition:all .15s; }
+.chip:hover { border-color:var(--acc); }
+.chip.sel { color:#fff; border-color:transparent; }
+.chip-sub { font-size:11px; padding:3px 10px; border-left-width:3px; }
+
+input[type=text], input[type=number] {
+  width:100%; border:1px solid #ddd; border-radius:7px; padding:8px 10px;
+  font-size:13px; background:var(--card); outline:none; color:var(--text);
+  transition:border-color .2s; font-family:inherit;
+}
+input:focus { border-color:var(--acc); }
+
+.fm-row { display:flex; gap:8px; align-items:center; }
+.fm-row input { flex:1; }
+.fm-unit { font-size:12px; color:var(--muted); white-space:nowrap; }
+
+/* Actions */
+.actions { display:flex; gap:10px; margin-top:16px; }
+.btn { flex:1; padding:10px; border:none; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .15s; font-family:inherit; }
+.btn-primary { background:var(--acc2); color:#fff; }
+.btn-primary:hover { opacity:.85; }
+.btn-cancel  { background:#f0f0f3; color:var(--text); }
+.btn-cancel:hover  { opacity:.75; }
+.success { color:#22c55e; font-size:13px; text-align:center; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2 id="hdr">欢迎回来</h2>
+  <div class="away-time" id="awayTime">—</div>
+
+  <!-- Before leave -->
+  <div class="section">
+    <div class="section-title" id="ttl-before">离开前在做什么</div>
+
+    <div class="field-label" id="lbl-before-type">活动类型</div>
+    <div class="chips" id="before-chips"></div>
+
+    <div class="field-label" id="lbl-before-wc">内容</div>
+    <input type="text" id="before-wc" placeholder="简单描述一下…" style="margin-bottom:10px">
+
+    <div class="field-label" id="lbl-before-fm">专注时长</div>
+    <div class="fm-row">
+      <input type="number" id="before-fm" min="0" placeholder="0">
+      <span class="fm-unit" id="fm-unit">分钟</span>
+    </div>
+  </div>
+
+  <!-- While away -->
+  <div class="section">
+    <div class="section-title" id="ttl-during">离开期间做了什么</div>
+
+    <div class="field-label" id="lbl-during-type">活动类型</div>
+    <div class="chips" id="during-chips"></div>
+
+    <div class="field-label" id="lbl-during-desc">备注（选填）</div>
+    <input type="text" id="during-desc" placeholder="可不填">
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-cancel" id="btnCancel" onclick="cancel()">取消</button>
+    <button class="btn btn-primary" id="btnSubmit" onclick="submit()">记录并继续</button>
+  </div>
+  <div class="success" id="msg"></div>
+</div>
+
+<script>
+const ZH = {
+  hdr:'欢迎回来', ttlBefore:'离开前在做什么', ttlDuring:'离开期间做了什么',
+  lblBeforeType:'活动类型', lblBeforeWc:'内容', lblBeforeFm:'专注时长', fmUnit:'分钟',
+  lblDuringType:'活动类型', lblDuringDesc:'备注（选填）',
+  btnCancel:'取消', btnSubmit:'记录并继续',
+  beforeWcPh:'简单描述一下…', duringDescPh:'可不填', msgOK:'已记录！',
+};
+const EN = {
+  hdr:'Welcome Back', ttlBefore:'Before you left', ttlDuring:'While you were away',
+  lblBeforeType:'Activity', lblBeforeWc:'What were you doing?', lblBeforeFm:'Focus duration', fmUnit:'min',
+  lblDuringType:'Away activity', lblDuringDesc:'Notes (optional)',
+  btnCancel:'Cancel', btnSubmit:'Log & Continue',
+  beforeWcPh:'Brief description…', duringDescPh:'Optional', msgOK:'Logged!',
+};
+
+let lang = 'zh', ACT_TYPES = [];
+let selBefore = null, selDuring = null;
+let awayMins = 0;
+
+function t(k) { return (lang==='zh' ? ZH : EN)[k] || k; }
+
+async function init() {
+  try {
+    const st = await fetch('/api/status').then(r=>r.json());
+    lang = st.lang || 'zh';
+    awayMins = st.away_seconds ? Math.round(st.away_seconds / 60) : 0;
+    ACT_TYPES = await RS.loadActivityTypes();
+    const sug = st.suggested_focus_minutes || 0;
+    if (sug > 0) document.getElementById('before-fm').value = sug;
+  } catch(e) {
+    ACT_TYPES = await RS.loadActivityTypes();
+  }
+  applyLang();
+  renderChips();
+  updateClock();
+}
+
+function updateClock() {
+  const el = document.getElementById('awayTime');
+  if (awayMins <= 0) { el.textContent = '…'; return; }
+  const h = Math.floor(awayMins/60), m = awayMins%60;
+  el.textContent = h>0 ? `${h}h ${m}m` : `${m} ${t('fmUnit')}`;
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.getElementById('hdr').textContent          = t('hdr');
+  document.getElementById('ttl-before').textContent   = t('ttlBefore');
+  document.getElementById('ttl-during').textContent   = t('ttlDuring');
+  document.getElementById('lbl-before-type').textContent = t('lblBeforeType');
+  document.getElementById('lbl-before-wc').textContent   = t('lblBeforeWc');
+  document.getElementById('lbl-before-fm').textContent   = t('lblBeforeFm');
+  document.getElementById('fm-unit').textContent         = t('fmUnit');
+  document.getElementById('lbl-during-type').textContent = t('lblDuringType');
+  document.getElementById('lbl-during-desc').textContent = t('lblDuringDesc');
+  document.getElementById('before-wc').placeholder    = t('beforeWcPh');
+  document.getElementById('during-desc').placeholder  = t('duringDescPh');
+  document.getElementById('btnCancel').textContent    = t('btnCancel');
+  document.getElementById('btnSubmit').textContent    = t('btnSubmit');
+}
+
+function renderChips() {
+  RS.renderGroupedChips(
+    document.getElementById('before-chips'),
+    ACT_TYPES, selBefore,
+    function(id) { selBefore = id; renderChips(); }
+  );
+  RS.renderGroupedChips(
+    document.getElementById('during-chips'),
+    ACT_TYPES, selDuring,
+    function(id) { selDuring = id; renderChips(); }
+  );
+}
+
+async function submit() {
+  const beforeWc = document.getElementById('before-wc').value.trim();
+  const beforeFm = Math.max(0, parseInt(document.getElementById('before-fm').value)||0);
+  const duringDesc = document.getElementById('during-desc').value.trim();
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  try {
+    await fetch('/api/return-log', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        activity_type: selDuring,
+        work_content:  duringDesc,
+        before_leave: {
+          activity_type:  selBefore,
+          work_content:   beforeWc,
+          focus_minutes:  beforeFm,
+        },
+      }),
+    });
+    document.getElementById('msg').textContent = t('msgOK');
+    setTimeout(async ()=>{
+      try { await fetch('/api/close-popup',{method:'POST'}); } catch {}
+    }, 700);
+  } catch(e) {
+    document.getElementById('msg').textContent = 'Error: '+e;
+    btn.disabled = false;
+  }
+}
+
+function cancel() {
+  fetch('/api/close-popup', {method:'POST'}).catch(()=>{});
+}
+
+init();
+</script>
+</body>
+</html>
