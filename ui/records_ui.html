@@ -621,15 +621,18 @@ function render24h(data){
   // Track blocks
   const track=document.getElementById('h24-track');
   track.innerHTML=ckins.map(c=>{
-    const start=timeToMin(c.time);
-    if(start<0)return'';
+    const endMin=timeToMin(c.time);
+    if(endMin<0)return'';
     const fm=Math.max(c.focus_minutes||15,15);
-    const left=(start/1440)*100;
+    // c.time is the check-in (end) time; shift left by focus_minutes to get start
+    const startMin=Math.max(endMin-fm,0);
+    const left=(startMin/1440)*100;
     const w=Math.max((fm/1440)*100,1.5);
     const act=c.activity_type||'other';
     const col=ACT_COLORS(act);
     const label=c.work_content||ACT_LABEL(act)||'';
-    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}" title="${c.time} ${label} +${c.score}pts"></div>`;
+    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
+    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}" title="${startStr}–${c.time} ${label} +${c.score}pts"></div>`;
   }).join('');
 
   // Pie chart (canvas)
