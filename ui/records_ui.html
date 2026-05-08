@@ -43,7 +43,7 @@ body{display:flex;flex-direction:column}
 .all-met{font-size:11px;font-weight:600;color:var(--green)}
 
 /* ── SCROLL AREA ── */
-.scroll{flex:1;overflow-y:auto;padding:16px}
+.scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
 
 /* ── EMPTY ── */
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;gap:8px}
@@ -120,10 +120,13 @@ body{display:flex;flex-direction:column}
 .pie-leg-label{font-size:12px;color:var(--sub);flex:1}
 .pie-leg-val{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-/* ══ VIEW 4: STACKED BAR CHART ══ */
-.bar-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+/* ══ VIEW 4: STACKED BAR + WEEK TIMELINE ══ */
+/* Full-height centering: bars-inner is a centered card within the flex scroll area */
+#view-bars{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:8px 0}
+.bars-inner{width:100%;max-width:580px}
+.bar-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .bar-toggle{display:flex;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px}
-.bar-toggle-btn{background:none;border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.bar-toggle-btn{background:none;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
 .bar-toggle-btn.active{background:var(--card);color:var(--acc2);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .bar-range-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
 .bar-range-btn.active{border-color:var(--acc);color:var(--acc2)}
@@ -135,7 +138,7 @@ body{display:flex;flex-direction:column}
 .bar-seg{width:100%;transition:height .3s}
 .bar-lbl{font-size:9px;color:var(--muted);margin-top:4px;text-align:center;font-family:var(--mono);white-space:nowrap}
 .bar-lbl.today{color:var(--acc2);font-weight:700}
-.bar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+.bar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;justify-content:center}
 /* Week 24h timeline */
 .week-tick-row{display:flex;justify-content:space-between;margin-left:40px;padding:0 0 5px;color:var(--muted);font-size:9px;font-family:var(--mono)}
 .week-rows{display:flex;flex-direction:column;gap:5px}
@@ -221,26 +224,27 @@ body{display:flex;flex-direction:column}
     </div>
   </div>
 
-  <!-- View 4: Stacked bars -->
+  <!-- View 4: Stacked bars + Week timeline -->
   <div id="view-bars" style="display:none">
-    <div class="bar-toolbar">
-      <div class="bar-toggle">
-        <button class="bar-toggle-btn active" id="bar-mode-score" onclick="setBarMode('score')">Score</button>
-        <button class="bar-toggle-btn" id="bar-mode-focus" onclick="setBarMode('focus')">Focus</button>
-        <button class="bar-toggle-btn" id="bar-mode-week" onclick="setBarMode('week')">Week</button>
+    <div class="bars-inner">
+      <div class="bar-toolbar">
+        <div class="bar-toggle">
+          <button class="bar-toggle-btn active" id="bar-mode-stack" onclick="setBarMode('stack')">Stack</button>
+          <button class="bar-toggle-btn" id="bar-mode-week" onclick="setBarMode('week')">Week</button>
+        </div>
+        <div class="bar-spacer"></div>
+        <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">Week</button>
+        <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">Month</button>
       </div>
-      <div class="bar-spacer"></div>
-      <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">7d</button>
-      <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">30d</button>
+      <div class="bar-wrap" id="bar-wrap">
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+      <div id="week-view" style="display:none">
+        <div class="week-tick-row" id="week-ticks"></div>
+        <div class="week-rows" id="week-rows"></div>
+      </div>
+      <div class="bar-legend" id="bar-legend"></div>
     </div>
-    <div class="bar-wrap" id="bar-wrap">
-      <div class="bar-chart" id="bar-chart"></div>
-    </div>
-    <div id="week-view" style="display:none">
-      <div class="week-tick-row" id="week-ticks"></div>
-      <div class="week-rows" id="week-rows"></div>
-    </div>
-    <div class="bar-legend" id="bar-legend"></div>
   </div>
 
   <!-- View 3: Heatmap -->
@@ -752,17 +756,13 @@ function hmSelectDay(iso){
 }
 
 /* ══ VIEW 4: STACKED BAR CHART ══ */
-let _barMode  = 'score';   // 'score' | 'focus' | 'week'
+let _barMode  = 'stack';   // 'stack' | 'week'
 let _barRange = 7;         // 7 | 30
 
 function setBarMode(m){
   _barMode = m;
-  document.getElementById('bar-mode-score').classList.toggle('active', m==='score');
-  document.getElementById('bar-mode-focus').classList.toggle('active', m==='focus');
+  document.getElementById('bar-mode-stack').classList.toggle('active', m==='stack');
   document.getElementById('bar-mode-week').classList.toggle('active', m==='week');
-  // Range buttons only apply to score/focus modes
-  document.getElementById('bar-range-7').style.display  = m==='week'?'none':'';
-  document.getElementById('bar-range-30').style.display = m==='week'?'none':'';
   document.getElementById('bar-wrap').style.display  = m==='week'?'none':'';
   document.getElementById('week-view').style.display = m==='week'?'':'none';
   if(m==='week') renderWeekTimeline(); else renderBars();
@@ -772,13 +772,13 @@ function setBarRange(r){
   _barRange = r;
   document.getElementById('bar-range-7').classList.toggle('active', r===7);
   document.getElementById('bar-range-30').classList.toggle('active', r===30);
-  renderBars();
+  if(_barMode==='week') renderWeekTimeline(); else renderBars();
 }
 
 async function renderWeekTimeline(){
   const today = todayStr();
   const dates = [];
-  for(let i=6; i>=0; i--){
+  for(let i=_barRange-1; i>=0; i--){
     const d=new Date(); d.setDate(d.getDate()-i);
     dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
   }
@@ -839,122 +839,79 @@ async function renderWeekTimeline(){
 }
 
 async function renderBars(){
-  // Build date list: last N days ending today
   const today = todayStr();
   const dates = [];
-  for(let i = _barRange - 1; i >= 0; i--){
-    const d = new Date(); d.setDate(d.getDate() - i);
+  for(let i=_barRange-1; i>=0; i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
     dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
   }
 
-  // Fetch missing dates we don't have detailed data for (only check-in details matter for focus mode)
-  // For score mode we can use histList summary; for focus mode we need checkin details.
+  // Full checkin data needed for per-activity breakdown
   const dayData = {};
-  if(_barMode === 'score'){
-    // histList already has total_score per day
-    for(const d of dates) dayData[d] = histList[d] || {total_score:0, checkins:[]};
-  } else {
-    // Need full checkin data for per-activity focus minutes
-    await Promise.all(dates.map(async d => {
-      try{
-        const r = await fetch(`/api/history/date?d=${d}`);
-        dayData[d] = await r.json();
-      }catch(e){ dayData[d] = {total_score:0, checkins:[]}; }
-    }));
-  }
+  await Promise.all(dates.map(async d=>{
+    try{
+      const r=await fetch(`/api/history/date?d=${d}`);
+      dayData[d]=await r.json();
+    }catch(e){ dayData[d]={checkins:[]}; }
+  }));
 
   const narrow = _barRange === 30;
-  const barW   = narrow ? 20 : 36;   // px per bar column
+  const barW   = narrow ? 18 : 36;
   const maxH   = 160;
 
-  // Compute max value for scaling
-  let maxVal = 1;
-  for(const d of dates){
-    const dd = dayData[d] || {};
-    if(_barMode === 'score'){
-      maxVal = Math.max(maxVal, dd.total_score || 0);
-    } else {
-      const byAct = actSumByDay(dd);
-      const total = Object.values(byAct).reduce((a,b)=>a+b,0);
-      maxVal = Math.max(maxVal, total);
-    }
-  }
-
   function actSumByDay(dd){
-    const m = {};
+    const m={};
     (dd.checkins||[]).forEach(c=>{
       if(c.event_type==='restroom'||c.event_type==='away_return') return;
-      const a = c.activity_type||'other';
-      m[a] = (m[a]||0) + (c.focus_minutes||0);
+      const a=c.activity_type||'other';
+      m[a]=(m[a]||0)+(c.focus_minutes||0);
     });
     return m;
   }
 
-  // Collect all activity types seen
-  const actSet = new Set();
-  if(_barMode === 'focus'){
-    for(const d of dates) Object.keys(actSumByDay(dayData[d]||{})).forEach(a=>actSet.add(a));
-    if(!actSet.size) actSet.add('other');
+  const actSet=new Set();
+  for(const d of dates) Object.keys(actSumByDay(dayData[d]||{})).forEach(a=>actSet.add(a));
+  if(!actSet.size) actSet.add('other');
+
+  let maxVal=1;
+  for(const d of dates){
+    const total=Object.values(actSumByDay(dayData[d]||{})).reduce((a,b)=>a+b,0);
+    maxVal=Math.max(maxVal,total);
   }
 
-  const chart = document.getElementById('bar-chart');
-  const legend = document.getElementById('bar-legend');
+  const chart=document.getElementById('bar-chart');
+  const legend=document.getElementById('bar-legend');
 
-  // Render bars
-  const cols = dates.map(d=>{
-    const dd = dayData[d] || {};
-    const isToday = d === today;
-    const dayLabel = (()=>{
-      const dt = new Date(d+'T12:00:00');
+  const cols=dates.map(d=>{
+    const dd=dayData[d]||{};
+    const isToday=d===today;
+    const dt=new Date(d+'T12:00:00');
+    const dayLabel=(()=>{
       if(narrow) return String(dt.getDate());
-      const days = lang==='zh'?['日','一','二','三','四','五','六']:['Su','Mo','Tu','We','Th','Fr','Sa'];
-      return `${String(dt.getMonth()+1)}/${String(dt.getDate())} ${days[dt.getDay()]}`;
+      const days=lang==='zh'?['日','一','二','三','四','五','六']:['Su','Mo','Tu','We','Th','Fr','Sa'];
+      return`${dt.getMonth()+1}/${dt.getDate()} ${days[dt.getDay()]}`;
     })();
 
-    let segsHtml = '';
-    let total = 0;
+    const byAct=actSumByDay(dd);
+    const total=Object.values(byAct).reduce((a,b)=>a+b,0);
+    let segsHtml=[...actSet].filter(a=>byAct[a]>0).map(a=>{
+      const segH=Math.round((byAct[a]/maxVal)*maxH);
+      return`<div class="bar-seg" style="height:${segH}px;background:${ACT_COLORS(a)}" title="${ACT_LABEL(a)}: ${byAct[a]}m"></div>`;
+    }).join('');
+    if(!segsHtml) segsHtml=`<div class="bar-seg" style="height:2px;background:var(--line)"></div>`;
 
-    if(_barMode === 'score'){
-      const score = dd.total_score || 0;
-      total = score;
-      const h = Math.round((score / maxVal) * maxH);
-      const col = scoreToColor(score);
-      segsHtml = `<div class="bar-seg" style="height:${h}px;background:${col}"></div>`;
-    } else {
-      const byAct = actSumByDay(dd);
-      total = Object.values(byAct).reduce((a,b)=>a+b,0);
-      const h = Math.round((total / maxVal) * maxH);
-      // Build segments bottom-to-top (column-reverse flex will flip)
-      segsHtml = [...actSet].filter(a=>byAct[a]>0).map(a=>{
-        const segH = Math.round((byAct[a]/maxVal)*maxH);
-        return `<div class="bar-seg" style="height:${segH}px;background:${ACT_COLORS(a)}" title="${ACT_LABEL(a)}: ${byAct[a]}m"></div>`;
-      }).join('');
-      if(!segsHtml) segsHtml = `<div class="bar-seg" style="height:2px;background:var(--line)"></div>`;
-    }
-
-    const tooltip = _barMode==='score'
-      ? `${d}: ${total}pts`
-      : `${d}: ${total}min`;
-
-    return `<div class="bar-col" style="width:${barW}px" title="${tooltip}" onclick="hmSelectDay('${d}')">
-      <div class="bar-stack" style="height:${maxH}px;width:${barW - (narrow?4:6)}px">${segsHtml}</div>
+    return`<div class="bar-col" style="width:${barW}px" title="${d}: ${total}min" onclick="hmSelectDay('${d}')">
+      <div class="bar-stack" style="height:${maxH}px;width:${barW-(narrow?4:6)}px">${segsHtml}</div>
       <div class="bar-lbl${isToday?' today':''}">${dayLabel}</div>
     </div>`;
   }).join('');
 
-  chart.style.gap = narrow ? '2px' : '4px';
-  chart.innerHTML = cols;
+  chart.style.gap=narrow?'2px':'4px';
+  chart.innerHTML=cols;
 
-  // Legend
-  if(_barMode === 'focus' && actSet.size > 0){
-    legend.innerHTML = [...actSet].map(a=>
-      `<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(a)}"></div><span>${ACT_LABEL(a)}</span></div>`
-    ).join('');
-  } else if(_barMode === 'score'){
-    legend.innerHTML = `<div style="font-size:11px;color:var(--muted)">${lang==='zh'?'颜色深度表示得分高低':'Color intensity = score'}</div>`;
-  } else {
-    legend.innerHTML = '';
-  }
+  legend.innerHTML=actSet.size>0
+    ? [...actSet].map(a=>`<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(a)}"></div><span>${ACT_LABEL(a)}</span></div>`).join('')
+    : '';
 }
 
 /* ── DATA LOADING ── */
