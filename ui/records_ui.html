@@ -128,14 +128,23 @@ body{display:flex;flex-direction:column}
 .bar-range-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
 .bar-range-btn.active{border-color:var(--acc);color:var(--acc2)}
 .bar-spacer{flex:1}
-.bar-wrap{overflow-x:auto;padding-bottom:4px}
-.bar-chart{display:flex;align-items:flex-end;gap:0;min-height:160px}
+.bar-wrap{display:flex;justify-content:center;overflow-x:auto;padding-bottom:4px}
+.bar-chart{display:flex;align-items:flex-end;gap:0;min-height:160px;min-width:min-content}
 .bar-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
 .bar-stack{display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden;min-height:4px;width:100%;transition:height .3s}
 .bar-seg{width:100%;transition:height .3s}
 .bar-lbl{font-size:9px;color:var(--muted);margin-top:4px;text-align:center;font-family:var(--mono);white-space:nowrap}
 .bar-lbl.today{color:var(--acc2);font-weight:700}
-.bar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.bar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+/* Week 24h timeline */
+.week-tick-row{display:flex;justify-content:space-between;margin-left:40px;padding:0 0 5px;color:var(--muted);font-size:9px;font-family:var(--mono)}
+.week-rows{display:flex;flex-direction:column;gap:5px}
+.week-row{display:flex;align-items:center;gap:8px}
+.week-day-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);width:32px;flex-shrink:0;text-align:right;line-height:1.4}
+.week-day-lbl.today{color:var(--acc2);font-weight:700}
+.week-track{position:relative;flex:1;height:26px;background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.week-block{position:absolute;top:3px;height:20px;border-radius:3px;opacity:.85;cursor:default;transition:opacity .15s}
+.week-block:hover{opacity:1}
 
 /* ══ VIEW 3: HEATMAP ══ */
 .heatmap{padding:4px 0}
@@ -216,15 +225,20 @@ body{display:flex;flex-direction:column}
   <div id="view-bars" style="display:none">
     <div class="bar-toolbar">
       <div class="bar-toggle">
-        <button class="bar-toggle-btn active" id="bar-mode-score" onclick="setBarMode('score')" id="bar-mode-score-btn">Score</button>
+        <button class="bar-toggle-btn active" id="bar-mode-score" onclick="setBarMode('score')">Score</button>
         <button class="bar-toggle-btn" id="bar-mode-focus" onclick="setBarMode('focus')">Focus</button>
+        <button class="bar-toggle-btn" id="bar-mode-week" onclick="setBarMode('week')">Week</button>
       </div>
       <div class="bar-spacer"></div>
       <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">7d</button>
       <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">30d</button>
     </div>
-    <div class="bar-wrap">
+    <div class="bar-wrap" id="bar-wrap">
       <div class="bar-chart" id="bar-chart"></div>
+    </div>
+    <div id="week-view" style="display:none">
+      <div class="week-tick-row" id="week-ticks"></div>
+      <div class="week-rows" id="week-rows"></div>
     </div>
     <div class="bar-legend" id="bar-legend"></div>
   </div>
@@ -738,14 +752,20 @@ function hmSelectDay(iso){
 }
 
 /* ══ VIEW 4: STACKED BAR CHART ══ */
-let _barMode  = 'score';   // 'score' | 'focus'
+let _barMode  = 'score';   // 'score' | 'focus' | 'week'
 let _barRange = 7;         // 7 | 30
 
 function setBarMode(m){
   _barMode = m;
   document.getElementById('bar-mode-score').classList.toggle('active', m==='score');
   document.getElementById('bar-mode-focus').classList.toggle('active', m==='focus');
-  renderBars();
+  document.getElementById('bar-mode-week').classList.toggle('active', m==='week');
+  // Range buttons only apply to score/focus modes
+  document.getElementById('bar-range-7').style.display  = m==='week'?'none':'';
+  document.getElementById('bar-range-30').style.display = m==='week'?'none':'';
+  document.getElementById('bar-wrap').style.display  = m==='week'?'none':'';
+  document.getElementById('week-view').style.display = m==='week'?'':'none';
+  if(m==='week') renderWeekTimeline(); else renderBars();
 }
 
 function setBarRange(r){
@@ -753,6 +773,69 @@ function setBarRange(r){
   document.getElementById('bar-range-7').classList.toggle('active', r===7);
   document.getElementById('bar-range-30').classList.toggle('active', r===30);
   renderBars();
+}
+
+async function renderWeekTimeline(){
+  const today = todayStr();
+  const dates = [];
+  for(let i=6; i>=0; i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+
+  // Fetch full checkin data for all 7 days in parallel
+  const dayData = {};
+  await Promise.all(dates.map(async d=>{
+    try{
+      const r=await fetch(`/api/history/date?d=${d}`);
+      dayData[d]=await r.json();
+    }catch(e){ dayData[d]={checkins:[]}; }
+  }));
+
+  // Tick row (shared header)
+  document.getElementById('week-ticks').innerHTML=
+    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
+
+  const dayNames = lang==='zh'
+    ? ['日','一','二','三','四','五','六']
+    : ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+  // Collect all activity types seen (for legend)
+  const actSet=new Set();
+
+  const rows = dates.map(d=>{
+    const dd=dayData[d]||{};
+    const isToday=d===today;
+    const dt=new Date(d+'T12:00:00');
+    const lbl=`${dt.getMonth()+1}/${dt.getDate()}<br>${dayNames[dt.getDay()]}`;
+
+    const ckins=(dd.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
+    const blocks=ckins.map(c=>{
+      const endMin=timeToMin(c.time);
+      if(endMin<0)return'';
+      const fm=Math.max(c.focus_minutes||15,15);
+      const startMin=Math.max(endMin-fm,0);
+      const left=(startMin/1440)*100;
+      const w=Math.max((fm/1440)*100,1);
+      const act=c.activity_type||'other';
+      actSet.add(act);
+      const col=ACT_COLORS(act);
+      const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
+      return`<div class="week-block" style="left:${left}%;width:${w}%;background:${col}" title="${startStr}–${c.time} ${ACT_LABEL(act)}"></div>`;
+    }).join('');
+
+    return`<div class="week-row">
+      <div class="week-day-lbl${isToday?' today':''}">${lbl}</div>
+      <div class="week-track">${blocks}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('week-rows').innerHTML=rows;
+
+  // Legend
+  document.getElementById('bar-legend').innerHTML=[...actSet].map(a=>
+    `<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(a)}"></div><span>${ACT_LABEL(a)}</span></div>`
+  ).join('');
 }
 
 async function renderBars(){
