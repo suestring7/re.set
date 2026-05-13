@@ -3,23 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
+<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Preferences</title>
 <style>
 :root {
-  --bg:#F7F7F9; --card:#fff; --acc:#B794F4; --acc2:#7C3AED;
-  --text:#111827; --muted:#9CA3AF; --line:#E5E7EB;
-  --nav:#EFECF8; --nav-w:132px;
-  --mono:"SF Mono","Fira Code",monospace;
+  --nav-w:132px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);font-family:-apple-system,sans-serif;font-size:13px;color:var(--text)}
+html,body{height:100%;background:var(--bg);font-family:inherit;font-size:13px;color:var(--text)}
 body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── Sidebar layout ── */
 .prefs-layout{display:flex;flex:1;overflow:hidden}
 .prefs-nav{
-  width:var(--nav-w);background:var(--nav);border-right:1px solid var(--line);
+  width:var(--nav-w);background:var(--bg);border-right:1px solid var(--line);
   padding:12px 8px;display:flex;flex-direction:column;gap:2px;flex-shrink:0
 }
 .nav-section{
@@ -32,7 +31,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
   font-size:13px;font-weight:500;color:var(--text);cursor:pointer;
   font-family:inherit;transition:background .12s
 }
-.nav-tab:hover:not(.active){background:rgba(124,58,237,.08)}
+.nav-tab:hover:not(.active){background:var(--acc-soft)}
 .nav-tab.active{background:var(--acc);color:#fff;font-weight:600}
 
 /* ── Content ── */
@@ -42,20 +41,15 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
 .lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
 
-/* ── Chips ── */
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1.5px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card);transition:all .15s}
-.chip.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
-
-/* ── Weight rows ── */
-.w-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bg)}
+/* ── Weights rows ── */
+.w-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
 .w-row:last-child{border-bottom:none}
 .dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
 .w-label{flex:1;font-size:13px;font-weight:600}
 .w-parent{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
 .w-in{
   width:66px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;
-  font-family:var(--mono);font-size:12px;text-align:right;background:var(--bg)
+  font-family:var(--mono);font-size:12px;text-align:right;background:var(--bg);color:var(--text)
 }
 .w-in:focus{outline:none;border-color:var(--acc)}
 
@@ -79,11 +73,49 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 }
 .tm-parent:focus{border-color:var(--acc)}
 .tm-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0 2px;flex-shrink:0}
-.tm-del:hover{color:#DC2626}
+.tm-del:hover{color:var(--red)}
 .tm-add-row{
   display:flex;align-items:center;gap:6px;margin-top:8px;
   padding-top:8px;border-top:1px solid var(--line)
 }
+
+/* ── Toggle switch (new design) ── */
+.rem-toggle{width:42px; height:24px; border-radius:99px; border:none; background:var(--line); position:relative; cursor:pointer; transition:all .15s}
+.rem-toggle.on{background:var(--acc)}
+.rem-dot{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:all .15s; box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.rem-toggle.on .rem-dot{left:20px}
+
+/* ── Theme chips ── */
+.theme-card{
+  background:var(--card); border:1px solid var(--line);
+  border-radius:10px; padding:12px 10px; cursor:pointer; font-family:inherit; text-align:left;
+  transition: all .15s;
+}
+.theme-card.active{border:2px solid var(--acc)}
+
+/* ── Feature Toggles ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-info{flex:1;margin-right:12px}
+.toggle-lbl{font-size:13px;font-weight:500;color:var(--text)}
+.toggle-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sw{position:relative;width:38px;height:22px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw-slider{position:absolute;inset:0;background:var(--line);border-radius:22px;cursor:pointer;transition:.2s}
+.sw-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+.sw-slider{background:var(--acc)}
+.sw input:checked+.sw-slider::before{transform:translateX(16px)}
+
+/* ── Plan fields ── */
+.field-row{margin-bottom:12px}
+.field-lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.field-input{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);outline:none}
+.field-input:focus{border-color:var(--acc)}
+.field-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+.radio-group{display:flex;flex-direction:column;gap:6px}
+.radio-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px}
+.radio-row input[type=radio]{accent-color:var(--acc2);cursor:pointer}
+.plan-custom-input{margin-top:6px;display:none}
 
 /* ── Footer save ── */
 .save-bar{
@@ -95,7 +127,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
   font-size:13px;font-weight:600;cursor:pointer;font-family:inherit
 }
 .save:hover{opacity:.9}
-.msg{font-size:12px;color:#059669;min-height:16px}
+.msg{font-size:12px;color:var(--green);min-height:16px}
 </style>
 </head>
 <body>
@@ -103,25 +135,96 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 <div class="prefs-layout">
   <nav class="prefs-nav">
     <div class="nav-section" id="nav-hdr">Settings</div>
-    <button class="nav-tab active" id="tab-gen"   onclick="setTab('gen')">General</button>
-    <button class="nav-tab"        id="tab-score" onclick="setTab('score')">Scoring</button>
-    <button class="nav-tab"        id="tab-types" onclick="setTab('types')">Activities</button>
+    <button class="nav-tab active" id="tab-gen"      onclick="setTab('gen')">General</button>
+    <button class="nav-tab"        id="tab-score"   onclick="setTab('score')">Scoring</button>
+    <button class="nav-tab"        id="tab-types"   onclick="setTab('types')">Activities</button>
+    <button class="nav-tab"        id="tab-features" onclick="setTab('features')">Features</button>
+    <button class="nav-tab"        id="tab-plan"    onclick="setTab('plan')">Plan</button>
   </nav>
 
   <main class="prefs-content">
 
     <!-- ── General ── -->
     <div class="panel active" id="panel-gen">
-      <div class="panel-title" id="title-gen">General</div>
-      <div class="card">
-        <div class="lbl" id="lbl-interval">Break interval</div>
-        <div class="chips" id="interval-chips"></div>
-      </div>
-      <div class="card">
-        <div class="lbl" id="lbl-lang">Language</div>
-        <div class="chips">
-          <button type="button" class="chip" id="lang-zh" onclick="selLang='zh';renderLang()">中文</button>
-          <button type="button" class="chip" id="lang-en" onclick="selLang='en';renderLang()">English</button>
+      <div style="font-size:11px; font-weight:700; letter-spacing:1.4px; color:var(--muted); text-transform:uppercase; margin-bottom:16px">偏好设置</div>
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:4px 22px">
+        
+        <!-- Section 1: Reminder -->
+        <div style="padding:18px 0; border-bottom:1px solid var(--line)">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <div style="font-size:14px; font-weight:600; color:var(--text)">休息提醒</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px">专注一段时间后提醒你休息</div>
+            </div>
+            <button id="rem-enabled" onclick="toggleRem()" class="rem-toggle">
+              <span class="rem-dot"></span>
+            </button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:14px">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <span style="font-size:11px; color:var(--muted); font-weight:600">专注间隔</span>
+                <span id="val-interval" style="font-family:var(--mono); font-size:13px; color:var(--text); font-variant-numeric:tabular-nums">-- 分钟</span>
+              </div>
+              <input type="range" id="in-interval" min="20" max="90" step="5" oninput="updateIntervalUI(this.value)" style="width:100%; accent-color:var(--acc)">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <span style="font-size:11px; color:var(--muted); font-weight:600">预警时长</span>
+                <span id="val-warning" style="font-family:var(--mono); font-size:13px; color:var(--text); font-variant-numeric:tabular-nums">-- 秒</span>
+              </div>
+              <input type="range" id="in-warning" min="15" max="120" step="5" oninput="updateWarningUI(this.value)" style="width:100%; accent-color:var(--acc)">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Appearance -->
+        <div style="padding:18px 0; border-bottom:1px solid var(--line)">
+          <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px">外观</div>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px" id="theme-grid"></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px">
+            <span style="font-size:13px; color:var(--text)">深色模式</span>
+            <div style="display:flex; gap:0; font-size:11px; font-family:var(--mono)" id="dark-mode-ctrl">
+              <button onclick="setDarkMode('light')" id="dm-light" style="background:var(--text); color:var(--bg); border:1px solid var(--line); border-radius:6px 0 0 6px; padding:5px 11px; cursor:pointer; font-weight:600">浅色</button>
+              <button onclick="setDarkMode('dark')" id="dm-dark" style="background:var(--card); color:var(--muted); border:1px solid var(--line); border-left:none; padding:5px 11px; cursor:pointer; font-weight:600">深色</button>
+              <button onclick="setDarkMode('system')" id="dm-system" style="background:var(--card); color:var(--muted); border:1px solid var(--line); border-left:none; border-radius:0 6px 6px 0; padding:5px 11px; cursor:pointer; font-weight:600">跟随系统</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Language -->
+        <div style="padding:18px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center">
+          <div>
+            <div style="font-size:14px; font-weight:600; color:var(--text)">语言</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px">Language</div>
+          </div>
+          <div style="display:flex; gap:0" id="lang-ctrl">
+            <button onclick="setLang('zh')" id="lang-zh-btn" style="background:var(--acc); color:#fff; border:none; border-radius:6px 0 0 6px; padding:7px 14px; cursor:pointer; font-weight:600; font-size:12px">中文</button>
+            <button onclick="setLang('en')" id="lang-en-btn" style="background:var(--card); color:var(--muted); border:1px solid var(--line); border-radius:0 6px 6px 0; padding:7px 14px; cursor:pointer; font-weight:600; font-size:12px">English</button>
+          </div>
+        </div>
+
+        <!-- Section 4: Sound -->
+        <div style="padding:18px 0; border-bottom:1px solid var(--line)">
+          <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px">声音</div>
+          <div style="display:flex; justify-content:space-between; padding:8px 0; align-items:center">
+            <span style="font-size:13px; color:var(--sub)">提醒铃声</span>
+            <button style="background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text); cursor:pointer">清亮 ▾</button>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:8px 0; align-items:center">
+            <span style="font-size:13px; color:var(--sub)">完成音效</span>
+            <button style="background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text); cursor:pointer">柔和 ▾</button>
+          </div>
+        </div>
+
+        <!-- Section 5: Data -->
+        <div style="padding:18px 0">
+          <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px">数据</div>
+          <div style="display:flex; gap:8px">
+            <button onclick="exportData('json')" style="flex:1; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:12px; color:var(--text); cursor:pointer">导出 JSON</button>
+            <button onclick="exportData('csv')" style="flex:1; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:12px; color:var(--text); cursor:pointer">导出 CSV</button>
+            <button onclick="confirmReset()" style="flex:1; background:var(--card); border:1px solid var(--red); border-radius:8px; padding:10px; font-size:12px; color:var(--red); cursor:pointer">清空数据</button>
+          </div>
         </div>
       </div>
     </div>
@@ -145,6 +248,54 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
       </div>
     </div>
 
+    <!-- ── Features ── -->
+    <div class="panel" id="panel-features">
+      <div class="panel-title" id="title-features">Features</div>
+      <div class="card">
+        <div class="lbl" id="lbl-features">Menu bar items</div>
+        <div id="feature-toggles"></div>
+      </div>
+    </div>
+
+    <!-- ── Plan Today ── -->
+    <div class="panel" id="panel-plan">
+      <div class="panel-title" id="title-plan">Plan Today</div>
+      <div class="card">
+        <div class="lbl" id="lbl-plan-target">Target file</div>
+        <div class="field-row">
+          <div class="field-lbl" id="lbl-plan-path">File path</div>
+          <input class="field-input" id="plan-file-path" type="text" placeholder="~/Documents/notes.md">
+          <div class="field-sub" id="sub-plan-path">Supports ~ for home directory</div>
+        </div>
+        <div class="field-row">
+          <div class="field-lbl" id="lbl-plan-kw">Keyword / section header</div>
+          <input class="field-input" id="plan-file-keyword" type="text" placeholder="## Today">
+          <div class="field-sub" id="sub-plan-kw">Plan text is inserted on the line after the first match. Leave blank to append.</div>
+        </div>
+        <div class="field-row">
+          <div class="field-lbl" id="lbl-plan-nf">If keyword not found</div>
+          <div class="radio-group">
+            <label class="radio-row"><input type="radio" name="plan-nf" value="append" id="nf-append" checked> <span id="lbl-nf-append">Append to end of file</span></label>
+            <label class="radio-row"><input type="radio" name="plan-nf" value="error"  id="nf-error">  <span id="lbl-nf-error">Show error (don't save)</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="lbl" id="lbl-plan-prefix">Date / time prefix</div>
+        <div class="radio-group">
+          <label class="radio-row"><input type="radio" name="plan-prefix" value="none"     id="pfx-none"     checked> <span id="lbl-pfx-none">None</span></label>
+          <label class="radio-row"><input type="radio" name="plan-prefix" value="date"     id="pfx-date">     <span id="lbl-pfx-date">Date  <small style="color:var(--muted)">2026-05-10</small></span></label>
+          <label class="radio-row"><input type="radio" name="plan-prefix" value="time"     id="pfx-time">     <span id="lbl-pfx-time">Time  <small style="color:var(--muted)">14:30</small></span></label>
+          <label class="radio-row"><input type="radio" name="plan-prefix" value="datetime" id="pfx-datetime"> <span id="lbl-pfx-datetime">Date + Time  <small style="color:var(--muted)">2026-05-10 14:30</small></span></label>
+          <label class="radio-row"><input type="radio" name="plan-prefix" value="custom"   id="pfx-custom">   <span id="lbl-pfx-custom">Custom</span></label>
+        </div>
+        <div class="plan-custom-input" id="custom-prefix-wrap">
+          <input class="field-input" id="plan-prefix-custom" type="text" placeholder="## {date} — {time}" style="margin-top:8px">
+          <div class="field-sub" id="sub-plan-custom">Use {date} and {time} as placeholders</div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -154,30 +305,61 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 </div>
 
 <script>
-let lang = 'en', selLang = 'zh', curInterval = 30;
+let lang = 'en', selLang = 'zh', curInterval = 30, curWarning = 60, curRemEnabled = true;
 let presets = [15,20,25,30,45,60];
 let types = [];
 let _curTab = 'gen';
+let menuFeatures = { plan_today:true, away_tracking:true, trigger_break:true, view_records:true, end_of_day:true };
+
+const THEMES = [
+  {id:'lavender', n:'薰衣草', acc:'#A87FEC', bg:'#F7F4FB'},
+  {id:'sage',     n:'鼠尾草', acc:'#7BA888', bg:'#F4F6F2'},
+  {id:'mist',     n:'雾蓝',   acc:'#7B9CC4', bg:'#F2F5F8'},
+  {id:'ochre',    n:'赭石',   acc:'#C8856B', bg:'#F8F4F1'},
+  {id:'ink',      n:'暗黑',   acc:'#B794F4', bg:'#1A1A1F'},
+];
+
+const FEATURE_DEFS = [
+  { key:'plan_today',    zhLbl:'规划今天',    enLbl:'Plan Today',         zhSub:'10分钟倒计时写今日计划',      enSub:'10-min countdown to write today\'s plan' },
+  { key:'away_tracking', zhLbl:'离开追踪',    enLbl:'Away Tracking',      zhSub:'暂停/恢复及离开记录',         enSub:'Pause/resume timer and log away periods' },
+  { key:'trigger_break', zhLbl:'立即触发休息', enLbl:'Trigger Break',      zhSub:'从菜单栏手动触发休息',        enSub:'Manually trigger a break from the menu bar' },
+  { key:'view_records',  zhLbl:'查看记录',    enLbl:'View Records',       zhSub:'打开今日记录面板',            enSub:'Open the daily records panel' },
+  { key:'end_of_day',    zhLbl:'下班',        enLbl:'End of Day',         zhSub:'停止提醒，结算今日得分',      enSub:'Stop reminders and finalise the daily score' },
+];
 
 const ZH = {
-  navHdr:'偏好设置', gen:'通用', score:'分值', types:'活动类型',
+  navHdr:'偏好设置', gen:'通用', score:'分值', types:'活动类型', features:'功能', plan:'规划',
   interval:'休息间隔', lang:'语言',
   weights:'各类活动专注分值权重',
   hint:'得分 = floor(分钟 × 权重 ÷ 5)，范围 −5 到 5，负值扣分。',
   save:'保存', saved:'已保存', typesMgr:'管理活动类型',
   noParent:'无父类', newType:'新类型名称…',
+  featuresLbl:'菜单栏功能项',
+  planTarget:'目标文件', planPathLbl:'文件路径', planPathSub:'支持 ~ 代表主目录',
+  planKwLbl:'关键字 / 章节标题', planKwSub:'计划内容插入在第一次匹配的行之后，留空则追加到末尾。',
+  planNfLbl:'关键字未找到时', nfAppend:'追加到文件末尾', nfError:'报错（不保存）',
+  planPrefixLbl:'日期 / 时间前缀',
+  pfxNone:'无', pfxDate:'日期', pfxTime:'时间', pfxDatetime:'日期 + 时间', pfxCustom:'自定义',
+  customSub:'可用 {date} 和 {time} 作为占位符',
 };
 const EN = {
-  navHdr:'Preferences', gen:'General', score:'Scoring', types:'Activities',
+  navHdr:'Preferences', gen:'General', score:'Scoring', types:'Activities', features:'Features', plan:'Plan',
   interval:'Break interval', lang:'Language',
   weights:'Focus score weight per activity type',
   hint:'Score = floor(minutes × weight ÷ 5). Range −5 to 5; negative deducts points.',
   save:'Save', saved:'Saved', typesMgr:'Manage types',
   noParent:'None', newType:'New type…',
+  featuresLbl:'Menu bar items',
+  planTarget:'Target file', planPathLbl:'File path', planPathSub:'Supports ~ for home directory',
+  planKwLbl:'Keyword / section header', planKwSub:'Plan text is inserted after the first matching line. Leave blank to append.',
+  planNfLbl:'If keyword not found', nfAppend:'Append to end of file', nfError:'Show error (don\'t save)',
+  planPrefixLbl:'Date / time prefix',
+  pfxNone:'None', pfxDate:'Date', pfxTime:'Time', pfxDatetime:'Date + Time', pfxCustom:'Custom',
+  customSub:'Use {date} and {time} as placeholders',
 };
 function L(k){ return (lang==='zh'?ZH:EN)[k]||k; }
 
-const FIXED = new Set(['work','entertainment','life']);
+const FIXED = new Set(['work','entertainment','life','restroom']);
 
 function setTab(id) {
   _curTab = id;
@@ -185,20 +367,82 @@ function setTab(id) {
   document.getElementById('tab-'+id).classList.add('active');
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
-  if (id === 'score') renderWeights();
-  if (id === 'types') renderPrefTypeManager();
+  if (id === 'score')    renderWeights();
+  if (id === 'types')    renderPrefTypeManager();
+  if (id === 'features') renderFeatureToggles();
 }
 
-function renderLang(){
-  document.getElementById('lang-zh').classList.toggle('sel', selLang==='zh');
-  document.getElementById('lang-en').classList.toggle('sel', selLang==='en');
+/* ── Section 1: Reminder Logic ── */
+function toggleRem(){
+  curRemEnabled = !curRemEnabled;
+  updateRemUI();
+}
+function updateRemUI(){
+  const btn = document.getElementById('rem-enabled');
+  btn.classList.toggle('on', curRemEnabled);
+}
+function updateIntervalUI(val){
+  curInterval = parseInt(val);
+  document.getElementById('val-interval').textContent = curInterval + (lang==='zh'?' 分钟':'m');
+}
+function updateWarningUI(val){
+  curWarning = parseInt(val);
+  document.getElementById('val-warning').textContent = curWarning + (lang==='zh'?' 秒':'s');
 }
 
-function renderIntervalChips(){
-  document.getElementById('interval-chips').innerHTML = presets.map(m=>
-    `<button type="button" class="chip${m===curInterval?' sel':''}"
-      onclick="curInterval=${m};renderIntervalChips()">${m} min</button>`
-  ).join('');
+/* ── Section 2: Theme Logic ── */
+function renderThemeGrid(){
+  const grid = document.getElementById('theme-grid');
+  const cur = localStorage.getItem('reset_theme') || 'lavender';
+  grid.innerHTML = THEMES.map(t=>(
+    `<button onclick="setTheme('${t.id}')" class="theme-card${cur===t.id?' active':''}" style="background:${t.bg}">
+      <div style="display:flex; gap:3px; margin-bottom:8px">
+        <div style="width:14px; height:14px; border-radius:50%; background:${t.acc}"></div>
+        <div style="width:14px; height:14px; border-radius:50%; background:#1a1a1a"></div>
+        <div style="width:14px; height:14px; border-radius:50%; background:#fff; border:1px solid var(--line)"></div>
+      </div>
+      <div style="font-size:12px; font-weight:600; color:${t.id==='ink'?'#fff':'#1a1a1a'}">${t.n}</div>
+    </button>`
+  )).join('');
+}
+function setTheme(id){
+  localStorage.setItem('reset_theme', id);
+  if(id==='lavender') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', id);
+  renderThemeGrid();
+  document.dispatchEvent(new Event('themechange'));
+}
+function setDarkMode(mode){
+  const btns = ['light','dark','system'];
+  btns.forEach(b=>{
+    const el = document.getElementById('dm-'+b);
+    const active = b===mode;
+    el.style.background = active?'var(--text)':'var(--card)';
+    el.style.color = active?'var(--bg)':'var(--muted)';
+  });
+}
+
+/* ── Section 3: Language Logic ── */
+function setLang(l){
+  selLang = l;
+  document.getElementById('lang-zh-btn').style.background = l==='zh'?'var(--acc)':'var(--card)';
+  document.getElementById('lang-zh-btn').style.color = l==='zh'?'#fff':'var(--muted)';
+  document.getElementById('lang-zh-btn').style.border = l==='zh'?'none':'1px solid var(--line)';
+  document.getElementById('lang-en-btn').style.background = l==='en'?'var(--acc)':'var(--card)';
+  document.getElementById('lang-en-btn').style.color = l==='en'?'#fff':'var(--muted)';
+  document.getElementById('lang-en-btn').style.border = l==='en'?'none':'1px solid var(--line)';
+}
+
+/* ── Section 5: Data Logic ── */
+function exportData(format){
+  // Endpoint stubs
+  console.log('Exporting as', format);
+  window.location.href = `/api/export?format=${format}`;
+}
+function confirmReset(){
+  if(confirm(lang==='zh'?'确定要清空所有数据吗？此操作不可撤销。':'Are you sure you want to clear all data? This cannot be undone.')){
+    fetch('/api/reset-data', {method:'POST'}).then(()=>window.location.reload());
+  }
 }
 
 function renderWeights(){
@@ -219,7 +463,6 @@ function renderWeights(){
 function renderPrefTypeManager() {
   const el = document.getElementById('pref-type-manager');
   const topLevel = types.filter(t=>!t.parent_id);
-
   function parentOpts(curParentId, excludeId) {
     const none = `<option value="">— ${L('noParent')} —</option>`;
     const opts = topLevel
@@ -228,7 +471,6 @@ function renderPrefTypeManager() {
       .join('');
     return none + opts;
   }
-
   function paint() {
     const rows = types.map((tp,i)=>{
       const locked = FIXED.has(tp.id);
@@ -243,10 +485,8 @@ function renderPrefTypeManager() {
           ${locked?' style="opacity:.3;pointer-events:none"':''}>×</button>
       </div>`;
     }).join('');
-
     const newParentOpts = `<option value="">— ${L('noParent')} —</option>`
       + topLevel.map(t=>`<option value="${t.id}">${t.label}</option>`).join('');
-
     const addRow = `<div class="tm-add-row">
       <input class="tm-color" type="color" id="tm-new-color" value="#7C5CFC">
       <input class="tm-label" type="text" id="tm-new-label" placeholder="${L('newType')}">
@@ -254,9 +494,7 @@ function renderPrefTypeManager() {
       <button type="button" class="tm-del" data-act="add"
         style="color:var(--acc2);font-size:18px;font-weight:700;opacity:1">+</button>
     </div>`;
-
     el.innerHTML = rows + addRow;
-
     el.oninput = function(e) {
       const t = e.target, act = t.dataset&&t.dataset.act, i = +(t.dataset&&t.dataset.i);
       if (act==='color')  { types[i].color=t.value; }
@@ -266,7 +504,6 @@ function renderPrefTypeManager() {
         paint(); renderWeights();
       }
     };
-
     el.onclick = function(e) {
       const btn = e.target.closest('[data-act]');
       if (!btn||!el.contains(btn)) return;
@@ -297,59 +534,137 @@ function renderPrefTypeManager() {
       }
     };
   }
-
   paint();
+}
+
+function renderFeatureToggles(){
+  const el = document.getElementById('feature-toggles');
+  el.innerHTML = FEATURE_DEFS.map(f=>{
+    const on = menuFeatures[f.key] !== false;
+    const lbl = lang==='zh' ? f.zhLbl : f.enLbl;
+    const sub = lang==='zh' ? f.zhSub : f.enSub;
+    return `<div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-lbl">${lbl}</div>
+        <div class="toggle-sub">${sub}</div>
+      </div>
+      <label class="sw">
+        <input type="checkbox" data-feature="${f.key}" ${on?'checked':''} onchange="menuFeatures['${f.key}']=this.checked">
+        <span class="sw-slider"></span>
+      </label>
+    </div>`;
+  }).join('');
 }
 
 function applyLangUI(){
   lang = selLang;
-  document.getElementById('nav-hdr').textContent    = L('navHdr');
-  document.getElementById('tab-gen').textContent    = L('gen');
-  document.getElementById('tab-score').textContent  = L('score');
-  document.getElementById('tab-types').textContent  = L('types');
-  document.getElementById('title-gen').textContent  = L('gen');
-  document.getElementById('title-score').textContent= L('score');
-  document.getElementById('title-types').textContent= L('types');
-  document.getElementById('lbl-interval').textContent = L('interval');
-  document.getElementById('lbl-lang').textContent   = L('lang');
-  document.getElementById('lbl-weights').textContent= L('weights');
-  document.getElementById('lbl-types-mgr').textContent = L('typesMgr');
-  document.getElementById('btn-save').textContent   = L('save');
+  document.getElementById('nav-hdr').textContent      = L('navHdr');
+  document.getElementById('tab-gen').textContent      = L('gen');
+  document.getElementById('tab-score').textContent    = L('score');
+  document.getElementById('tab-types').textContent    = L('types');
+  document.getElementById('tab-features').textContent = L('features');
+  document.getElementById('tab-plan').textContent     = L('plan');
+  document.getElementById('title-score').textContent  = L('score');
+  document.getElementById('title-types').textContent  = L('types');
+  document.getElementById('title-features').textContent = L('features');
+  document.getElementById('title-plan').textContent   = L('plan');
+  document.getElementById('lbl-weights').textContent  = L('weights');
+  document.getElementById('lbl-types-mgr').textContent= L('typesMgr');
+  document.getElementById('lbl-features').textContent = L('featuresLbl');
+  document.getElementById('lbl-plan-target').textContent = L('planTarget');
+  document.getElementById('lbl-plan-path').textContent   = L('planPathLbl');
+  document.getElementById('sub-plan-path').textContent   = L('planPathSub');
+  document.getElementById('lbl-plan-kw').textContent     = L('planKwLbl');
+  document.getElementById('sub-plan-kw').textContent     = L('planKwSub');
+  document.getElementById('lbl-plan-nf').textContent     = L('planNfLbl');
+  document.getElementById('lbl-nf-append').textContent   = L('nfAppend');
+  document.getElementById('lbl-nf-error').textContent    = L('nfError');
+  document.getElementById('lbl-plan-prefix').textContent = L('planPrefixLbl');
+  document.getElementById('lbl-pfx-none').textContent    = L('pfxNone');
+  document.getElementById('lbl-pfx-date').textContent    = L('pfxDate');
+  document.getElementById('lbl-pfx-time').textContent    = L('pfxTime');
+  document.getElementById('lbl-pfx-datetime').textContent= L('pfxDatetime');
+  document.getElementById('lbl-pfx-custom').textContent  = L('pfxCustom');
+  document.getElementById('sub-plan-custom').textContent = L('customSub');
+  document.getElementById('btn-save').textContent        = L('save');
   const hint = document.getElementById('weight-hint');
   if (hint) hint.textContent = L('hint');
+  if (_curTab === 'features') renderFeatureToggles();
+  updateIntervalUI(curInterval);
+  updateWarningUI(curWarning);
+  setLang(selLang);
 }
+
+// Plan prefix custom input visibility
+document.querySelectorAll('input[name=plan-prefix]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    document.getElementById('custom-prefix-wrap').style.display =
+      document.querySelector('input[name=plan-prefix]:checked').value==='custom' ? 'block' : 'none';
+  });
+});
 
 async function init(){
   try{
     const r = await fetch('/api/prefs').then(x=>x.json());
     lang = r.lang||'zh'; selLang = r.lang||'zh';
     curInterval = r.interval_minutes||30;
-    presets = r.interval_presets||presets;
+    curWarning  = r.warning_advance_seconds||60;
+    curRemEnabled = r.reminder_enabled!==false;
     types = await RS.loadActivityTypes();
+    if(r.menu_features) menuFeatures = {...menuFeatures, ...r.menu_features};
+    if(r.plan_file_path)    document.getElementById('plan-file-path').value    = r.plan_file_path;
+    if(r.plan_file_keyword) document.getElementById('plan-file-keyword').value = r.plan_file_keyword;
+    const pfxType = r.plan_prefix_type || 'none';
+    const pfxEl = document.getElementById('pfx-'+pfxType);
+    if(pfxEl){ pfxEl.checked = true;
+      document.getElementById('custom-prefix-wrap').style.display = pfxType==='custom'?'block':'none'; }
+    if(r.plan_prefix_custom) document.getElementById('plan-prefix-custom').value = r.plan_prefix_custom;
+    const nfVal = r.plan_keyword_not_found || 'append';
+    const nfEl = document.getElementById('nf-'+nfVal);
+    if(nfEl) nfEl.checked = true;
+
+    document.getElementById('in-interval').value = curInterval;
+    document.getElementById('in-warning').value = curWarning;
+    
     applyLangUI();
-    renderIntervalChips();
-    renderLang();
-    renderWeights();
+    updateRemUI();
+    renderThemeGrid();
+    setDarkMode('light'); // default
   }catch(e){
     document.getElementById('msg').textContent = String(e);
   }
 }
 
 async function saveAll(){
-  // Flush any weight inputs that may not have fired onchange yet
   document.querySelectorAll('.w-in').forEach((inp,i)=>{
     if(i<types.length) types[i].weight = parseFloat(inp.value)||0;
   });
   document.getElementById('msg').textContent = '';
+  const pfxType = document.querySelector('input[name=plan-prefix]:checked')?.value || 'none';
+  const nfVal   = document.querySelector('input[name=plan-nf]:checked')?.value || 'append';
+  const body = {
+    interval_minutes: curInterval,
+    warning_advance_seconds: curWarning,
+    reminder_enabled: curRemEnabled,
+    lang: selLang,
+    activity_types: types,
+    menu_features: menuFeatures,
+    plan_file_path:         document.getElementById('plan-file-path').value.trim(),
+    plan_file_keyword:      document.getElementById('plan-file-keyword').value.trim(),
+    plan_prefix_type:       pfxType,
+    plan_prefix_custom:     document.getElementById('plan-prefix-custom').value.trim(),
+    plan_keyword_not_found: nfVal,
+  };
   try{
     await fetch('/api/prefs',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({interval_minutes:curInterval, lang:selLang, activity_types:types}),
+      body: JSON.stringify(body),
     });
     lang = selLang;
     applyLangUI();
-    if (_curTab==='types') renderPrefTypeManager();
+    if (_curTab==='types')    renderPrefTypeManager();
+    if (_curTab==='features') renderFeatureToggles();
     document.getElementById('msg').textContent = L('saved');
     setTimeout(()=>{ document.getElementById('msg').textContent=''; },2000);
   }catch(e){

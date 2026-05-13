@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/theme.css">
+<script src="/shared.js"></script>
+<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
+<title>re.set — Plan Today</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:var(--bg);font-family:inherit;font-size:13px;color:var(--text);overflow:hidden}
+body{display:flex;flex-direction:column}
+
+/* ── Header ── */
+.header{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:16px}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.timer-display{font-family:var(--mono);font-size:32px;font-weight:300;color:var(--acc2);letter-spacing:2px;transition:color .3s}
+.timer-display.expired{color:var(--red);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.timer-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.header-text{flex:1}
+.header-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.header-hint{font-size:11px;color:var(--muted);line-height:1.5}
+.target-hint{font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Textarea ── */
+.body{flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:8px}
+.plan-area{flex:1;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--card);color:var(--text);resize:none;outline:none;line-height:1.6}
+.plan-area:focus{border-color:var(--acc)}
+.plan-area.expired-border{border-color:var(--red)}
+.char-count{font-size:10px;color:var(--muted);text-align:right}
+
+/* ── Footer ── */
+.footer{flex-shrink:0;padding:12px 20px;background:var(--card);border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.save-btn{padding:8px 20px;background:var(--acc2);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.save-btn:hover{opacity:.88}
+.save-btn:disabled{opacity:.4;cursor:default}
+.dismiss-btn{padding:8px 14px;background:none;border:1px solid var(--line);border-radius:var(--r);font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;margin-left:auto}
+.dismiss-btn:hover{border-color:var(--acc);color:var(--text)}
+.msg{font-size:12px;flex:1}
+.msg.ok{color:#059669}.msg.err{color:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="timer-wrap">
+    <div class="timer-display" id="timer">10:00</div>
+    <div class="timer-label" id="timer-lbl">remaining</div>
+  </div>
+  <div class="header-text">
+    <div class="header-title" id="title-txt">Plan Today</div>
+    <div class="header-hint" id="hint-txt">Write your plan for today. Timer counts down 10 minutes.</div>
+    <div class="target-hint" id="target-hint"></div>
+  </div>
+</div>
+
+<div class="body">
+  <textarea class="plan-area" id="plan-area" placeholder="Today's plan…" autofocus></textarea>
+  <div class="char-count" id="char-count">0 chars</div>
+</div>
+
+<div class="footer">
+  <button class="save-btn" id="save-btn" onclick="savePlan()">Save &amp; Close</button>
+  <div class="msg" id="msg"></div>
+  <button class="dismiss-btn" id="dismiss-btn" onclick="dismiss()">Dismiss</button>
+</div>
+
+<script>
+'use strict';
+let lang = 'zh';
+let _secs = 600;  // 10 minutes
+let _tid = null;
+let _prefs = {};
+
+const ZH = {
+  title:'规划今天', hint:'写下今天的计划。10分钟倒计时。',
+  remaining:'剩余', expired:'时间到！',
+  save:'保存并关闭', dismiss:'关闭',
+  placeholder:'今天的计划…',
+  charCount: n => `${n} 字`,
+  targetHint: (path, kw) => path ? `→ ${path}${kw?' (关键字: '+kw+')':''}` : '未配置目标文件',
+  saving:'保存中…', saved:'已保存 ✓', errEmpty:'请先输入内容',
+  errNoPath:'未配置目标文件路径，请先在偏好设置里设置。',
+  errNotFound:'未找到关键字，内容未保存。',
+  errFileNotFound:'文件不存在，请检查路径。',
+  errGeneric: e => `保存失败：${e}`,
+};
+const EN = {
+  title:'Plan Today', hint:'Write your plan for today. Timer counts down 10 minutes.',
+  remaining:'remaining', expired:'Time\'s up!',
+  save:'Save & Close', dismiss:'Dismiss',
+  placeholder:'Today\'s plan…',
+  charCount: n => `${n} chars`,
+  targetHint: (path, kw) => path ? `→ ${path}${kw?' (keyword: '+kw+')':''}` : 'No target file configured',
+  saving:'Saving…', saved:'Saved ✓', errEmpty:'Please write something first.',
+  errNoPath:'No file path configured. Set it in Preferences → Plan.',
+  errNotFound:'Keyword not found in file — content not saved.',
+  errFileNotFound:'File not found. Check the path in Preferences.',
+  errGeneric: e => `Save failed: ${e}`,
+};
+function L(k, ...a){ const d=(lang==='zh'?ZH:EN); return typeof d[k]==='function'?d[k](...a):(d[k]??k); }
+
+function tick(){
+  if(_secs > 0) _secs--;
+  const m = Math.floor(_secs/60), s = _secs%60;
+  const disp = document.getElementById('timer');
+  const lbl  = document.getElementById('timer-lbl');
+  disp.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if(_secs === 0){
+    disp.classList.add('expired');
+    document.getElementById('plan-area').classList.add('expired-border');
+    lbl.textContent = L('expired');
+    clearInterval(_tid);
+  }
+}
+
+async function savePlan(){
+  const text = document.getElementById('plan-area').value.trim();
+  const msg  = document.getElementById('msg');
+  if(!text){ msg.className='msg err'; msg.textContent=L('errEmpty'); return; }
+  msg.className='msg'; msg.textContent=L('saving');
+  document.getElementById('save-btn').disabled = true;
+  try{
+    const r = await fetch('/api/plan/save',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text}),
+    }).then(x=>x.json());
+    if(r.success){
+      msg.className='msg ok'; msg.textContent=L('saved');
+      setTimeout(()=>fetch('/api/close-popup',{method:'POST'}), 700);
+    } else {
+      document.getElementById('save-btn').disabled = false;
+      if(r.error==='no_path')         { msg.className='msg err'; msg.textContent=L('errNoPath'); }
+      else if(r.error==='keyword_not_found') { msg.className='msg err'; msg.textContent=L('errNotFound'); }
+      else if(r.error==='file_not_found')    { msg.className='msg err'; msg.textContent=L('errFileNotFound'); }
+      else { msg.className='msg err'; msg.textContent=L('errGeneric', r.error||'unknown'); }
+    }
+  } catch(e){
+    document.getElementById('save-btn').disabled = false;
+    msg.className='msg err'; msg.textContent=L('errGeneric', String(e));
+  }
+}
+
+function dismiss(){
+  fetch('/api/close-popup',{method:'POST'});
+}
+
+function applyLang(){
+  document.getElementById('title-txt').textContent   = L('title');
+  document.getElementById('hint-txt').textContent    = L('hint');
+  document.getElementById('timer-lbl').textContent   = L('remaining');
+  document.getElementById('save-btn').textContent    = L('save');
+  document.getElementById('dismiss-btn').textContent = L('dismiss');
+  document.getElementById('plan-area').placeholder   = L('placeholder');
+  const path = _prefs.plan_file_path  || '';
+  const kw   = _prefs.plan_file_keyword || '';
+  document.getElementById('target-hint').textContent = L('targetHint', path, kw);
+}
+
+document.getElementById('plan-area').addEventListener('input', ()=>{
+  const n = document.getElementById('plan-area').value.length;
+  document.getElementById('char-count').textContent = L('charCount', n);
+});
+
+async function init(){
+  try{
+    const r = await fetch('/api/prefs').then(x=>x.json());
+    lang = r.lang||'zh'; _prefs = r;
+  } catch(e){}
+  applyLang();
+  _tid = setInterval(tick, 1000);
+}
+
+init();
+</script>
+</body>
+</html>

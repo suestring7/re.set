@@ -73,11 +73,21 @@ class PersistenceService:
     # ── Config ────────────────────────────────────────────────────────────────
 
     def load_config(self) -> AppConfig:
+        from ..models.app_config import _DEFAULT_MENU_FEATURES
         try:
             d = json.loads(self._config_file.read_text(encoding="utf-8")) if self._config_file.exists() else {}
+            features = {**_DEFAULT_MENU_FEATURES, **d.get("menu_features", {})}
             return AppConfig(
                 interval_minutes=int(d.get("interval_minutes", 30)),
+                warning_advance_seconds=int(d.get("warning_advance_seconds", 60)),
+                reminder_enabled=bool(d.get("reminder_enabled", True)),
                 lang=str(d.get("lang", "zh")),
+                menu_features=features,
+                plan_file_path=str(d.get("plan_file_path", "")),
+                plan_file_keyword=str(d.get("plan_file_keyword", "")),
+                plan_prefix_type=str(d.get("plan_prefix_type", "none")),
+                plan_prefix_custom=str(d.get("plan_prefix_custom", "")),
+                plan_keyword_not_found=str(d.get("plan_keyword_not_found", "append")),
             )
         except Exception:
             return AppConfig()

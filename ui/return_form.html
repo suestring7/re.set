@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
+<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Return Log</title>
 <style>
-:root { --acc:#B794F4; --acc2:#7C3AED; --bg:#F7F7F9; --card:#fff; --text:#1a1a1a; --muted:#888; --line:#E5E7EB; }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html,body { background:var(--bg); font-family:-apple-system,system-ui,sans-serif; font-size:13px; color:var(--text); }
+html,body { background:var(--bg); font-family:inherit; font-size:13px; color:var(--text); }
 body { display:flex; flex-direction:column; align-items:center; padding:16px; overflow-y:auto; min-height:100vh; }
 
 .card { background:var(--card); border:1px solid #e8e8ec; border-radius:14px; padding:20px 22px 18px; width:100%; max-width:380px; }

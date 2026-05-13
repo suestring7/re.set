@@ -4,7 +4,8 @@ from pathlib import Path
 
 import objc
 from AppKit import (
-    NSApp, NSApplication, NSColor, NSFloatingWindowLevel,
+    NSApp, NSApplication, NSColor, NSEvent, NSEventModifierFlagCommand,
+    NSFloatingWindowLevel,
     NSMenu, NSMenuItem, NSScreen, NSStatusBar, NSStatusWindowLevel,
     NSVariableStatusItemLength, NSWindow,
     NSWindowCollectionBehaviorCanJoinAllSpaces,
@@ -35,6 +36,7 @@ _MI: dict[str, dict] = {
         "resume_log":   "回来了，记录一下",
         "away_form":    "记录工作时段",
         "trigger":      "立即触发休息",
+        "plan_today":   "规划今天",
         "records":      "查看今日记录",
         "prefs":        "设置",
         "eod_on":       "下班了",
@@ -49,6 +51,7 @@ _MI: dict[str, dict] = {
         "resume_log":   "I'm back — log it",
         "away_form":    "Log Work Session",
         "trigger":      "Trigger Break Now",
+        "plan_today":   "Plan Today",
         "records":      "View Today's Records",
         "prefs":        "Preferences",
         "eod_on":       "End of Day",
@@ -90,14 +93,19 @@ class MacOSController(NSObject):
         self._si_hdr      = None
         self._si_away_form = None
         self._si_trig     = None
+        self._si_plan     = None
         self._si_rec      = None
         self._si_prefs    = None
+        self._pw      = None   # plan-today window
+        self._key_monitor = None
         return self
 
     # ── AppDelegate ───────────────────────────────────────────────────────────
 
     def applicationDidFinishLaunching_(self, _):
         self._setup_status_bar()
+        self._setup_subscriptions()
+        self._setup_key_monitor()
         ws_nc = NSWorkspace.sharedWorkspace().notificationCenter()
         ws_nc.addObserver_selector_name_object_(
             self, "screenDidWake:", "NSWorkspaceScreensDidWakeNotification", None)
@@ -105,12 +113,51 @@ class MacOSController(NSObject):
     def applicationShouldTerminateAfterLastWindowClosed_(self, _):
         return False
 
+    @objc.python_method
+    def _setup_subscriptions(self) -> None:
+        """Wire AppViewModel observables to platform UI (called once after app launch)."""
+        url = f"http://localhost:{PORT}/"
+
+        def on_break(show: bool) -> None:
+            if show:
+                self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                    "showBreakWindow:", url, False)
+
+        def on_warning(show: bool) -> None:
+            sel = "showWarningPanel:" if show else "hideWarningPanel:"
+            self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                sel, None, False)
+
+        self._app_vm.show_break_window.subscribe(on_break)
+        self._app_vm.show_warning_panel.subscribe(on_warning)
+
+    @objc.python_method
+    def _setup_key_monitor(self) -> None:
+        """Intercept Cmd+Esc to force-close the break window (emergency exit)."""
+        NSEventMaskKeyDown = 1 << 10
+
+        def handler(event):
+            if (event.keyCode() == 53 and  # Escape
+                    bool(event.modifierFlags() & NSEventModifierFlagCommand)):
+                if self._bw and self._bw.isVisible():
+                    self._app_vm.release_break_lock(reset_active=True)
+                    self._app_vm.hide_break_window()
+                    self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                        "hideBreakWindow:", None, False)
+                    return None  # consume the event
+            return event
+
+        self._key_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
+            NSEventMaskKeyDown, handler)
+
     # ── Status bar setup ──────────────────────────────────────────────────────
 
+    @objc.python_method
     def _L(self, key: str):
         lang = self._app_vm.lang
         return _MI.get(lang, _MI["zh"]).get(key, key)
 
+    @objc.python_method
     def _setup_status_bar(self):
         from AppKit import NSImage
         bar      = NSStatusBar.systemStatusBar()
@@ -144,15 +191,16 @@ class MacOSController(NSObject):
         self._si_hdr   = _item(self._L("app_title"), None, enabled=False)
         self._si_timer = _item("—", None, enabled=False)
         menu.addItem_(NSMenuItem.separatorItem())
-        self._si_pause     = _item(self._L("pause"),     "handlePause_:",     target=self)
-        self._si_away_form = _item(self._L("away_form"), "handleAwayForm_:",  target=self)
-        self._si_trig      = _item(self._L("trigger"),   "handleTrigger_:",   target=self)
+        self._si_pause     = _item(self._L("pause"),     "handlePause:",     target=self)
+        self._si_away_form = _item(self._L("away_form"), "handleAwayForm:",  target=self)
+        self._si_trig      = _item(self._L("trigger"),   "handleTrigger:",   target=self)
         menu.addItem_(NSMenuItem.separatorItem())
-        self._si_rec   = _item(self._L("records"), "handleViewRecords_:", target=self)
-        self._si_prefs = _item(self._L("prefs"),   "handlePreferences_:", target=self)
+        self._si_plan  = _item(self._L("plan_today"), "handlePlanToday:", target=self)
+        self._si_rec   = _item(self._L("records"), "handleViewRecords:", target=self)
+        self._si_prefs = _item(self._L("prefs"),   "handlePreferences:", target=self)
         menu.addItem_(NSMenuItem.separatorItem())
         self._si_eod = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            self._eod_title(), "handleEndOfDay_:", "")
+            self._eod_title(), "handleEndOfDay:", "")
         self._si_eod.setTarget_(self)
         menu.addItem_(self._si_eod)
         menu.addItem_(NSMenuItem.separatorItem())
@@ -162,14 +210,17 @@ class MacOSController(NSObject):
         menu.addItem_(quit_item)
 
         self._si.setMenu_(menu)
+        self._apply_menu_visibility()
         NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-            5.0, self, "updateStatusBar_:", None, True)
+            5.0, self, "updateStatusBar:", None, True)
 
     # ── Menu helpers ──────────────────────────────────────────────────────────
 
+    @objc.python_method
     def _eod_title(self) -> str:
         return self._L("eod_off") if self._app_vm.is_end_of_day.value else self._L("eod_on")
 
+    @objc.python_method
     def _pause_title(self) -> str:
         if self._app_vm.is_away_mode.value:
             secs = self._app_vm._timer.away_elapsed_seconds
@@ -177,15 +228,32 @@ class MacOSController(NSObject):
             return self._L("resume_log") + f"  ({m:02d}:{s:02d})"
         return self._L("pause")
 
+    @objc.python_method
+    def _apply_menu_visibility(self) -> None:
+        cfg = self._app_vm.config
+        pairs = [
+            (self._si_pause,     "away_tracking"),
+            (self._si_away_form, "away_tracking"),
+            (self._si_trig,      "trigger_break"),
+            (self._si_plan,      "plan_today"),
+            (self._si_rec,       "view_records"),
+            (self._si_eod,       "end_of_day"),
+        ]
+        for item, key in pairs:
+            if item:
+                item.setHidden_(not cfg.feature_enabled(key))
+
     def updateMenuAfterPrefs_(self, _):
         """Called on main thread after preferences saved via HTTP."""
         if self._si_hdr:       self._si_hdr.setTitle_(self._L("app_title"))
         if self._si_pause:     self._si_pause.setTitle_(self._pause_title())
         if self._si_away_form: self._si_away_form.setTitle_(self._L("away_form"))
         if self._si_trig:      self._si_trig.setTitle_(self._L("trigger"))
+        if self._si_plan:      self._si_plan.setTitle_(self._L("plan_today"))
         if self._si_rec:       self._si_rec.setTitle_(self._L("records"))
         if self._si_prefs:     self._si_prefs.setTitle_(self._L("prefs"))
         if self._si_eod:       self._si_eod.setTitle_(self._eod_title())
+        self._apply_menu_visibility()
         # Reload visible records window so it picks up the new language
         if self._rw and self._rw.isVisible():
             self._rw.contentView().loadRequest_(
@@ -206,49 +274,55 @@ class MacOSController(NSObject):
     def screenDidWake_(self, _):
         if self._app_vm.is_away_mode.value:
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                "showReturnForm_:", None, False)
+                "showReturnForm:", None, False)
 
     def handlePause_(self, _):
         if self._app_vm.is_away_mode.value:
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                "showReturnForm_:", None, False)
+                "showReturnForm:", None, False)
         else:
             threading.Thread(target=self._app_vm.pause_timer, daemon=True).start()
             url = f"http://localhost:{PORT}/?away=1"
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                "showBreakWindow_:", url, False)
+                "showBreakWindow:", url, False)
 
     def handleAwayForm_(self, _):
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
-            "showAwayForm_:", None, False)
+            "showAwayForm:", None, False)
 
     def handleTrigger_(self, _):
         threading.Thread(target=self._app_vm.trigger_break_now, daemon=True).start()
 
     def handleViewRecords_(self, _):
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
-            "showRecordsPanel_:", None, False)
+            "showRecordsPanel:", None, False)
+
+    def handlePlanToday_(self, _):
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            "showPlanWindow:", None, False)
 
     def handlePreferences_(self, _):
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
-            "showPreferences_:", None, False)
+            "showPreferences:", None, False)
 
     def handleEndOfDay_(self, _):
         threading.Thread(
             target=lambda: (
                 self._app_vm.toggle_end_of_day(),
                 self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                    "updateMenuAfterPrefs_:", None, False),
+                    "updateMenuAfterPrefs:", None, False),
             ),
             daemon=True,
         ).start()
 
     # ── Window helpers ────────────────────────────────────────────────────────
 
+    @objc.python_method
     def _wkview(self, frame):
         cfg = WKWebViewConfiguration.alloc().init()
         return WKWebView.alloc().initWithFrame_configuration_(frame, cfg)
 
+    @objc.python_method
     def _load_url(self, wkview, path: str) -> None:
         wkview.loadRequest_(
             NSURLRequest.requestWithURL_(
@@ -256,6 +330,7 @@ class MacOSController(NSObject):
 
     # ── Break window ──────────────────────────────────────────────────────────
 
+    @objc.python_method
     def _make_break_window(self, frame):
         bw = _BreakWindow.alloc().initWithContentRect_styleMask_backing_defer_(
             frame, NSWindowStyleMaskBorderless, NSBackingStoreBuffered, False)
@@ -271,10 +346,25 @@ class MacOSController(NSObject):
         bw.setContentView_(bwv)
         return bw, bwv
 
+    @objc.python_method
+    def _make_cover_window(self, frame) -> NSWindow:
+        win = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            frame, NSWindowStyleMaskBorderless, NSBackingStoreBuffered, False)
+        win.setLevel_(BREAK_WINDOW_LEVEL)
+        win.setBackgroundColor_(NSColor.blackColor())
+        win.setOpaque_(True)
+        win.setReleasedWhenClosed_(False)
+        win.setCollectionBehavior_(
+            NSWindowCollectionBehaviorCanJoinAllSpaces
+            | NSWindowCollectionBehaviorStationary)
+        return win
+
     def showBreakWindow_(self, url_str: str):
+        frame = NSScreen.mainScreen().frame()
         if not self._bw:
-            frame = NSScreen.mainScreen().frame()
             self._bw, self._bwv = self._make_break_window(frame)
+        else:
+            self._bw.setFrame_display_(frame, False)
         req = NSURLRequest.requestWithURL_(NSURL.URLWithString_(url_str))
         self._bwv.loadRequest_(req)
         self._bw.makeKeyAndOrderFront_(None)
@@ -291,10 +381,9 @@ class MacOSController(NSObject):
             if (abs(fr.origin.x - main_fr.origin.x) < 1 and
                     abs(fr.origin.y - main_fr.origin.y) < 1):
                 continue
-            bw, bwv = self._make_break_window(fr)
-            bwv.loadRequest_(req)
-            bw.makeKeyAndOrderFront_(None)
-            self._bw_extra.append(bw)
+            cover = self._make_cover_window(fr)
+            cover.makeKeyAndOrderFront_(None)
+            self._bw_extra.append(cover)
 
     def hideBreakWindow_(self, _):
         if self._bw:
@@ -311,7 +400,7 @@ class MacOSController(NSObject):
     def showWarningPanel_(self, _):
         sw = NSScreen.mainScreen().frame().size.width
         sh = NSScreen.mainScreen().frame().size.height
-        pw, ph = 244.0, 96.0
+        pw, ph = 380.0, 114.0
         pf = NSMakeRect(sw - pw - 20, sh - ph - 20, pw, ph)
         if not self._ww:
             self._ww = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
@@ -334,6 +423,7 @@ class MacOSController(NSObject):
 
     # ── Auxiliary popup (away-form / return-form) ─────────────────────────────
 
+    @objc.python_method
     def _make_aux_window(self, w: float, h: float) -> NSWindow:
         sw = NSScreen.mainScreen().frame().size.width
         sh = NSScreen.mainScreen().frame().size.height
@@ -370,6 +460,8 @@ class MacOSController(NSObject):
     def closeAuxWindow_(self, _):
         if self._waw:
             self._waw.orderOut_(None)
+        if self._pw:
+            self._pw.orderOut_(None)
 
     # ── Records window ────────────────────────────────────────────────────────
 
@@ -395,6 +487,25 @@ class MacOSController(NSObject):
         NSApp.activateIgnoringOtherApps_(True)
 
     # ── Preferences window ────────────────────────────────────────────────────
+
+    def showPlanWindow_(self, _):
+        sw = NSScreen.mainScreen().frame().size.width
+        sh = NSScreen.mainScreen().frame().size.height
+        pw, ph = 500.0, 420.0
+        pf = NSMakeRect((sw - pw) / 2, (sh - ph) / 2, pw, ph)
+        mask = (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
+                | NSWindowStyleMaskMiniaturizable)
+        self._pw = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            pf, mask, NSBackingStoreBuffered, False)
+        self._pw.setReleasedWhenClosed_(False)
+        self._pw.setLevel_(NSFloatingWindowLevel)
+        self._pw.setCollectionBehavior_(NSWindowCollectionBehaviorCanJoinAllSpaces)
+        self._pw.setContentView_(self._wkview(NSMakeRect(0, 0, pw, ph)))
+        lang = self._app_vm.lang
+        self._pw.setTitle_("规划今天" if lang == "zh" else "Plan Today")
+        self._load_url(self._pw.contentView(), "/plan-today")
+        self._pw.makeKeyAndOrderFront_(None)
+        NSApp.activateIgnoringOtherApps_(True)
 
     def showPreferences_(self, _):
         if not self._wp:

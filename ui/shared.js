@@ -240,6 +240,87 @@
     paint();
   }
 
+  // ── Exercise SVG icons ────────────────────────────────────────────
+  var _EX_ICONS = {
+    S2: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="16" cy="9" r="4"/>'
+        + '<path d="M16 13v8M11 17c2-1 8-1 10 0M16 21l-3 6M16 21l3 6"/>'
+        + '<path d="M19 9c2 1 4 3 4 5" stroke-dasharray="2 2"/>'
+        + '</svg>';
+    },
+    S5: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="16" cy="8" r="3"/>'
+        + '<path d="M16 11v9M9 15c3-2 11-2 14 0M16 20l-4 7M16 20l4 7"/>'
+        + '<path d="M7 13c-1 2 0 4 2 4M25 13c1 2 0 4-2 4" stroke-dasharray="1.5 2"/>'
+        + '</svg>';
+    },
+    S7: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="13" cy="9" r="3"/>'
+        + '<path d="M13 12c0 4 4 4 6 6M13 18l-2 9M19 18l2 9M9 22h12"/>'
+        + '</svg>';
+    },
+    C1: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="16" cy="16" r="9" opacity=".4"/>'
+        + '<circle cx="16" cy="16" r="5"/>'
+        + '<path d="M16 7v3M16 22v3M7 16h3M22 16h3"/>'
+        + '</svg>';
+    },
+    C4: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="6" cy="16" r="2.2"/>'
+        + '<path d="M8 17h17M25 13v4M5 19l-2 2M27 19l-1 2"/>'
+        + '<path d="M9 17l13-3" stroke-dasharray="1 2"/>'
+        + '</svg>';
+    },
+    C6: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="6" cy="20" r="2"/>'
+        + '<path d="M7 19l18-12M25 7v3M5 22v3M16 13l3 3"/>'
+        + '</svg>';
+    },
+    T1: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="16" cy="9" r="3"/>'
+        + '<path d="M16 12v9M9 16h14M16 21l-3 6M16 21l3 6"/>'
+        + '<rect x="5" y="3" width="3" height="6" rx="1"/>'
+        + '<rect x="24" y="3" width="3" height="6" rx="1"/>'
+        + '</svg>';
+    },
+    T3: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<circle cx="16" cy="9" r="3"/>'
+        + '<path d="M16 12v9M16 21l-3 6M16 21l3 6"/>'
+        + '<path d="M16 14l-6 4M16 14l6 4"/>'
+        + '<rect x="7" y="16" width="3" height="6" rx="1"/>'
+        + '<rect x="22" y="16" width="3" height="6" rx="1"/>'
+        + '</svg>';
+    },
+    E1: function (c) {
+      return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round">'
+        + '<path d="M3 16c4-6 9-9 13-9s9 3 13 9c-4 6-9 9-13 9S7 22 3 16z"/>'
+        + '<circle cx="16" cy="16" r="3.5"/>'
+        + '<circle cx="16" cy="16" r="1" fill="' + c + '"/>'
+        + '</svg>';
+    },
+  };
+
+  function _defaultIcon(c) {
+    return '<svg viewBox="0 0 32 32" fill="none" stroke="' + c + '" stroke-width="1.6">'
+      + '<circle cx="16" cy="16" r="10"/>'
+      + '</svg>';
+  }
+
+  function getExIconSVG(id, color) {
+    var c = color || 'currentColor';
+    var fn = _EX_ICONS[id];
+    return fn ? fn(c) : _defaultIcon(c);
+  }
+  // ──────────────────────────────────────────────────────────────────
+
   var RS = {
     DEFAULT_TYPES:        DEFAULT_TYPES,
     loadActivityTypes:    loadActivityTypes,
@@ -249,11 +330,13 @@
     saveActivityTypes:    saveActivityTypes,
     renderTypeManager:    renderTypeManager,
     renderGroupedChips:   renderGroupedChips,
+    getExIconSVG:         getExIconSVG,
   };
 
-  global.RS           = RS;
+  global.RS              = RS;
   global.loadActivityTypes = loadActivityTypes;
-  global.ACT_COLORS   = ACT_COLORS;
-  global.ACT_LABEL    = ACT_LABEL;
-  global.fmtMin       = fmtMin;
+  global.ACT_COLORS      = ACT_COLORS;
+  global.ACT_LABEL       = ACT_LABEL;
+  global.fmtMin          = fmtMin;
+  global.getExIconSVG    = getExIconSVG;
 })(typeof window !== 'undefined' ? window : this);

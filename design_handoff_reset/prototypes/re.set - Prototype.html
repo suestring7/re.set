@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>re.set — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design/theme.css">
+<style>
+  html, body { height:100%; }
+  body {
+    margin:0; min-height:100vh;
+    background: var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    padding: 32px 16px;
+    transition: background .25s;
+  }
+  .device {
+    width: 720px; max-width:100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgba(42,27,61,.12), 0 6px 18px rgba(42,27,61,.05);
+    overflow: hidden;
+    position: relative;
+  }
+  .device-bar {
+    display:flex; align-items:center; gap:8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
+  .device-bar .dots { display:flex; gap:6px; }
+  .device-bar .dot { width:10px; height:10px; border-radius:50%; }
+  .device-bar .title {
+    flex:1; text-align:center; font-size:11px; color:var(--muted);
+    font-family: var(--mono); letter-spacing:.6px;
+  }
+  .stage { padding: 6px; background: var(--bg); }
+  .toast-stage {
+    min-height: 220px; display:flex; align-items:center; justify-content:center;
+    padding: 30px;
+  }
+  .stepper {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: 18px;
+    display:flex; gap:8px; align-items:center;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 99px; padding: 6px 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.10);
+    z-index: 50;
+  }
+  .stepper button {
+    background:none; border:none; font-family:inherit;
+    font-size:12px; color:var(--muted); cursor:pointer;
+    padding: 6px 10px; border-radius: 99px; font-weight:600;
+  }
+  .stepper button.active { background: var(--acc); color:#fff; }
+  .stepper button:hover:not(.active) { background: var(--acc-soft); color: var(--acc2); }
+  .stepper .arrow { width:28px; height:28px; display:flex; align-items:center; justify-content:center; padding:0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+window.TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": {
+    "value": "lavender",
+    "label": "薰衣草",
+    "swatch": [
+      "#A87FEC",
+      "#F0E6FB",
+      "#2A1B3D"
+    ]
+  },
+  "circuitStyle": "ring",
+  "language": "zh",
+  "personality": "playful"
+}/*EDITMODE-END*/;
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design/tweaks-panel.jsx"></script>
+<script type="text/babel" src="design/data-and-icons.jsx"></script>
+<script type="text/babel" src="design/break-selection.jsx"></script>
+<script type="text/babel" src="design/circuit.jsx"></script>
+<script type="text/babel" src="design/checkin.jsx"></script>
+<script type="text/babel" src="design/warnings-forms.jsx"></script>
+<script type="text/babel" src="design/records.jsx"></script>
+<script type="text/babel" src="design/preferences.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+const { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakSelect, TweakColor } = window;
+const { WarningA, BreakSelectionA, CircuitA, CircuitB, CircuitC, CheckinA,
+        RecordsTimeline, Records24h, RecordsBars, RecordsHeatmap, PreferencesA } = window;
+
+function RecordsTabs() {
+  const [view, setView] = useState('time');
+  const tabs = [
+    ['time', '\n', RecordsTimeline],
+    ['24h',  '\n 比例', Records24h],
+    ['bars', '周\n', RecordsBars],
+    ['heat', '\n',    RecordsHeatmap],
+  ];
+  const Active = tabs.find(t => t[0] === view)[2];
+  return (
+    <div style={{ position:'relative' }}>
+      <div style={{
+        position:'absolute', top:14, right:24, zIndex:5,
+        display:'flex', gap:0, fontSize:11, fontFamily:'var(--mono)',
+        background:'var(--card)', borderRadius:6, border:'1px solid var(--line)', overflow:'hidden',
+      }}>
+        {tabs.map(([id, label]) => (
+          <button key={id} onClick={()=>setView(id)} style={{
+            background: view===id ? 'var(--text)' : 'transparent',
+            color: view===id ? 'var(--bg)' : 'var(--muted)',
+            border:'none', padding:'5px 11px', cursor:'pointer',
+            fontFamily:'inherit', fontWeight:600,
+          }}>{label}</button>
+        ))}
+      </div>
+      <Active/>
+    </div>
+  );
+}
+
+const SCREENS = [
+  { id:'warning', label:'1. 提醒' },
+  { id:'select',  label:'2. 选择' },
+  { id:'circuit', label:'3. 计时' },
+  { id:'checkin', label:'4. 打卡' },
+  { id:'records', label:'5. 记录' },
+  { id:'prefs',   label:'6. 设置' },
+];
+
+function Prototype() {
+  const [t, setTweak] = useTweaks(window.TWEAKS);
+  const [screen, setScreen] = useState('warning');
+
+  // Apply theme class on body
+  useEffect(() => {
+    document.body.dataset.theme = t.theme === 'lavender' ? '' : t.theme;
+  }, [t.theme]);
+
+  const idx = SCREENS.findIndex(s => s.id === screen);
+  const next = () => setScreen(SCREENS[Math.min(idx+1, SCREENS.length-1)].id);
+  const prev = () => setScreen(SCREENS[Math.max(idx-1, 0)].id);
+
+  const Circuit = t.circuitStyle === 'numeral' ? CircuitA
+    : t.circuitStyle === 'breath' ? CircuitC
+    : CircuitB;
+
+  return (
+    <>
+      <div className="device" data-theme={t.theme === 'lavender' ? '' : t.theme}>
+        <div className="device-bar">
+          <div className="dots">
+            <div className="dot" style={{ background:'#FF5F57' }}/>
+            <div className="dot" style={{ background:'#FEBC2E' }}/>
+            <div className="dot" style={{ background:'#28C840' }}/>
+          </div>
+          <div className="title">re.set · {SCREENS[idx].label}</div>
+          <div style={{ width:48 }}/>
+        </div>
+        <div className={'stage' + (screen === 'warning' ? ' toast-stage' : '')}>
+          {screen === 'warning' && <WarningA/>}
+          {screen === 'select'  && <BreakSelectionA/>}
+          {screen === 'circuit' && <Circuit/>}
+          {screen === 'checkin' && <CheckinA/>}
+          {screen === 'records' && <RecordsTabs/>}
+          {screen === 'prefs'   && <PreferencesA/>}
+        </div>
+      </div>
+
+      <div className="stepper">
+        <button className="arrow" onClick={prev} disabled={idx===0}>←</button>
+        {SCREENS.map(s => (
+          <button key={s.id} className={s.id===screen?'active':''} onClick={()=>setScreen(s.id)}>{s.label}</button>
+        ))}
+        <button className="arrow" onClick={next} disabled={idx===SCREENS.length-1}>→</button>
+      </div>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection title="主题色板">
+          <TweakColor
+            label="Theme palette"
+            value={t.theme}
+            onChange={v => setTweak('theme', v)}
+            options={[
+              { value:'lavender', label:'薰衣草',  swatch:['#A87FEC','#F0E6FB','#2A1B3D'] },
+              { value:'sage',     label:'鼠尾草',  swatch:['#7BA888','#E5EFE6','#1F2D24'] },
+              { value:'mist',     label:'雾蓝',    swatch:['#7B9CC4','#E5ECF5','#1B2A3D'] },
+              { value:'ochre',    label:'赭石',    swatch:['#C8856B','#F2E2D6','#2D1F14'] },
+              { value:'ink',      label:'夜墨',    swatch:['#B794F4','#34343F','#F0EBF7'] },
+            ]}
+          />
+        </TweakSection>
+        <TweakSection title="计时器风格">
+          <TweakRadio
+            label="Circuit timer"
+            value={t.circuitStyle}
+            onChange={v => setTweak('circuitStyle', v)}
+            options={[
+              { value:'ring',    label:'圆环' },
+              { value:'numeral', label:'数字' },
+              { value:'breath',  label:'呼吸' },
+            ]}
+          />
+        </TweakSection>
+        <TweakSection title="跳到屏幕">
+          <TweakSelect
+            label="Screen"
+            value={screen}
+            onChange={setScreen}
+            options={SCREENS.map(s => ({ value:s.id, label:s.label }))}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Prototype/>);
+</script>
+</body>
+</html>

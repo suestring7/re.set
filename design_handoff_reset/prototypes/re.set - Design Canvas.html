@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>re.set — Design Canvas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design/theme.css">
+<style>
+  body { background: #EBE6F2; min-height: 100vh; }
+  .canvas-shell { padding: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design/design-canvas.jsx"></script>
+<script type="text/babel" src="design/data-and-icons.jsx"></script>
+<script type="text/babel" src="design/break-selection.jsx"></script>
+<script type="text/babel" src="design/circuit.jsx"></script>
+<script type="text/babel" src="design/checkin.jsx"></script>
+<script type="text/babel" src="design/warnings-forms.jsx"></script>
+<script type="text/babel" src="design/records.jsx"></script>
+<script type="text/babel" src="design/preferences.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+const { DesignCanvas, DCSection, DCArtboard } = window;
+const { WarningA, WarningB, WarningC,
+        BreakSelectionA, BreakSelectionB, BreakSelectionC,
+        CircuitA, CircuitB, CircuitC,
+        CheckinA, CheckinB, CheckinC,
+        AwayFormA, ReturnFormA,
+        RecordsTimeline, Records24h, RecordsBars, RecordsHeatmap,
+        PreferencesA } = window;
+
+function ThemedFrame({ theme = 'lavender', children }) {
+  return (
+    <div data-theme={theme === 'lavender' ? '' : theme} style={{ width:'100%', height:'100%', overflow:'auto' }}>
+      {children}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas title="re.set — 设计探索" subtitle="所有屏幕 · 多种方向 · 拖拽重排 · 双击放大">
+      <DCSection id="warning" title="01 · 休息提醒 (Warning Toast)" subtitle="专注时间到了之后的预警提示。共 3 种方向。">
+        <DCArtboard id="warn-a" label="A · 卡片式" width={380} height={140}>
+          <ThemedFrame><div style={{padding:'28px 24px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:140}}><WarningA/></div></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="warn-b" label="B · 胶囊条" width={340} height={100}>
+          <ThemedFrame><div style={{padding:'24px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:100}}><WarningB/></div></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="warn-c" label="C · 极简边框" width={320} height={170}>
+          <ThemedFrame><div style={{padding:'24px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:170}}><WarningC/></div></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="select" title="02 · 选择动作 (Break Selection)" subtitle="3 种探索：网格、编辑、推荐 + 列表。">
+        <DCArtboard id="sel-a" label="A · 网格 + 图标" width={660} height={500}>
+          <ThemedFrame><BreakSelectionA/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="sel-b" label="B · 编辑列表" width={660} height={620}>
+          <ThemedFrame><BreakSelectionB/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="sel-c" label="C · 推荐 + 备选" width={660} height={500}>
+          <ThemedFrame><BreakSelectionC/></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="circuit" title="03 · 计时器 (Circuit Timer)" subtitle="动作进行中的核心屏幕。3 种数字呈现。">
+        <DCArtboard id="cir-a" label="A · 数字 + 进度点" width={660} height={520}>
+          <ThemedFrame><CircuitA/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="cir-b" label="B · 圆形进度环" width={660} height={580}>
+          <ThemedFrame><CircuitB/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="cir-c" label="C · 呼吸节律" width={660} height={580}>
+          <ThemedFrame><CircuitC/></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="checkin" title="04 · 完成打卡 (Check-in)" subtitle="记录这段专注时间。3 种结构。">
+        <DCArtboard id="chk-a" label="A · 表单式" width={660} height={580}>
+          <ThemedFrame><CheckinA/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="chk-b" label="B · 对话式" width={660} height={520}>
+          <ThemedFrame><CheckinB/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="chk-c" label="C · 紧凑双栏" width={660} height={400}>
+          <ThemedFrame><CheckinC/></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="forms" title="05 · 离开 / 回来 (Away / Return)" subtitle="离开和回来时的快速记录。">
+        <DCArtboard id="away" label="离开表单" width={520} height={420}>
+          <ThemedFrame><AwayFormA/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="return" label="回来表单" width={520} height={500}>
+          <ThemedFrame><ReturnFormA/></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="records" title="06 · 历史记录 (Records)" subtitle="4 种等权视图：时间线、24h、趋势、热图。">
+        <DCArtboard id="rec-time" label="时间线" width={660} height={780}>
+          <ThemedFrame><RecordsTimeline/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="rec-24h" label="24h 比例" width={660} height={520}>
+          <ThemedFrame><Records24h/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="rec-bars" label="周趋势" width={660} height={460}>
+          <ThemedFrame><RecordsBars/></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="rec-heat" label="热图 + 成就" width={660} height={560}>
+          <ThemedFrame><RecordsHeatmap/></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="prefs" title="07 · 偏好设置 (Preferences)" subtitle="包含 4 种主题色板的选择。">
+        <DCArtboard id="pref-a" label="设置主页" width={660} height={760}>
+          <ThemedFrame><PreferencesA/></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="themes" title="08 · 主题色板预览" subtitle="同一屏幕在不同主题下的样子。">
+        <DCArtboard id="theme-lav" label="薰衣草 (默认)" width={520} height={300}>
+          <ThemedFrame theme="lavender"><div style={{padding:14}}><WarningA/></div></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="theme-sage" label="鼠尾草" width={520} height={300}>
+          <ThemedFrame theme="sage"><div style={{padding:14}}><WarningA/></div></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="theme-mist" label="雾蓝" width={520} height={300}>
+          <ThemedFrame theme="mist"><div style={{padding:14}}><WarningA/></div></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="theme-ochre" label="赭石" width={520} height={300}>
+          <ThemedFrame theme="ochre"><div style={{padding:14}}><WarningA/></div></ThemedFrame>
+        </DCArtboard>
+        <DCArtboard id="theme-ink" label="夜墨 (深色)" width={520} height={300}>
+          <ThemedFrame theme="ink"><div style={{padding:14, background:'#1A1A1F', minHeight:'100%'}}><WarningA/></div></ThemedFrame>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

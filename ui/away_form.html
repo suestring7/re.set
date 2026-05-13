@@ -2,16 +2,13 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
+<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Log Work Session</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#F7F7F9;--card:#fff;--acc:#B794F4;--acc2:#7C3AED;
-  --text:#111827;--muted:#9CA3AF;--line:#E5E7EB;
-  --mono:"SF Mono","Fira Code",monospace;
-}
-html,body{height:100%;background:var(--bg);font-family:-apple-system,sans-serif;font-size:13px;color:var(--text)}
+html,body{height:100%;background:var(--bg);font-family:inherit;font-size:13px;color:var(--text)}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px 24px;width:100%;max-width:370px}

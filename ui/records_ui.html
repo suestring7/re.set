@@ -2,16 +2,13 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
+<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Records</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#F7F7F9;--card:#fff;--acc:#B794F4;--acc2:#7C3AED;
-  --text:#111827;--sub:#374151;--muted:#9CA3AF;--line:#E5E7EB;
-  --green:#059669;--amber:#D97706;--red:#DC2626;
-  --mono:"SF Mono","Fira Code",monospace;--r:8px;
-}
+:root{--r:8px;}
 html,body{width:100%;height:100%;background:var(--bg);font-family:-apple-system,sans-serif;font-size:13px;color:var(--text);overflow:hidden}
 body{display:flex;flex-direction:column}
 
@@ -22,25 +19,19 @@ body{display:flex;flex-direction:column}
 .nav-arrow:disabled{opacity:.3;cursor:default}
 .nav-date{font-size:14px;font-weight:700;color:var(--text);min-width:140px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s}
 .nav-date:hover{background:var(--bg)}
-.nav-today{font-size:11px;font-weight:600;color:var(--acc2);background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:99px;padding:3px 10px;cursor:pointer;margin-left:4px}
+.nav-today{font-size:11px;font-weight:600;color:var(--acc2);background:var(--acc-soft);border:1px solid var(--acc);border-radius:99px;padding:3px 10px;cursor:pointer;margin-left:4px}
 .spacer{flex:1}
 .view-tabs{display:flex;gap:4px}
-.vtab{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.vtab{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;height:28px;display:inline-flex;align-items:center;justify-content:center}
 .vtab.active{background:var(--acc);border-color:var(--acc);color:#fff}
 
-/* ── SCORE HEADER ── */
-.score-row{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.score-big{font-family:var(--mono);font-size:30px;font-weight:300;color:var(--acc2);line-height:1}
-.score-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-.sep-v{width:1px;height:36px;background:var(--line)}
-.cats-inline{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.cat-g{display:flex;align-items:center;gap:5px}
-.cat-tag{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:1px 7px;border-radius:99px}
-.ct-s{background:rgba(5,150,105,.1);color:var(--green)}.ct-c{background:rgba(217,119,6,.1);color:var(--amber)}.ct-t{background:rgba(220,38,38,.1);color:var(--red)}
-.cat-dots{display:flex;gap:3px}
-.cat-dot{width:6px;height:6px;border-radius:50%;border:1.5px solid var(--line)}
-.cat-dot.done{background:var(--acc);border-color:var(--acc)}
-.all-met{font-size:11px;font-weight:600;color:var(--green)}
+/* ── STATS STRIP ── */
+.score-row{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:0}
+.stat-cell{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 10px}
+.stat-cell:first-child{padding-left:0}
+.stat-val{font-family:var(--mono);font-size:20px;font-weight:300;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
+.stat-lbl{font-size:10.5px;color:var(--muted);letter-spacing:.4px;margin-top:3px}
+.stat-sep{width:1px;height:36px;background:var(--line);flex-shrink:0}
 
 /* ── SCROLL AREA ── */
 .scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
@@ -126,9 +117,9 @@ body{display:flex;flex-direction:column}
 .bars-inner{width:100%;max-width:580px}
 .bar-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .bar-toggle{display:flex;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px}
-.bar-toggle-btn{background:none;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.bar-toggle-btn{background:none;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;height:28px;display:inline-flex;align-items:center;justify-content:center}
 .bar-toggle-btn.active{background:var(--card);color:var(--acc2);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.bar-range-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.bar-range-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;height:28px;display:inline-flex;align-items:center;justify-content:center}
 .bar-range-btn.active{border-color:var(--acc);color:var(--acc2)}
 .bar-spacer{flex:1}
 .bar-wrap{display:flex;justify-content:center;overflow-x:auto;padding-bottom:4px}
@@ -139,29 +130,17 @@ body{display:flex;flex-direction:column}
 .bar-lbl{font-size:9px;color:var(--muted);margin-top:4px;text-align:center;font-family:var(--mono);white-space:nowrap}
 .bar-lbl.today{color:var(--acc2);font-weight:700}
 .bar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;justify-content:center}
-/* Week 24h timeline */
-.week-tick-row{display:flex;justify-content:space-between;margin-left:40px;padding:0 0 5px;color:var(--muted);font-size:9px;font-family:var(--mono)}
-.week-rows{display:flex;flex-direction:column;gap:5px}
-.week-row{display:flex;align-items:center;gap:8px}
-.week-day-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);width:32px;flex-shrink:0;text-align:right;line-height:1.4}
-.week-day-lbl.today{color:var(--acc2);font-weight:700}
-.week-track{position:relative;flex:1;height:26px;background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.week-block{position:absolute;top:3px;height:20px;border-radius:3px;opacity:.85;cursor:default;transition:opacity .15s}
-.week-block:hover{opacity:1}
+/* Timeline column view */
+.chart-area{display:flex;align-items:flex-start;gap:4px}
+.tl-y-axis{height:160px;display:flex;flex-direction:column;justify-content:space-between;width:24px;font-size:9px;color:var(--muted);font-family:var(--mono);text-align:right;flex-shrink:0}
+.tl-col{position:relative;overflow:hidden}
+.tl-block{position:absolute;left:1px;right:1px;border-radius:2px;opacity:.85;cursor:default;transition:opacity .15s}
+.tl-block:hover{opacity:1}
 
-/* ══ VIEW 3: HEATMAP ══ */
+/* ══ VIEW: HEATMAP (GitHub style) ══ */
 .heatmap{padding:4px 0}
-.hm-month-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.hm-month-title{font-size:13px;font-weight:700;color:var(--text)}
-.hm-arrow{background:none;border:1px solid var(--line);border-radius:5px;padding:2px 8px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s}
-.hm-arrow:hover{border-color:var(--acc);color:var(--acc)}
-.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.hm-day-header{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding-bottom:4px}
-.hm-cell{aspect-ratio:1;border-radius:4px;cursor:pointer;transition:all .15s;border:1px solid transparent;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,.8);font-weight:700}
-.hm-cell.empty-day{background:transparent;cursor:default}
-.hm-cell.no-data{background:var(--line)}
-.hm-cell:not(.empty-day):not(.no-data):hover{border-color:var(--acc2);transform:scale(1.08)}
-.hm-cell.selected{border-color:var(--acc2);transform:scale(1.08)}
+.hm-cell-gh{width:12px;height:12px;border-radius:3px;cursor:pointer;transition:opacity .15s}
+.hm-cell-gh:hover{opacity:.8}
 
 /* ── BOTTOM STATS ── */
 .bottom-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
@@ -180,21 +159,22 @@ body{display:flex;flex-direction:column}
   <button class="nav-arrow" id="btn-next" onclick="navigate(1)" disabled>›</button>
   <div class="spacer"></div>
   <div class="view-tabs">
-    <button class="vtab active ns" onclick="setView('events')" id="vtab-events">≡</button>
-    <button class="vtab ns" onclick="setView('h24')" id="vtab-h24">24h</button>
-    <button class="vtab ns" onclick="setView('bars')" id="vtab-bars">▮▮</button>
-    <button class="vtab ns" onclick="setView('heatmap')" id="vtab-heatmap">▦</button>
+    <button class="vtab active ns" onclick="setView('events')" id="vtab-events">时间线</button>
+    <button class="vtab ns" onclick="setView('24h')" id="vtab-24h">24h</button>
+    <button class="vtab ns" onclick="setView('bars')" id="vtab-bars">趋势</button>
+    <button class="vtab ns" onclick="setView('heatmap')" id="vtab-heatmap">热图</button>
   </div>
 </div>
 
-<!-- SCORE HEADER -->
+<!-- STATS STRIP -->
 <div class="score-row ns">
-  <div>
-    <div class="score-big" id="score-big">0</div>
-    <div class="score-lbl" id="score-lbl">pts today</div>
-  </div>
-  <div class="sep-v"></div>
-  <div class="cats-inline" id="cats-inline">—</div>
+  <div class="stat-cell"><div class="stat-val" id="stat-focus">—</div><div class="stat-lbl">专注</div></div>
+  <div class="stat-sep"></div>
+  <div class="stat-cell"><div class="stat-val" id="stat-resets">—</div><div class="stat-lbl">Reset</div></div>
+  <div class="stat-sep"></div>
+  <div class="stat-cell"><div class="stat-val" id="stat-score" style="color:var(--acc2)">—</div><div class="stat-lbl">积分</div></div>
+  <div class="stat-sep"></div>
+  <div class="stat-cell"><div class="stat-val" id="stat-streak" style="color:var(--green)">—</div><div class="stat-lbl">连续天</div></div>
 </div>
 
 <!-- MAIN SCROLL -->
@@ -209,59 +189,68 @@ body{display:flex;flex-direction:column}
     <div class="timeline" id="timeline"></div>
   </div>
 
-  <!-- View 2: 24h -->
-  <div id="view-h24" style="display:none">
+  <!-- View 2: 24h proportional bar -->
+  <div id="view-24h" style="display:none">
     <div class="view24">
       <div class="h24-tick-row" id="h24-ticks"></div>
       <div class="h24-track" id="h24-track"></div>
       <div class="h24-legend" id="h24-legend"></div>
-      <div class="pie-row" id="pie-row">
-        <div class="pie-wrap"><canvas id="pie-canvas" width="240" height="240"></canvas>
-          <div class="pie-center"><div class="pie-cval" id="pie-cval">0</div><div class="pie-clbl" id="pie-clbl">min</div></div>
-        </div>
-        <div class="pie-legend" id="pie-legend"></div>
+      <div style="margin-top:20px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px;margin-bottom:10px">占比</div>
+        <div id="h24-bar" style="display:flex;border-radius:6px;overflow:hidden;height:20px;margin-bottom:10px"></div>
+        <div id="h24-breakdown" style="display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px"></div>
       </div>
     </div>
   </div>
 
-  <!-- View 4: Stacked bars + Week timeline -->
+  <!-- View 3: Bars — Stacked / Timeline -->
   <div id="view-bars" style="display:none">
     <div class="bars-inner">
       <div class="bar-toolbar">
         <div class="bar-toggle">
-          <button class="bar-toggle-btn active" id="bar-mode-stack" onclick="setBarMode('stack')">Stack</button>
-          <button class="bar-toggle-btn" id="bar-mode-week" onclick="setBarMode('week')">Week</button>
+          <button class="bar-toggle-btn active" id="bar-mode-day" onclick="setBarMode('day')">Day</button>
+          <button class="bar-toggle-btn" id="bar-mode-stack" onclick="setBarMode('stack')">Stacked View</button>
+          <button class="bar-toggle-btn" id="bar-mode-tl" onclick="setBarMode('tl')">Timeline View</button>
         </div>
         <div class="bar-spacer"></div>
-        <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">Week</button>
-        <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">Month</button>
+        <div id="bar-range-wrap" style="display:none;gap:4px">
+          <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">Week</button>
+          <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">Month</button>
+        </div>
       </div>
-      <div class="bar-wrap" id="bar-wrap">
-        <div class="bar-chart" id="bar-chart"></div>
+      <!-- Day mode: current-day 24h track + pie -->
+      <div id="bar-day-view">
+        <div class="h24-tick-row" id="bd-ticks"></div>
+        <div class="h24-track" id="bd-track"></div>
+        <div class="h24-legend" id="bd-legend"></div>
+        <div class="pie-row">
+          <div class="pie-wrap"><canvas id="bd-pie-canvas" width="240" height="240"></canvas>
+            <div class="pie-center"><div class="pie-cval" id="bd-pie-cval">0</div><div class="pie-clbl" id="bd-pie-clbl">min</div></div>
+          </div>
+          <div class="pie-legend" id="bd-pie-legend"></div>
+        </div>
       </div>
-      <div id="week-view" style="display:none">
-        <div class="week-tick-row" id="week-ticks"></div>
-        <div class="week-rows" id="week-rows"></div>
+      <!-- Stacked + Timeline (shared column x-axis) -->
+      <div id="bar-chart-area" style="display:none">
+        <div class="chart-area">
+          <div class="tl-y-axis" id="tl-y-axis" style="display:none"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+          <div class="bar-wrap" id="bar-wrap">
+            <div class="bar-chart" id="bar-chart"></div>
+          </div>
+        </div>
+        <div class="bar-legend" id="bar-legend"></div>
       </div>
-      <div class="bar-legend" id="bar-legend"></div>
     </div>
   </div>
 
-  <!-- View 3: Heatmap -->
+  <!-- View 4: Heatmap (GitHub style) -->
   <div id="view-heatmap" style="display:none">
-    <div class="heatmap">
-      <div class="hm-month-nav">
-        <button class="hm-arrow ns" onclick="hmNavigate(-1)">‹</button>
-        <div class="hm-month-title ns" id="hm-month-title">—</div>
-        <button class="hm-arrow ns" onclick="hmNavigate(1)" id="hm-next">›</button>
-      </div>
-      <div class="hm-grid" id="hm-grid"></div>
-    </div>
+    <div class="heatmap" id="hm-grid-gh"></div>
   </div>
 </div>
 
-<!-- BOTTOM STATS -->
-<div class="bottom-bar ns" id="bottom-bar"></div>
+<!-- bottom-bar retained for compat but hidden -->
+<div class="bottom-bar ns" id="bottom-bar" style="display:none"></div>
 
 <script>
 'use strict';
@@ -325,13 +314,18 @@ function fmtDate(iso){
 /* ── VIEW SWITCHING ── */
 function setView(v){
   curView=v;
-  ['events','h24','bars','heatmap'].forEach(n=>{
-    document.getElementById(`view-${n}`).style.display=n===v?'':'none';
-    document.getElementById(`vtab-${n}`).classList.toggle('active',n===v);
+  ['events','24h','bars','heatmap'].forEach(n=>{
+    const el = document.getElementById(`view-${n}`);
+    if(el) el.style.display=n===v?'':'none';
+    const tab = document.getElementById(`vtab-${n}`);
+    if(tab) tab.classList.toggle('active',n===v);
   });
   if(v==='heatmap') renderHeatmap();
-  else if(v==='h24' && curData) render24h(curData);
-  else if(v==='bars') renderBars();
+  else if(v==='bars'){
+    if(_barMode==='stack') renderBars();
+    else renderTimeline(); 
+  } 
+  else if(v==='24h') render24h();
 }
 
 /* ── DATE NAVIGATION ── */
@@ -355,29 +349,68 @@ function updateNavButtons(){
 
 /* ── SCORE + CATS HEADER ── */
 function renderHeader(data){
-  document.getElementById('score-big').textContent=data.total_score||0;
-  document.getElementById('score-lbl').textContent=t('scoreLbl');
-  const counts=data.category_counts||{};
-  const mins=data.daily_minimums||{stretch:3,core:3,strength:2};
-  const ci=document.getElementById('cats-inline');
-  const nm={stretch:t('catS'),core:t('catC'),strength:t('catT')};
-  const cls={stretch:'ct-s',core:'ct-c',strength:'ct-t'};
-  const cats=['stretch','core','strength'];
-  if(data.all_minimums_met){
-    // Show "all met" badge + each category's actual count on the right
-    const countsHtml=cats.map(cat=>{
-      const d=counts[cat]||0,to=mins[cat]||0;
-      return`<div class="cat-g"><span class="cat-tag ${cls[cat]}">${nm[cat]}</span><span style="font-size:10px;color:var(--green);font-weight:600">${d}/${to}</span></div>`;
-    }).join('');
-    ci.innerHTML=`<span class="all-met">${t('allMet')}</span><span style="display:inline-flex;gap:10px;margin-left:12px">${countsHtml}</span>`;
-    return;
-  }
-  ci.innerHTML=cats.map(cat=>{
-    const d=counts[cat]||0,to=mins[cat]||0;
-    const dots=Array.from({length:to},(_,i)=>`<span class="cat-dot${i<d?' done':''}"></span>`).join('');
-    return`<div class="cat-g"><span class="cat-tag ${cls[cat]}">${nm[cat]}</span><span class="cat-dots">${dots}</span><span style="font-size:10px;color:var(--muted)">${d}/${to}</span></div>`;
-  }).join('');
+  const ckins = data.checkins || [];
+  const fm = data.focus_minutes || 0;
+  const h = Math.floor(fm/60), m = fm%60;
+  const focusStr = h ? `${h}h ${m}m` : `${m}m`;
+  const resets = ckins.filter(c => c.event_type !== 'restroom').length;
+  const score = data.total_score || 0;
+  const fEl = document.getElementById('stat-focus');
+  const rEl = document.getElementById('stat-resets');
+  const sEl = document.getElementById('stat-score');
+  if(fEl) fEl.textContent = focusStr;
+  if(rEl) rEl.textContent = resets;
+  if(sEl) sEl.textContent = '★ ' + score;
+  // Streak: count consecutive days with score>0 going backward from today
+  const streakEl = document.getElementById('stat-streak');
+  if(streakEl){
+    let streak=0;
+    const d=new Date();
+    while(true){
+      const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if(!histList[iso]||(histList[iso].total_score||0)===0) break;
+      streak++;
+      d.setDate(d.getDate()-1);
+    } 
+    streakEl.textContent = streak + (lang==='zh'?'天':'d');
+  } 
 }
+
+function render24h(){
+  if(!curData) return;
+  const ckins=(curData.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
+  document.getElementById('h24-ticks').innerHTML=
+    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
+  document.getElementById('h24-track').innerHTML=ckins.map(c=>{
+    const endMin=timeToMin(c.time); if(endMin<0)return'';
+    const fm=Math.max(c.focus_minutes||15,15);
+    const startMin=Math.max(endMin-fm,0);
+    const left=(startMin/1440)*100, w=Math.max((fm/1440)*100,1.5);
+    const col=ACT_COLORS(c.activity_type||'other');
+    const label=c.work_content||ACT_LABEL(c.activity_type||'other')||'';
+    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
+    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}"
+      title="${startStr}–${c.time} ${label}"></div>`;
+  }).join('');
+  // Stacked breakdown bar
+  const byAct={};
+  ckins.forEach(c=>{const a=c.activity_type||'other';byAct[a]=(byAct[a]||0)+(c.focus_minutes||0);});
+  const totalMin=Object.values(byAct).reduce((a,b)=>a+b,0)||1;
+  const entries=Object.entries(byAct).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('h24-bar').innerHTML=entries.map(([act,min])=>{
+    const pct=(min/totalMin*100).toFixed(1);
+    return`<div style="width:${pct}%;background:${ACT_COLORS(act)};display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:#1a1a1a;overflow:hidden;white-space:nowrap">${min>totalMin*0.08?ACT_LABEL(act):''}</div>`;
+  }).join('');
+  document.getElementById('h24-breakdown').innerHTML=entries.map(([act,min])=>
+    `<div style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:2px;background:${ACT_COLORS(act)};display:inline-block"></span><span
+    style="color:var(--sub)">${ACT_LABEL(act)}</span><span
+    style="font-family:var(--mono);font-size:11px;color:var(--muted)">${min}m</span></div>`
+  ).join('');
+  document.getElementById('h24-legend').innerHTML=entries.map(([act,])=>
+    `<div class="leg-item"><div class="leg-dot" 
+    style="background:${ACT_COLORS(act)}"></div><span>${ACT_LABEL(act)}</span></div>`
+  ).join('');
+} 
 
 /* ── BOTTOM STATS ── */
 function renderBottom(data){
@@ -627,75 +660,8 @@ async function deleteRecord(idx){
   }catch(e){console.error(e);}
 }
 
-/* ══ VIEW 2: 24H PROPORTIONAL ══ */
+/* ══ SHARED: time helper ══ */
 function timeToMin(t){if(!t)return-1;const[h,m]=t.split(':').map(Number);return h*60+m;}
-
-function render24h(data){
-  const ckins=(data.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
-  // Ticks
-  const ticks=document.getElementById('h24-ticks');
-  ticks.innerHTML=[0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
-
-  // Track blocks
-  const track=document.getElementById('h24-track');
-  track.innerHTML=ckins.map(c=>{
-    const endMin=timeToMin(c.time);
-    if(endMin<0)return'';
-    const fm=Math.max(c.focus_minutes||15,15);
-    // c.time is the check-in (end) time; shift left by focus_minutes to get start
-    const startMin=Math.max(endMin-fm,0);
-    const left=(startMin/1440)*100;
-    const w=Math.max((fm/1440)*100,1.5);
-    const act=c.activity_type||'other';
-    const col=ACT_COLORS(act);
-    const label=c.work_content||ACT_LABEL(act)||'';
-    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
-    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}" title="${startStr}–${c.time} ${label} +${c.score}pts"></div>`;
-  }).join('');
-
-  // Pie chart (canvas)
-  const byAct={};
-  ckins.forEach(c=>{
-    const act=c.activity_type||'other';
-    byAct[act]=(byAct[act]||0)+(c.focus_minutes||0);
-  });
-  const totalMin=Object.values(byAct).reduce((a,b)=>a+b,0)||1;
-  document.getElementById('pie-cval').textContent=totalMin;
-  document.getElementById('pie-clbl').textContent=t('pieLbl');
-
-  const canvas=document.getElementById('pie-canvas');
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,240,240);
-  let angle=-Math.PI/2;
-  const cx=120,cy=120,r=100,ir=60;
-  const entries=Object.entries(byAct).filter(([,v])=>v>0);
-  entries.forEach(([act,min])=>{
-    const sweep=(min/totalMin)*Math.PI*2;
-    ctx.beginPath();ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,r,angle,angle+sweep);ctx.closePath();
-    ctx.fillStyle=ACT_COLORS(act);ctx.fill();
-    angle+=sweep;
-  });
-  // Donut hole
-  ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
-
-  // Legend
-  const legend=document.getElementById('pie-legend');
-  legend.innerHTML=entries.map(([act,min])=>`
-    <div class="pie-leg-item">
-      <div class="pie-leg-dot" style="background:${ACT_COLORS(act)}"></div>
-      <div class="pie-leg-label">${ACT_LABEL(act)}</div>
-      <div class="pie-leg-val">${min}m</div>
-    </div>`).join('');
-
-  // 24h legend
-  const h24leg=document.getElementById('h24-legend');
-  h24leg.innerHTML=entries.map(([act,])=>`
-    <div class="leg-item">
-      <div class="leg-dot" style="background:${ACT_COLORS(act)}"></div>
-      <span>${ACT_LABEL(act)}</span>
-    </div>`).join('');
-}
 
 /* ══ VIEW 3: HEATMAP ══ */
 function scoreToColor(score){
@@ -708,131 +674,214 @@ function scoreToColor(score){
 }
 
 function renderHeatmap(){
-  const now=new Date();
-  if(!hmYear){hmYear=now.getFullYear();hmMonth=now.getMonth();}
-  const mNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const mNamesZH=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('hm-month-title').textContent=
-    lang==='zh'?`${hmYear}年 ${mNamesZH[hmMonth]}`:`${mNames[hmMonth]} ${hmYear}`;
-  document.getElementById('hm-next').disabled=
-    hmYear>now.getFullYear()||(hmYear===now.getFullYear()&&hmMonth>=now.getMonth());
+  const today=todayStr();
+  const todayDate=new Date(today+'T12:00:00');                                   
+  // Start from Monday 83 days before today (ensuring 12 complete weeks)
+  const startDate=new Date(todayDate);
+  startDate.setDate(startDate.getDate()-83);
+  const startDow=(startDate.getDay()+6)%7; // Mon=0
+  startDate.setDate(startDate.getDate()-startDow);
 
-  const grid=document.getElementById('hm-grid');
-  const headers=t('dayHeaders');
-  let html=headers.map(d=>`<div class="hm-day-header">${d}</div>`).join('');
+  const cells=[];
+  for(let w=0;w<12;w++) for(let d=0;d<7;d++){
+    const dt=new Date(startDate);
+    dt.setDate(dt.getDate()+w*7+d);
+    const iso=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    const isFuture=iso>today;
+    const score=(histList[iso]||{}).total_score||0;
+    cells.push({iso,score,isFuture});
+  }                                                                           
 
-  const firstDay=new Date(hmYear,hmMonth,1);
-  // ISO: Mon=0,...,Sun=6
-  let startOffset=(firstDay.getDay()+6)%7;
-  for(let i=0;i<startOffset;i++) html+=`<div class="hm-cell empty-day"></div>`;
+  const HM_C=['var(--acc-soft)','rgba(168,127,236,.25)','rgba(168,127,236,.45)','rgba(168,127,236,.7)','var(--acc)'];
+  function lvl(s){if(!s)return 0;if(s<20)return 1;if(s<50)return 2;if(s<80)return 3;return 4;}
+  const dayLbls=lang==='zh'?['一','二','三','四','五','六','日']:['Mo','Tu','We','Th','Fr','Sa','Su'];
 
-  const daysInMonth=new Date(hmYear,hmMonth+1,0).getDate();
-  const todayISO=todayStr();
-  for(let d=1;d<=daysInMonth;d++){
-    const iso=`${hmYear}-${String(hmMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isFuture=iso>todayISO;
-    const data=histList[iso];
-    const score=data?.total_score||0;
-    const bg=isFuture?'transparent':scoreToColor(score);
-    const isSelected=iso===curDate;
-    const cls=`hm-cell${isFuture?' empty-day':score?' ':' no-data'}${isSelected?' selected':''}`;
-    const scoreLabel=score&&!isFuture?score:'';
-    html+=`<div class="${cls}" style="background:${bg}" title="${iso}: ${score}pts" onclick="hmSelectDay('${iso}')">${scoreLabel}</div>`;
+  // Streak count
+  let streak=0;const sd=new Date();
+  while(true){
+    const iso=`${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}-${String(sd.getDate()).padStart(2,'0')}`;
+    if(!histList[iso]||(histList[iso].total_score||0)===0) break;
+    streak++;sd.setDate(sd.getDate()-1);
   }
-  grid.innerHTML=html;
+  let totalResets=0;
+  Object.values(histList).forEach(d=>{totalResets+=(d.checkins||0);});
+
+  const achievements=[
+    streak>=7?['🌱','坚持一周',`${streak}天连续打卡`]:streak>0?['📅','连续打卡',`${streak}天`]:null,
+    totalResets>=100?['💪','小有所成',`累计${totalResets}次reset`]:['⚡','Reset计数',`累计${totalResets}次`],
+  ].filter(Boolean);
+
+  document.getElementById('hm-grid-gh').innerHTML=`
+    <div style="display:flex;gap:8px;align-items:flex-start">                  
+      <div style="display:flex;flex-direction:column;gap:3px;padding-top:18px">
+        ${dayLbls.map(l=>`<div style="height:12px;font-size:9.5px;color:var(--muted);font-family:var(--mono);line-height:12px">${l}</div>`).join('')}
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);font-family:var(--mono);margin-bottom:4px">
+          <span>${lang==='zh'?'12周前':'12w ago'}</span><span>${lang==='zh'?'9周前':'9w'}</span><span>${lang==='zh'?'6周前':'6w'}</span><span>${lang==='zh'?'3周前':'3w'}</span><span>${lang==='zh'?'本周':'now'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(7,12px);gap:3px;grid-auto-flow:column">
+          ${cells.map(c=>{
+            const l=c.isFuture?-1:lvl(c.score);
+            const bg=l<0?'transparent':HM_C[l];
+            const border=l<=0?'1px solid var(--line)':'1px solid transparent';
+            return`<div 
+              style="background:${bg};border:${border};border-radius:3px;${c.isFuture?'':'cursor:pointer'}"
+              title="${c.iso}: ${c.score}分"
+              ${c.isFuture?'':` onclick="hmSelectDay('${c.iso}')"`}></div>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;font-size:10px;color:var(--muted);font-family:var(--mono)">
+          <span>${lang==='zh'?'少':'less'}</span>
+          ${HM_C.map((c,i)=>`<div 
+            style="width:12px;height:12px;background:${c};border-radius:3px;border:${i===0?'1px solid var(--line)':'1px solid transparent'}"></div>`).join('')}
+          <span>${lang==='zh'?'多':'more'}</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+      <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px;margin-bottom:10px">
+        ${lang==='zh'?'里程碑':'Milestones'}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${achievements.map(([icon,title,sub])=>`
+          <div style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+            <div style="font-size:22px">${icon}</div>
+            <div><div style="font-size:12px;font-weight:600;color:var(--text)">${title}</div><div
+            style="font-size:10.5px;color:var(--muted);margin-top:1px">${sub}</div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
 }
 
-function hmNavigate(dir){
-  hmMonth+=dir;
-  if(hmMonth<0){hmMonth=11;hmYear--;}
-  if(hmMonth>11){hmMonth=0;hmYear++;}
-  renderHeatmap();
-}
 function hmSelectDay(iso){
-  if(iso>todayStr())return;
+  if(iso>todayStr()) return;
   curDate=iso;
   loadDate(curDate);
   setView('events');
 }
 
-/* ══ VIEW 4: STACKED BAR CHART ══ */
-let _barMode  = 'stack';   // 'stack' | 'week'
-let _barRange = 7;         // 7 | 30
+/* ══ VIEW 4: BARS (Stacked / Timeline) ══ */
+let _barMode  = 'stack';  // 'stack' | 'tl'
+let _barRange = 7;       // 7 | 30
 
 function setBarMode(m){
   _barMode = m;
-  document.getElementById('bar-mode-stack').classList.toggle('active', m==='stack');
-  document.getElementById('bar-mode-week').classList.toggle('active', m==='week');
-  document.getElementById('bar-wrap').style.display  = m==='week'?'none':'';
-  document.getElementById('week-view').style.display = m==='week'?'':'none';
-  if(m==='week') renderWeekTimeline(); else renderBars();
+  ['stack','tl'].forEach(id=>{
+    const el = document.getElementById('bar-mode-'+id);
+    if(el) el.classList.toggle('active', m===id);
+  });
+  const bdView = document.getElementById('bar-day-view');
+  if(bdView) bdView.style.display = 'none';
+  const brWrap = document.getElementById('bar-range-wrap');
+  if(brWrap) brWrap.style.display = 'flex';
+  const bcArea = document.getElementById('bar-chart-area');
+  if(bcArea) bcArea.style.display = '';
+  
+  const tlY = document.getElementById('tl-y-axis');
+  if(tlY) tlY.style.display = m==='tl'?'':'none';
+  const bc = document.getElementById('bar-chart');
+  if(bc) bc.style.alignItems = m==='tl'?'flex-start':'flex-end';
+
+  if(m==='stack') renderBars(); 
+  else renderTimeline();
 }
 
 function setBarRange(r){
   _barRange = r;
   document.getElementById('bar-range-7').classList.toggle('active', r===7);
   document.getElementById('bar-range-30').classList.toggle('active', r===30);
-  if(_barMode==='week') renderWeekTimeline(); else renderBars();
+  if(_barMode==='stack') renderBars(); else renderTimeline();
 }
 
-async function renderWeekTimeline(){
-  const today = todayStr();
-  const dates = [];
-  for(let i=_barRange-1; i>=0; i--){
-    const d=new Date(); d.setDate(d.getDate()-i);
+function renderDay(){
+  if(!curData) return;
+  const ckins=(curData.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
+  document.getElementById('bd-ticks').innerHTML=
+    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
+  document.getElementById('bd-track').innerHTML=ckins.map(c=>{
+    const endMin=timeToMin(c.time);
+    if(endMin<0)return'';
+    const fm=Math.max(c.focus_minutes||15,15);
+    const startMin=Math.max(endMin-fm,0);
+    const left=(startMin/1440)*100;
+    const w=Math.max((fm/1440)*100,1.5);
+    const col=ACT_COLORS(c.activity_type||'other');
+    const label=c.work_content||ACT_LABEL(c.activity_type||'other')||'';
+    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
+    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}" title="${startStr}–${c.time} ${label} +${c.score}pts"></div>`;
+  }).join('');
+  const byAct={};
+  ckins.forEach(c=>{const a=c.activity_type||'other';byAct[a]=(byAct[a]||0)+(c.focus_minutes||0);});
+  const totalMin=Object.values(byAct).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('bd-pie-cval').textContent=totalMin;
+  document.getElementById('bd-pie-clbl').textContent=t('pieLbl');
+  const canvas=document.getElementById('bd-pie-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,240,240);
+  let angle=-Math.PI/2;
+  const entries=Object.entries(byAct).filter(([,v])=>v>0);
+  entries.forEach(([act,min])=>{
+    const sweep=(min/totalMin)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(120,120);ctx.arc(120,120,100,angle,angle+sweep);ctx.closePath();
+    ctx.fillStyle=ACT_COLORS(act);ctx.fill();angle+=sweep;
+  });
+  ctx.beginPath();ctx.arc(120,120,60,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  document.getElementById('bd-pie-legend').innerHTML=entries.map(([act,min])=>
+    `<div class="pie-leg-item"><div class="pie-leg-dot" style="background:${ACT_COLORS(act)}"></div><div class="pie-leg-label">${ACT_LABEL(act)}</div><div class="pie-leg-val">${min}m</div></div>`
+  ).join('');
+  document.getElementById('bd-legend').innerHTML=entries.map(([act,])=>
+    `<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(act)}"></div><span>${ACT_LABEL(act)}</span></div>`
+  ).join('');
+}
+
+async function renderTimeline(){
+  const today=todayStr();
+  const dates=[];
+  for(let i=_barRange-1;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
     dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
   }
-
-  // Fetch full checkin data for all 7 days in parallel
-  const dayData = {};
+  const dayData={};
   await Promise.all(dates.map(async d=>{
-    try{
-      const r=await fetch(`/api/history/date?d=${d}`);
-      dayData[d]=await r.json();
-    }catch(e){ dayData[d]={checkins:[]}; }
+    try{const r=await fetch(`/api/history/date?d=${d}`);dayData[d]=await r.json();}
+    catch(e){dayData[d]={checkins:[]};}
   }));
-
-  // Tick row (shared header)
-  document.getElementById('week-ticks').innerHTML=
-    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
-
-  const dayNames = lang==='zh'
-    ? ['日','一','二','三','四','五','六']
-    : ['Su','Mo','Tu','We','Th','Fr','Sa'];
-
-  // Collect all activity types seen (for legend)
+  const narrow=_barRange===30;
+  const barW=narrow?18:36;
+  const maxH=160;
   const actSet=new Set();
-
-  const rows = dates.map(d=>{
+  const chart=document.getElementById('bar-chart');
+  chart.style.alignItems='flex-start';
+  chart.style.gap=narrow?'2px':'4px';
+  const cols=dates.map(d=>{
     const dd=dayData[d]||{};
     const isToday=d===today;
     const dt=new Date(d+'T12:00:00');
-    const lbl=`${dt.getMonth()+1}/${dt.getDate()}<br>${dayNames[dt.getDay()]}`;
-
+    const days=lang==='zh'?['日','一','二','三','四','五','六']:['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const dayLabel=narrow?String(dt.getDate()):`${dt.getMonth()+1}/${dt.getDate()} ${days[dt.getDay()]}`;
+    const innerW=barW-(narrow?4:6);
     const ckins=(dd.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
     const blocks=ckins.map(c=>{
       const endMin=timeToMin(c.time);
       if(endMin<0)return'';
       const fm=Math.max(c.focus_minutes||15,15);
       const startMin=Math.max(endMin-fm,0);
-      const left=(startMin/1440)*100;
-      const w=Math.max((fm/1440)*100,1);
+      const top=(startMin/1440)*maxH;
+      const h=Math.max((fm/1440)*maxH,2);
       const act=c.activity_type||'other';
       actSet.add(act);
       const col=ACT_COLORS(act);
       const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
-      return`<div class="week-block" style="left:${left}%;width:${w}%;background:${col}" title="${startStr}–${c.time} ${ACT_LABEL(act)}"></div>`;
+      return`<div class="tl-block" style="top:${top.toFixed(1)}px;height:${h.toFixed(1)}px;background:${col}" title="${startStr}–${c.time} ${ACT_LABEL(act)}"></div>`;
     }).join('');
-
-    return`<div class="week-row">
-      <div class="week-day-lbl${isToday?' today':''}">${lbl}</div>
-      <div class="week-track">${blocks}</div>
+    return`<div class="bar-col" style="width:${barW}px" title="${d}" onclick="hmSelectDay('${d}')">
+      <div class="tl-col" style="height:${maxH}px;width:${innerW}px;background:var(--card);border:1px solid var(--line);border-radius:4px">${blocks}</div>
+      <div class="bar-lbl${isToday?' today':''}">${dayLabel}</div>
     </div>`;
   }).join('');
-
-  document.getElementById('week-rows').innerHTML=rows;
-
-  // Legend
+  chart.innerHTML=cols;
   document.getElementById('bar-legend').innerHTML=[...actSet].map(a=>
     `<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(a)}"></div><span>${ACT_LABEL(a)}</span></div>`
   ).join('');
@@ -923,8 +972,9 @@ async function loadDate(iso){
     renderHeader(curData);
     renderBottom(curData);
     renderEvents(curData);
-    if(curView==='h24') render24h(curData);
-    if(curView==='bars') renderBars();
+    if(curView==='bars' && _barMode==='stack') renderBars();
+    if(curView==='bars' && _barMode==='tl') renderTimeline();
+    if(curView==='24h') render24h();
     if(curView==='heatmap') renderHeatmap();
     updateNavButtons();
   }catch(e){console.error(e);}

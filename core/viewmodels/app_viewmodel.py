@@ -56,6 +56,8 @@ class AppViewModel:
         return _MI.get(self._config.lang, _MI["zh"])[key](m, s)
 
     def _on_tick(self, state: TimerState) -> None:
+        if self.today_record.value.date != today_str():
+            self.today_record.value = self._persistence.load_state()
         rem = state.time_remaining
         m, s = rem // 60, rem % 60
         if state.snooze_until > 0:
@@ -75,6 +77,10 @@ class AppViewModel:
         self.show_break_window.value  = True
 
     # ── Properties ───────────────────────────────────────────────────────────
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def lang(self) -> str:

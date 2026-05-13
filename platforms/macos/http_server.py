@@ -76,6 +76,7 @@ def make_handler(
                 "/return-form":         lambda: self._serve_file("return_form.html"),
                 "/warning":             lambda: self._serve_file("warning.html"),
                 "/preferences":         lambda: self._serve_file("preferences.html"),
+                "/plan-today":          lambda: self._serve_file("plan_today.html"),
                 "/shared.js":           self._serve_shared_js,
                 "/api/status":          self._api_status,
                 "/api/exercises":       self._api_exercises,
@@ -113,6 +114,7 @@ def make_handler(
                 "/api/records/delete":       self._api_records_delete,
                 "/api/prefs":                self._api_prefs_post,
                 "/api/postpone-warning":     self._api_postpone_warning,
+                "/api/plan/save":            self._api_plan_save,
             }
             handler = routes.get(urlparse(self.path).path)
             if handler:
@@ -148,7 +150,7 @@ def make_handler(
             self._json({
                 "daily_minimums":          DAILY_MINIMUMS,
                 "eye_timer_seconds":       EYE_TIMER_SECONDS,
-                "warning_advance_seconds": WARNING_ADVANCE,
+                "warning_advance_seconds": app_vm.config.warning_advance_seconds,
                 "idle_threshold_seconds":  IDLE_THRESHOLD,
             })
 
@@ -369,12 +371,79 @@ def make_handler(
                     app_vm.update_interval(int(body["interval_minutes"]))
                 except (TypeError, ValueError):
                     pass
+            if "warning_advance_seconds" in body:
+                try:
+                    body["warning_advance_seconds"] = max(15, min(300, int(body["warning_advance_seconds"])))
+                except (TypeError, ValueError):
+                    pass
             if "lang" in body:
                 app_vm.update_lang(str(body["lang"]))
             if "activity_types" in body and isinstance(body["activity_types"], list):
                 prefs_vm.save_activity_types(body["activity_types"])
+            prefs_vm.save_plan_settings(body)
             self._json({"success": True})
             dispatch_fn("updateMenuAfterPrefs:", None)
+
+        def _api_plan_save(self) -> None:
+            from datetime import date as _date, datetime as _dt
+            body = self._body()
+            text = str(body.get("text", "")).strip()
+            if not text:
+                self._json({"success": False, "error": "empty"})
+                return
+            p_prefs = prefs_vm.get_prefs()
+            file_path         = p_prefs.get("plan_file_path", "").strip()
+            keyword           = p_prefs.get("plan_file_keyword", "").strip()
+            prefix_type       = p_prefs.get("plan_prefix_type", "none")
+            prefix_custom     = p_prefs.get("plan_prefix_custom", "")
+            not_found_action  = p_prefs.get("plan_keyword_not_found", "append")
+            if not file_path:
+                self._json({"success": False, "error": "no_path"})
+                return
+            today_s = _date.today().strftime("%Y-%m-%d")
+            now_s   = _dt.now().strftime("%H:%M")
+            if prefix_type == "date":
+                prefix = today_s + "\n"
+            elif prefix_type == "time":
+                prefix = now_s + "\n"
+            elif prefix_type == "datetime":
+                prefix = f"{today_s} {now_s}\n"
+            elif prefix_type == "custom" and prefix_custom:
+                prefix = prefix_custom.replace("{date}", today_s).replace("{time}", now_s) + "\n"
+            else:
+                prefix = ""
+            insert_text = prefix + text + "\n"
+            try:
+                p = Path(file_path).expanduser()
+                if not p.exists():
+                    self._json({"success": False, "error": "file_not_found"})
+                    return
+                content = p.read_text(encoding="utf-8")
+                if keyword:
+                    lines = content.splitlines(keepends=True)
+                    insert_idx = None
+                    for i, line in enumerate(lines):
+                        if keyword in line:
+                            insert_idx = i + 1
+                            break
+                    if insert_idx is not None:
+                        lines.insert(insert_idx, insert_text)
+                        p.write_text("".join(lines), encoding="utf-8")
+                        self._json({"success": True})
+                    elif not_found_action == "append":
+                        if not content.endswith("\n"):
+                            content += "\n"
+                        p.write_text(content + "\n" + insert_text, encoding="utf-8")
+                        self._json({"success": True})
+                    else:
+                        self._json({"success": False, "error": "keyword_not_found"})
+                else:
+                    if not content.endswith("\n"):
+                        content += "\n"
+                    p.write_text(content + "\n" + insert_text, encoding="utf-8")
+                    self._json({"success": True})
+            except Exception as e:
+                self._json({"success": False, "error": str(e)})
 
         def _api_activity_types_post(self) -> None:
             types = self._body()

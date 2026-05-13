@@ -94,6 +94,7 @@ RESOURCES = [
     "ui/return_form.html",
     "ui/preferences.html",
     "ui/warning.html",
+    "ui/plan_today.html",
     "ui/shared.js",
     "ui/exercises.json",
     "ui/activity_types.json",

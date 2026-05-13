@@ -170,4 +170,4 @@ Dependency direction is strictly one-way: `platform/` → `core/`, never reverse
 
 ## License
 
-MIT — do whatever you like with it.
+GNU General Public License v3.0 — see [LICENSE](LICENSE) for details.

@@ -1,0 +1,76 @@
+/* re.set — design-system tokens. Apply data-theme="<id>" on <html> to switch. */
+:root {
+  --bg:       #F4EFFA;
+  --card:     #FFFFFF;
+  --line:     #E8E0F0;
+  --text:     #2A1B3D;
+  --sub:      #4A3A5C;
+  --muted:    #8B7A9E;
+  --acc:      #A87FEC;
+  --acc2:     #6B4FA0;
+  --acc-soft: #F0E6FB;
+  --green:    #059669;
+  --amber:    #D97706;
+  --red:      #DC2626;
+  --mono:     'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+}
+
+[data-theme="sage"] {
+  --bg:       #F2F5F2;
+  --card:     #FFFFFF;
+  --line:     #DDE6DD;
+  --text:     #1F2D24;
+  --sub:      #3A4A40;
+  --muted:    #7B8A80;
+  --acc:      #7BA888;
+  --acc2:     #4F7359;
+  --acc-soft: #E5EFE6;
+}
+
+[data-theme="mist"] {
+  --bg:       #EFF3F8;
+  --card:     #FFFFFF;
+  --line:     #DCE4EC;
+  --text:     #1B2A3D;
+  --sub:      #3A4A60;
+  --muted:    #7B8AA0;
+  --acc:      #7B9CC4;
+  --acc2:     #4D6E96;
+  --acc-soft: #E5ECF5;
+}
+
+[data-theme="ochre"] {
+  --bg:       #F8F2EC;
+  --card:     #FFFFFF;
+  --line:     #E8DDD0;
+  --text:     #2D1F14;
+  --sub:      #4A3A2A;
+  --muted:    #9A8472;
+  --acc:      #C8856B;
+  --acc2:     #8C5A40;
+  --acc-soft: #F2E2D6;
+}
+
+[data-theme="ink"] {
+  --bg:       #1A1A1F;
+  --card:     #25252D;
+  --line:     #34343F;
+  --text:     #F0EBF7;
+  --sub:      #C5BDD0;
+  --muted:    #8C849A;
+  --acc:      #B794F4;
+  --acc2:     #C8B4F0;
+  --acc-soft: rgba(183,148,244,.12);
+}
+
+*  { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; }
+input  { font-family: inherit; color: inherit; outline: none; }
+input:focus { border-color: var(--acc) !important; }

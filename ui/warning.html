@@ -2,69 +2,111 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="/theme.css">
+<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:244px;height:96px;overflow:hidden;border-radius:18px;
-  background:rgba(247,247,249,.96);font-family:-apple-system,sans-serif}
-.w{display:flex;align-items:center;height:100%;padding:14px 16px;gap:12px;
-   border:1px solid #E5E7EB;border-radius:18px}
-.dot{width:10px;height:10px;border-radius:50%;border:1px solid #B794F4;
-  flex-shrink:0;animation:b 1.6s ease-in-out infinite}
-@keyframes b{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
-.info{line-height:1.55;flex:1}
-.lbl{font-size:11px;color:#9CA3AF}
-.row{display:flex;align-items:baseline;gap:4px}
-.num{font-family:"SF Mono","Fira Code",monospace;font-size:22px;color:#B794F4}
-.u{font-size:12px;color:#9CA3AF}
-.postpone{background:none;border:1px solid #E5E7EB;border-radius:8px;
-  padding:4px 9px;font-size:11px;font-weight:600;color:#9CA3AF;
-  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.postpone:hover{border-color:#B794F4;color:#7C3AED}
-.postpone:disabled{opacity:.35;cursor:default}
-.postpone.maxed{border-color:#FCA5A5;color:#DC2626}
+html, body { width:380px; height:114px; overflow:hidden; border-radius:14px; margin:0; }
+.card {
+  width:380px; height:114px;
+  background:var(--card); border:1.5px solid var(--acc);
+  border-radius:14px; overflow:hidden;
+  box-shadow:0 18px 50px rgba(168,127,236,.25);
+  display:flex; flex-direction:column;
+}
+.header { padding:16px 18px 12px; display:flex; align-items:center; gap:12px; flex:1; }
+.icon-box {
+  width:38px; height:38px; border-radius:10px;
+  background:var(--acc-soft); display:flex; align-items:center;
+  justify-content:center; font-size:20px; flex-shrink:0;
+}
+.info { flex:1; min-width:0; }
+.info-title { font-size:13px; font-weight:600; color:var(--text); }
+.info-sub   { font-size:11px; color:var(--muted); margin-top:2px; }
+.countdown  {
+  font-family:var(--mono); font-size:22px; font-weight:300;
+  color:var(--acc2); font-variant-numeric:tabular-nums;
+}
+.strip-bg   { height:3px; background:var(--line); flex-shrink:0; }
+.strip-fill { height:100%; background:var(--acc); transition:width 1s linear; }
+.footer     { display:flex; border-top:1px solid var(--line); flex-shrink:0; }
+.footer button {
+  flex:1; height:38px; padding:0;
+  background:none; border:none;
+  font-size:12px; color:var(--muted);
+  cursor:pointer; font-family:inherit;
+  transition:background .1s;
+}
+.footer button:hover  { background:var(--acc-soft); }
+.footer .sep          { width:1px; background:var(--line); flex-shrink:0; }
+.footer .start-btn    { font-weight:600; color:var(--acc2); }
 </style>
 </head>
 <body>
-<div class="w">
-  <div class="dot"></div>
-  <div class="info">
-    <div class="lbl">Break in</div>
-    <div class="row"><span class="num" id="c">60</span><span class="u">s</span></div>
+<div class="card">
+  <div class="header">
+    <div class="icon-box">☕</div>
+    <div class="info">
+      <div class="info-title">该休息了</div>
+      <div class="info-sub" id="sub">倒计时结束后自动开始</div>
+    </div>
+    <div class="countdown" id="cnt">01:00</div>
   </div>
-  <button class="postpone" id="btn" onclick="postpone()">+5m</button>
+  <div class="strip-bg"><div class="strip-fill" id="strip"></div></div>
+  <div class="footer">
+    <button id="postpone-btn" onclick="postpone()">再等 5 分钟</button>
+    <div class="sep"></div>
+    <button class="start-btn" onclick="startNow()">立即开始 →</button>
+  </div>
 </div>
 <script>
-let n = 60;
-let postponed = 0;
-const MAX = 3;
-const el = document.getElementById('c');
-const btn = document.getElementById('btn');
+var total = 60, n = 60, postponed = 0;
+var MAX = 3;
+var el    = document.getElementById('cnt');
+var strip = document.getElementById('strip');
+var btn   = document.getElementById('postpone-btn');
 
-setInterval(() => { if(n > 0){ n--; el.textContent = n; } }, 1000);
+function fmt(s) {
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+function updateUI() {
+  el.textContent = fmt(n);
+  strip.style.width = (total > 0 ? n / total * 100 : 0) + '%';
+}
+
+fetch('/api/prefs').then(function(r){return r.json();}).then(function(d){
+  total = d.warning_advance_seconds || 60;
+  n = total;
+  updateUI();
+}).catch(function(){});
+
+setInterval(function() { if (n > 0) { n--; updateUI(); } }, 1000);
+updateUI();
 
 async function postpone() {
   btn.disabled = true;
   try {
-    const r = await fetch('/api/postpone-warning', { method: 'POST' });
-    const d = await r.json();
+    var r = await fetch('/api/postpone-warning', { method:'POST' });
+    var d = await r.json();
     if (d.success) {
       postponed = d.postpones_used;
-      n = 60;
-      el.textContent = n;
+      n = total;
+      updateUI();
       if (postponed >= MAX) {
-        btn.textContent = '✗';
-        btn.classList.add('maxed');
+        btn.textContent = '已达上限';
+        btn.style.color = 'var(--red)';
       } else {
         btn.disabled = false;
-        btn.textContent = `+5m (${MAX - postponed} left)`;
+        btn.textContent = '再等 5 分钟 (' + (MAX - postponed) + ')';
       }
     } else {
-      btn.textContent = '✗';
-      btn.classList.add('maxed');
+      btn.textContent = '已达上限';
+      btn.style.color = 'var(--red)';
     }
-  } catch(e) {
-    btn.disabled = false;
-  }
+  } catch(e) { btn.disabled = false; }
+}
+
+function startNow() {
+  fetch('/api/trigger', { method:'POST' }).catch(function(){});
 }
 </script>
 </body>
