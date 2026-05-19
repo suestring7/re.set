@@ -60,6 +60,18 @@ if [ ! -d "dist/re.set.app" ]; then
     exit 1
 fi
 
+# ── 6. Clear quarantine + harden ad-hoc signature ────────────────────────────
+echo "==> Clearing quarantine attributes …"
+xattr -cr dist/re.set.app 2>/dev/null || true
+
+echo "==> Re-signing all Mach-O binaries (ad-hoc) …"
+find dist/re.set.app -type f | while read f; do
+    if file "$f" 2>/dev/null | grep -qE 'Mach-O|dylib'; then
+        /usr/bin/codesign --force --sign - "$f" 2>/dev/null || true
+    fi
+done
+/usr/bin/codesign --force --deep --sign - dist/re.set.app 2>/dev/null || true
+
 echo ""
 echo "✅  Build succeeded: $REPO/dist/re.set.app"
 echo ""

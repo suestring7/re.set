@@ -4,21 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/theme.css">
+<script>(function(){var s=document.createElement('style');s.textContent=':root{--bg:#F4EFFA;--card:#fff;--line:#E8E0F0;--text:#2A1B3D;--sub:#4A3A5C;--muted:#8B7A9E;--acc:#A87FEC;--acc2:#6B4FA0;--acc-soft:#F0E6FB;--green:#059669;--amber:#D97706;--red:#DC2626}[data-theme="sage"]{--bg:#F2F5F2;--card:#fff;--line:#DDE6DD;--text:#1F2D24;--sub:#3A4A40;--muted:#7B8A80;--acc:#7BA888;--acc2:#4F7359;--acc-soft:#E5EFE6}[data-theme="mist"]{--bg:#EFF3F8;--card:#fff;--line:#DCE4EC;--text:#1B2A3D;--sub:#3A4A60;--muted:#7B8AA0;--acc:#7B9CC4;--acc2:#4D6E96;--acc-soft:#E5ECF5}[data-theme="ochre"]{--bg:#F8F2EC;--card:#fff;--line:#E8DDD0;--text:#2D1F14;--sub:#4A3A2A;--muted:#9A8472;--acc:#C8856B;--acc2:#8C5A40;--acc-soft:#F2E2D6}[data-theme="ink"],[data-appearance="dark"]{--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}@media(prefers-color-scheme:dark){:root:not([data-appearance="light"]):not([data-theme]){--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}button{font-family:inherit}input{font-family:inherit;color:inherit;outline:none}';document.head.insertBefore(s,document.head.firstChild);var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);var a=localStorage.getItem('reset_appearance');if(a==='dark')document.documentElement.setAttribute('data-appearance','dark');else if(a==='light')document.documentElement.setAttribute('data-appearance','light');var c=localStorage.getItem('reset_custom_colors');if(c)try{var o=JSON.parse(c),r=document.documentElement;Object.keys(o).forEach(function(k){r.style.setProperty('--'+k,o[k]);});}catch(e){}})()</script>
 <script src="/shared.js"></script>
-<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Preferences</title>
 <style>
-:root {
-  --nav-w:132px;
-}
+:root { --nav:var(--card); --nav-w:132px; }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);font-family:inherit;font-size:13px;color:var(--text)}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,sans-serif;font-size:13px;color:var(--text)}
 body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── Sidebar layout ── */
 .prefs-layout{display:flex;flex:1;overflow:hidden}
 .prefs-nav{
-  width:var(--nav-w);background:var(--bg);border-right:1px solid var(--line);
+  width:var(--nav-w);background:var(--nav);border-right:1px solid var(--line);
   padding:12px 8px;display:flex;flex-direction:column;gap:2px;flex-shrink:0
 }
 .nav-section{
@@ -31,7 +29,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
   font-size:13px;font-weight:500;color:var(--text);cursor:pointer;
   font-family:inherit;transition:background .12s
 }
-.nav-tab:hover:not(.active){background:var(--acc-soft)}
+.nav-tab:hover:not(.active){background:rgba(124,58,237,.08)}
 .nav-tab.active{background:var(--acc);color:#fff;font-weight:600}
 
 /* ── Content ── */
@@ -41,15 +39,20 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
 .lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
 
-/* ── Weights rows ── */
-.w-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+/* ── Chips ── */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card);transition:all .15s}
+.chip.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+/* ── Weight rows ── */
+.w-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bg)}
 .w-row:last-child{border-bottom:none}
 .dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
 .w-label{flex:1;font-size:13px;font-weight:600}
 .w-parent{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
 .w-in{
   width:66px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;
-  font-family:var(--mono);font-size:12px;text-align:right;background:var(--bg);color:var(--text)
+  font-family:var(--mono);font-size:12px;text-align:right;background:var(--bg)
 }
 .w-in:focus{outline:none;border-color:var(--acc)}
 
@@ -73,28 +76,14 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 }
 .tm-parent:focus{border-color:var(--acc)}
 .tm-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0 2px;flex-shrink:0}
-.tm-del:hover{color:var(--red)}
+.tm-del:hover{color:#DC2626}
 .tm-add-row{
   display:flex;align-items:center;gap:6px;margin-top:8px;
   padding-top:8px;border-top:1px solid var(--line)
 }
 
-/* ── Toggle switch (new design) ── */
-.rem-toggle{width:42px; height:24px; border-radius:99px; border:none; background:var(--line); position:relative; cursor:pointer; transition:all .15s}
-.rem-toggle.on{background:var(--acc)}
-.rem-dot{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:all .15s; box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.rem-toggle.on .rem-dot{left:20px}
-
-/* ── Theme chips ── */
-.theme-card{
-  background:var(--card); border:1px solid var(--line);
-  border-radius:10px; padding:12px 10px; cursor:pointer; font-family:inherit; text-align:left;
-  transition: all .15s;
-}
-.theme-card.active{border:2px solid var(--acc)}
-
-/* ── Feature Toggles ── */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+/* ── Toggle switch ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bg)}
 .toggle-row:last-child{border-bottom:none}
 .toggle-info{flex:1;margin-right:12px}
 .toggle-lbl{font-size:13px;font-weight:500;color:var(--text)}
@@ -127,7 +116,58 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
   font-size:13px;font-weight:600;cursor:pointer;font-family:inherit
 }
 .save:hover{opacity:.9}
-.msg{font-size:12px;color:var(--green);min-height:16px}
+.msg{font-size:12px;color:#059669;min-height:16px}
+.edit-wc{width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none}
+.edit-wc:focus{border-color:var(--acc)}
+
+/* ── General tab (single card) ── */
+.gen-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 22px}
+.gen-sec{padding:18px 0;border-bottom:1px solid var(--line)}
+.gen-sec:last-child{border-bottom:none}
+.gen-sec-hd{font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px}
+.gen-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.gen-row:last-child{margin-bottom:0}
+.gen-lbl{font-size:13px;font-weight:500;color:var(--text)}
+.gen-val{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.reminder-pill{width:42px;height:24px;border-radius:99px;cursor:pointer;position:relative;flex-shrink:0;border:none;padding:0}
+.reminder-pill .dot{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
+.reminder-pill.on{background:var(--acc)}
+.reminder-pill.off{background:var(--line)}
+.reminder-pill.on .dot{transform:translateX(18px)}
+.slider-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+input[type=range].gen-range{width:100%;-webkit-appearance:none;appearance:none;height:18px;background:transparent;outline:none;cursor:pointer;margin:4px 0}
+input[type=range].gen-range::-webkit-slider-runnable-track{height:4px;border-radius:99px;background:var(--line);cursor:pointer}
+input[type=range].gen-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;margin-top:-7px;width:18px;height:18px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.18);border:2.5px solid var(--card);transition:transform .15s,box-shadow .15s}
+input[type=range].gen-range::-webkit-slider-thumb:hover{transform:scale(1.15);box-shadow:0 2px 8px rgba(0,0,0,.22)}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;margin-top:8px}
+.theme-card{border-radius:10px;padding:10px 6px 8px;cursor:pointer;text-align:center;transition:border-color .15s,box-shadow .15s}
+.theme-card .dots{display:flex;justify-content:center;gap:3px;margin-top:6px}
+.theme-card .dots span{width:8px;height:8px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.08)}
+.theme-card .name{font-size:10.5px;font-weight:600;margin-top:5px}
+.theme-card.custom-card{background:conic-gradient(from 0deg,#A87FEC,#7B9CC4,#7BA888,#C8856B,#A87FEC);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px}
+.theme-card.custom-card .name{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+/* Custom color picker panel */
+.custom-panel{margin-top:12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;display:none}
+.custom-panel.open{display:block}
+.cpicker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cp-row{display:flex;flex-direction:column;gap:4px;align-items:center}
+.cp-row label{font-size:10px;color:var(--muted);font-weight:600;text-align:center}
+.cp-swatch{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);cursor:pointer;padding:0;-webkit-appearance:none;overflow:hidden;flex-shrink:0}
+.cp-swatch::-webkit-color-swatch-wrapper{padding:0}
+.cp-swatch::-webkit-color-swatch{border:none;border-radius:6px}
+.custom-panel-actions{display:flex;gap:8px;margin-top:12px}
+.cp-btn{flex:1;padding:6px 10px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit}
+.cp-btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.cp-btn.danger{border-color:var(--red);color:var(--red);background:var(--card)}
+/* Segmented control */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.seg button{border:none;background:transparent;padding:6px 14px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit}
+.seg button.sel{background:var(--acc);color:#fff}
+.sound-dd{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text);cursor:pointer;font-family:inherit;flex:1;-webkit-appearance:auto}
+.sound-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.data-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.data-row .btn-data{flex:1;min-width:100px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--text)}
+.data-row .btn-danger{background:var(--card);border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -140,92 +180,116 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
     <button class="nav-tab"        id="tab-types"   onclick="setTab('types')">Activities</button>
     <button class="nav-tab"        id="tab-features" onclick="setTab('features')">Features</button>
     <button class="nav-tab"        id="tab-plan"    onclick="setTab('plan')">Plan</button>
+    <button class="nav-tab"        id="tab-movement" onclick="setTab('movement')">Movement</button>
   </nav>
 
   <main class="prefs-content">
 
     <!-- ── General ── -->
     <div class="panel active" id="panel-gen">
-      <div style="font-size:11px; font-weight:700; letter-spacing:1.4px; color:var(--muted); text-transform:uppercase; margin-bottom:16px">偏好设置</div>
-      <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:4px 22px">
-        
-        <!-- Section 1: Reminder -->
-        <div style="padding:18px 0; border-bottom:1px solid var(--line)">
-          <div style="display:flex; justify-content:space-between; align-items:center">
-            <div>
-              <div style="font-size:14px; font-weight:600; color:var(--text)">休息提醒</div>
-              <div style="font-size:12px; color:var(--muted); margin-top:2px">专注一段时间后提醒你休息</div>
-            </div>
-            <button id="rem-enabled" onclick="toggleRem()" class="rem-toggle">
-              <span class="rem-dot"></span>
-            </button>
+      <div class="panel-title" id="title-gen">General</div>
+      <div class="gen-card">
+        <section class="gen-sec" id="reminder-section">
+          <div class="gen-sec-hd" id="sec-reminder">休息提醒</div>
+          <div class="gen-row">
+            <span class="gen-lbl" id="lbl-reminder-on">启用提醒</span>
+            <button type="button" class="reminder-pill on" id="pill-reminder" aria-pressed="true" onclick="toggleReminderPill()"><span class="dot"></span></button>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:14px">
+          <div class="slider-grid">
             <div>
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
-                <span style="font-size:11px; color:var(--muted); font-weight:600">专注间隔</span>
-                <span id="val-interval" style="font-family:var(--mono); font-size:13px; color:var(--text); font-variant-numeric:tabular-nums">-- 分钟</span>
+              <div class="gen-row" style="margin-bottom:6px">
+                <span class="gen-lbl" id="lbl-focus-interval">专注间隔</span>
+                <span class="gen-val" id="val-interval">45 分钟</span>
               </div>
-              <input type="range" id="in-interval" min="20" max="90" step="5" oninput="updateIntervalUI(this.value)" style="width:100%; accent-color:var(--acc)">
+              <input type="range" class="gen-range" id="rng-interval" min="20" max="90" step="5" value="45" oninput="onIntervalInput()">
             </div>
             <div>
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
-                <span style="font-size:11px; color:var(--muted); font-weight:600">预警时长</span>
-                <span id="val-warning" style="font-family:var(--mono); font-size:13px; color:var(--text); font-variant-numeric:tabular-nums">-- 秒</span>
+              <div class="gen-row" style="margin-bottom:6px">
+                <span class="gen-lbl" id="lbl-warning-advance">预警时长</span>
+                <span class="gen-val" id="val-warning">60 秒</span>
               </div>
-              <input type="range" id="in-warning" min="15" max="120" step="5" oninput="updateWarningUI(this.value)" style="width:100%; accent-color:var(--acc)">
+              <input type="range" class="gen-range" id="rng-warning" min="15" max="120" step="5" value="60" oninput="onWarningInput()">
             </div>
           </div>
-        </div>
-
-        <!-- Section 2: Appearance -->
-        <div style="padding:18px 0; border-bottom:1px solid var(--line)">
-          <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px">外观</div>
-          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px" id="theme-grid"></div>
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px">
-            <span style="font-size:13px; color:var(--text)">深色模式</span>
-            <div style="display:flex; gap:0; font-size:11px; font-family:var(--mono)" id="dark-mode-ctrl">
-              <button onclick="setDarkMode('light')" id="dm-light" style="background:var(--text); color:var(--bg); border:1px solid var(--line); border-radius:6px 0 0 6px; padding:5px 11px; cursor:pointer; font-weight:600">浅色</button>
-              <button onclick="setDarkMode('dark')" id="dm-dark" style="background:var(--card); color:var(--muted); border:1px solid var(--line); border-left:none; padding:5px 11px; cursor:pointer; font-weight:600">深色</button>
-              <button onclick="setDarkMode('system')" id="dm-system" style="background:var(--card); color:var(--muted); border:1px solid var(--line); border-left:none; border-radius:0 6px 6px 0; padding:5px 11px; cursor:pointer; font-weight:600">跟随系统</button>
+        </section>
+        <section class="gen-sec" id="theme-section">
+          <div class="gen-sec-hd" id="sec-appearance">外观</div>
+          <div class="theme-grid" id="theme-cards"></div>
+          <!-- Custom color picker panel (shown when Custom tile is selected) -->
+          <div class="custom-panel" id="custom-panel">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px" id="lbl-custom-colors">自定义颜色</div>
+            <div class="cpicker-grid" id="cpicker-grid">
+              <div class="cp-row"><label id="cp-lbl-acc">主色调</label><input type="color" class="cp-swatch" id="cp-acc" oninput="onCustomColorInput('acc',this.value)"></div>
+              <div class="cp-row"><label id="cp-lbl-acc2">深色调</label><input type="color" class="cp-swatch" id="cp-acc2" oninput="onCustomColorInput('acc2',this.value)"></div>
+              <div class="cp-row"><label id="cp-lbl-bg">背景</label><input type="color" class="cp-swatch" id="cp-bg" oninput="onCustomColorInput('bg',this.value)"></div>
+              <div class="cp-row"><label id="cp-lbl-card">卡片</label><input type="color" class="cp-swatch" id="cp-card" oninput="onCustomColorInput('card',this.value)"></div>
+              <div class="cp-row"><label id="cp-lbl-text">文字</label><input type="color" class="cp-swatch" id="cp-text" oninput="onCustomColorInput('text',this.value)"></div>
+              <div class="cp-row"><label id="cp-lbl-line">边框</label><input type="color" class="cp-swatch" id="cp-line" oninput="onCustomColorInput('line',this.value)"></div>
+            </div>
+            <div class="custom-panel-actions">
+              <button type="button" class="cp-btn primary" onclick="saveCustomColors()" id="cp-save-btn">应用自定义</button>
+              <button type="button" class="cp-btn danger" onclick="clearCustomColors()" id="cp-clear-btn">清除</button>
             </div>
           </div>
-        </div>
-
-        <!-- Section 3: Language -->
-        <div style="padding:18px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center">
-          <div>
-            <div style="font-size:14px; font-weight:600; color:var(--text)">语言</div>
-            <div style="font-size:12px; color:var(--muted); margin-top:2px">Language</div>
+          <div class="gen-row" style="margin-top:14px">
+            <div>
+              <span class="gen-lbl" id="lbl-dark-mode">显示</span>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px" id="hint-dark-mode">深色始终使用暗黑配色；跟随系统仅在未选主题时生效</div>
+            </div>
+            <div class="seg" id="seg-appearance">
+              <button type="button" id="app-light" onclick="setAppearance('light')">浅色</button>
+              <button type="button" id="app-dark" onclick="setAppearance('dark')">深色</button>
+              <button type="button" id="app-sys" onclick="setAppearance('system')">跟随系统</button>
+            </div>
           </div>
-          <div style="display:flex; gap:0" id="lang-ctrl">
-            <button onclick="setLang('zh')" id="lang-zh-btn" style="background:var(--acc); color:#fff; border:none; border-radius:6px 0 0 6px; padding:7px 14px; cursor:pointer; font-weight:600; font-size:12px">中文</button>
-            <button onclick="setLang('en')" id="lang-en-btn" style="background:var(--card); color:var(--muted); border:1px solid var(--line); border-radius:0 6px 6px 0; padding:7px 14px; cursor:pointer; font-weight:600; font-size:12px">English</button>
+        </section>
+        <section class="gen-sec" id="lang-section">
+          <div class="gen-sec-hd" id="sec-lang">语言</div>
+          <div class="seg">
+            <button type="button" id="lang-zh" onclick="selLang='zh';renderLangSeg()">中文</button>
+            <button type="button" id="lang-en" onclick="selLang='en';renderLangSeg()">English</button>
           </div>
-        </div>
-
-        <!-- Section 4: Sound -->
-        <div style="padding:18px 0; border-bottom:1px solid var(--line)">
-          <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px">声音</div>
-          <div style="display:flex; justify-content:space-between; padding:8px 0; align-items:center">
-            <span style="font-size:13px; color:var(--sub)">提醒铃声</span>
-            <button style="background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text); cursor:pointer">清亮 ▾</button>
+        </section>
+        <section class="gen-sec" id="sound-section">
+          <div class="gen-sec-hd" id="sec-sound">声音</div>
+          <div class="sound-grid">
+            <div>
+              <div class="gen-val" style="margin-bottom:4px" id="lbl-ring">提醒铃声</div>
+              <select class="sound-dd" id="dd-ring" onchange="saveSound()">
+                <option value="Ping">清亮 (Ping)</option>
+                <option value="Tink">叮声 (Tink)</option>
+                <option value="Pop">轻弹 (Pop)</option>
+                <option value="Purr">低鸣 (Purr)</option>
+                <option value="Submarine">水滴 (Submarine)</option>
+                <option value="Morse">莫斯 (Morse)</option>
+                <option value="Glass">玻璃 (Glass)</option>
+                <option value="Funk">低沉 (Funk)</option>
+                <option value="">无声 (None)</option>
+              </select>
+            </div>
+            <div>
+              <div class="gen-val" style="margin-bottom:4px" id="lbl-fx">完成音效</div>
+              <select class="sound-dd" id="dd-fx" onchange="saveSound()">
+                <option value="Pop">轻弹 (Pop)</option>
+                <option value="Ping">清亮 (Ping)</option>
+                <option value="Tink">叮声 (Tink)</option>
+                <option value="Purr">低鸣 (Purr)</option>
+                <option value="Submarine">水滴 (Submarine)</option>
+                <option value="Hero">英雄 (Hero)</option>
+                <option value="Blow">吹声 (Blow)</option>
+                <option value="">无声 (None)</option>
+              </select>
+            </div>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:8px 0; align-items:center">
-            <span style="font-size:13px; color:var(--sub)">完成音效</span>
-            <button style="background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text); cursor:pointer">柔和 ▾</button>
+        </section>
+        <section class="gen-sec" id="data-section">
+          <div class="gen-sec-hd" id="sec-data">数据</div>
+          <div class="data-row">
+            <button type="button" class="btn-data" id="btn-exp-json" onclick="exportData('json')">导出 JSON</button>
+            <button type="button" class="btn-data" id="btn-exp-csv" onclick="exportData('csv')">导出 CSV</button>
+            <button type="button" class="btn-danger" id="btn-reset-data" onclick="resetData()">清空数据</button>
           </div>
-        </div>
-
-        <!-- Section 5: Data -->
-        <div style="padding:18px 0">
-          <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px">数据</div>
-          <div style="display:flex; gap:8px">
-            <button onclick="exportData('json')" style="flex:1; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:12px; color:var(--text); cursor:pointer">导出 JSON</button>
-            <button onclick="exportData('csv')" style="flex:1; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:12px; color:var(--text); cursor:pointer">导出 CSV</button>
-            <button onclick="confirmReset()" style="flex:1; background:var(--card); border:1px solid var(--red); border-radius:8px; padding:10px; font-size:12px; color:var(--red); cursor:pointer">清空数据</button>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
 
@@ -255,6 +319,54 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
         <div class="lbl" id="lbl-features">Menu bar items</div>
         <div id="feature-toggles"></div>
       </div>
+      <!-- Scheduled alerts -->
+      <div class="card">
+        <div class="lbl" id="lbl-alerts">定时全屏提醒</div>
+        <div class="field-sub" style="margin-bottom:10px" id="sub-alerts">在指定时刻弹出全屏提醒，适合服药、站立等自定义提醒。</div>
+        <div id="alert-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+        <div id="alert-form" style="display:none;background:var(--bg);border:1px solid var(--acc);border-radius:10px;padding:12px;margin-bottom:10px">
+          <!-- Mode switcher -->
+          <div style="display:flex;gap:4px;margin-bottom:10px">
+            <button id="afm-daily" onclick="setAlertMode('daily')"
+              style="flex:1;padding:5px 0;font-size:11px;font-weight:600;font-family:inherit;border-radius:7px;border:1.5px solid var(--acc);background:var(--acc2);color:#fff;cursor:pointer">每日</button>
+            <button id="afm-once" onclick="setAlertMode('once')"
+              style="flex:1;padding:5px 0;font-size:11px;font-weight:600;font-family:inherit;border-radius:7px;border:1.5px solid var(--line);background:none;color:var(--muted);cursor:pointer">指定时间</button>
+            <button id="afm-rel" onclick="setAlertMode('rel')"
+              style="flex:1;padding:5px 0;font-size:11px;font-weight:600;font-family:inherit;border-radius:7px;border:1.5px solid var(--line);background:none;color:var(--muted);cursor:pointer">N分钟后</button>
+          </div>
+          <!-- Daily body -->
+          <div id="af-body-daily" style="margin-bottom:8px">
+            <div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">时间（每天重复）</div>
+            <input id="af-time" type="time" class="edit-wc" style="margin:0;width:130px">
+          </div>
+          <!-- Once body -->
+          <div id="af-body-once" style="display:none;margin-bottom:8px">
+            <div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">日期 + 时间（触发一次）</div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="af-date" type="date" class="edit-wc" style="margin:0;flex:1">
+              <input id="af-time-once" type="time" class="edit-wc" style="margin:0;width:110px">
+            </div>
+          </div>
+          <!-- Relative body -->
+          <div id="af-body-rel" style="display:none;margin-bottom:8px">
+            <div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">从现在起（触发一次）</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input id="af-mins" type="number" min="1" max="1440" class="edit-wc" style="margin:0;width:70px;text-align:center" placeholder="40">
+              <span style="font-size:12px;color:var(--muted)">分钟后</span>
+            </div>
+          </div>
+          <!-- Message -->
+          <div style="margin-bottom:8px">
+            <div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">提醒内容</div>
+            <input id="af-msg" type="text" class="edit-wc" style="margin:0" placeholder="例：该吃药了">
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="save" style="flex:1;font-size:12px;padding:7px 0" onclick="submitAlertForm()">保存</button>
+            <button onclick="cancelAlertForm()" style="flex:1;padding:7px 0;font-size:12px;background:none;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--muted);font-family:inherit">取消</button>
+          </div>
+        </div>
+        <button class="save" style="width:100%;font-size:12px;padding:7px 0" id="btn-add-alert" onclick="showAlertForm()">+ 添加提醒</button>
+      </div>
     </div>
 
     <!-- ── Plan Today ── -->
@@ -262,21 +374,43 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
       <div class="panel-title" id="title-plan">Plan Today</div>
       <div class="card">
         <div class="lbl" id="lbl-plan-target">Target file</div>
-        <div class="field-row">
-          <div class="field-lbl" id="lbl-plan-path">File path</div>
+        <!-- File mode toggle -->
+        <div class="field-row" style="margin-bottom:2px">
+          <div class="field-lbl" id="lbl-plan-mode">写入模式</div>
+          <div class="seg" id="seg-plan-mode">
+            <button type="button" id="plan-mode-fixed" onclick="setPlanMode('fixed')" class="sel">固定文件</button>
+            <button type="button" id="plan-mode-daily" onclick="setPlanMode('daily')">每日文件</button>
+          </div>
+        </div>
+        <!-- Fixed file path (shown in fixed mode) -->
+        <div class="field-row" id="plan-fixed-row">
+          <div class="field-lbl" id="lbl-plan-path">文件路径</div>
           <input class="field-input" id="plan-file-path" type="text" placeholder="~/Documents/notes.md">
-          <div class="field-sub" id="sub-plan-path">Supports ~ for home directory</div>
+          <div class="field-sub" id="sub-plan-path">支持 ~ 代替主目录 · Supports ~ for home directory</div>
+        </div>
+        <!-- Daily file fields (shown in daily mode) -->
+        <div id="plan-daily-rows" style="display:none">
+          <div class="field-row">
+            <div class="field-lbl" id="lbl-plan-dir">目录</div>
+            <input class="field-input" id="plan-file-path-daily" type="text" placeholder="~/Documents/daily-notes/">
+            <div class="field-sub">每日文件所在目录 · Directory for daily files</div>
+          </div>
+          <div class="field-row">
+            <div class="field-lbl" id="lbl-plan-pattern">文件名式样</div>
+            <input class="field-input" id="plan-file-pattern" type="text" placeholder="YYYY-MM-DD.md">
+            <div class="field-sub" id="sub-plan-pattern">YYYY=年 MM=月 DD=日，例：YYYY-MM-DD.md → 2026-05-13.md</div>
+          </div>
         </div>
         <div class="field-row">
-          <div class="field-lbl" id="lbl-plan-kw">Keyword / section header</div>
+          <div class="field-lbl" id="lbl-plan-kw">关键字 / 章节标题</div>
           <input class="field-input" id="plan-file-keyword" type="text" placeholder="## Today">
-          <div class="field-sub" id="sub-plan-kw">Plan text is inserted on the line after the first match. Leave blank to append.</div>
+          <div class="field-sub" id="sub-plan-kw">计划内容插入在第一次匹配的行之后，留空则追加到末尾。</div>
         </div>
         <div class="field-row">
-          <div class="field-lbl" id="lbl-plan-nf">If keyword not found</div>
+          <div class="field-lbl" id="lbl-plan-nf">关键字未找到时</div>
           <div class="radio-group">
-            <label class="radio-row"><input type="radio" name="plan-nf" value="append" id="nf-append" checked> <span id="lbl-nf-append">Append to end of file</span></label>
-            <label class="radio-row"><input type="radio" name="plan-nf" value="error"  id="nf-error">  <span id="lbl-nf-error">Show error (don't save)</span></label>
+            <label class="radio-row"><input type="radio" name="plan-nf" value="append" id="nf-append" checked> <span id="lbl-nf-append">追加到末尾</span></label>
+            <label class="radio-row"><input type="radio" name="plan-nf" value="error"  id="nf-error">  <span id="lbl-nf-error">报错（不保存）</span></label>
           </div>
         </div>
       </div>
@@ -296,6 +430,79 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
       </div>
     </div>
 
+    <!-- ── Movement ── -->
+    <div class="panel" id="panel-movement">
+      <div class="panel-title" id="title-movement">Movement</div>
+
+      <!-- Exercise filters -->
+      <div class="card">
+        <div class="lbl" id="lbl-ex-filters">Exercise filters</div>
+        <div class="gen-row" style="margin-bottom:12px">
+          <span class="gen-lbl" id="lbl-ex-standing">Include standing exercises</span>
+          <button type="button" class="reminder-pill on" id="pill-standing" aria-pressed="true" onclick="togglePill('standing')"><span class="dot"></span></button>
+        </div>
+        <div class="gen-row" style="margin-bottom:12px">
+          <span class="gen-lbl" id="lbl-ex-props">Include exercises requiring props</span>
+          <button type="button" class="reminder-pill on" id="pill-props" aria-pressed="true" onclick="togglePill('props')"><span class="dot"></span></button>
+        </div>
+        <div class="gen-row" style="margin-bottom:6px">
+          <span class="gen-lbl" id="lbl-ex-diff">Max difficulty</span>
+          <span class="gen-val" id="val-diff">3</span>
+        </div>
+        <input type="range" class="gen-range" id="rng-diff" min="1" max="3" step="1" value="3" oninput="onDiffInput()">
+        <div class="field-sub" id="sub-diff" style="margin-top:4px">1=轻松 2=适中 3=挑战</div>
+      </div>
+
+      <!-- Pain flags -->
+      <div class="card">
+        <div class="lbl" id="lbl-pain-flags">Pain / injury flags</div>
+        <div class="field-sub" style="margin-bottom:10px" id="sub-pain">Selected areas are excluded from exercise picks</div>
+        <div id="pain-flags-grid" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+      </div>
+
+      <!-- Exercise library -->
+      <div class="card">
+        <div class="lbl" id="lbl-lib">Exercise library</div>
+        <div class="field-sub" style="margin-bottom:10px" id="sub-lib">Add, edit, or remove exercises. Built-in exercises can be viewed but not deleted.</div>
+        <div id="lib-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:10px"></div>
+        <div id="ex-form" style="display:none;background:var(--bg);border:1px solid var(--acc);border-radius:10px;padding:12px;margin-bottom:10px;display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">ID (e.g. U1)</div>
+              <input id="exf-id" type="text" class="edit-wc" style="margin:0" placeholder="U1"></div>
+            <div><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">Category</div>
+              <select id="exf-cat" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text);outline:none">
+                <option value="stretch">Stretch</option>
+                <option value="core">Core</option>
+                <option value="strength">Strength</option>
+              </select></div>
+          </div>
+          <div style="margin-bottom:8px"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">中文名</div>
+            <input id="exf-name" type="text" class="edit-wc" style="margin:0" placeholder="坐姿拉伸"></div>
+          <div style="margin-bottom:8px"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">English name</div>
+            <input id="exf-name-en" type="text" class="edit-wc" style="margin:0" placeholder="Seated Stretch"></div>
+          <div style="margin-bottom:8px"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">Description</div>
+            <input id="exf-desc" type="text" class="edit-wc" style="margin:0" placeholder="How to do it..."></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <div style="font-size:10.5px;color:var(--muted)">Score</div>
+            <input id="exf-score" type="number" min="1" max="5" value="3" style="width:56px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:var(--mono);background:var(--card);color:var(--text);outline:none">
+            <span style="font-size:10.5px;color:var(--muted)">(1–5)</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <div><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">Sets (组数)</div>
+              <input id="exf-sets" type="number" min="0" max="20" value="0" style="width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:var(--mono);background:var(--card);color:var(--text);outline:none"></div>
+            <div><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px">Secs / set (单组秒)</div>
+              <input id="exf-dur-set" type="number" min="0" max="300" value="0" style="width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:var(--mono);background:var(--card);color:var(--text);outline:none"></div>
+          </div>
+          <div id="exf-err" style="font-size:11px;color:var(--red);margin-bottom:8px;display:none"></div>
+          <div style="display:flex;gap:8px">
+            <button class="save" style="flex:1;font-size:12px;padding:7px 0" id="exf-submit" onclick="submitExForm()">Save</button>
+            <button onclick="cancelExForm()" style="flex:1;padding:7px 0;font-size:12px;background:none;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--muted);font-family:inherit">Cancel</button>
+          </div>
+        </div>
+        <button class="save" style="width:100%;font-size:12px;padding:7px 0" id="btn-add-ex" onclick="showExForm()">+ Add exercise</button>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -305,31 +512,110 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 </div>
 
 <script>
-let lang = 'en', selLang = 'zh', curInterval = 30, curWarning = 60, curRemEnabled = true;
-let presets = [15,20,25,30,45,60];
+let lang = 'en', selLang = 'zh';
+let curInterval = 30;
+let curWarningSec = 60;
+let reminderEnabled = true;
+let appearance = 'system';
 let types = [];
 let _curTab = 'gen';
-let menuFeatures = { plan_today:true, away_tracking:true, trigger_break:true, view_records:true, end_of_day:true };
+let menuFeatures = { plan_today:true, away_tracking:true, trigger_break:true, view_records:true, end_of_day:true, restroom_analytics:true };
+// Movement prefs
+let exStanding = true, exProps = true, exMaxDiff = 3;
+let painFlags = new Set();
+let _builtinLibrary = [], _userLibrary = [];
+const PAIN_AREAS = [
+  {id:'neck',zh:'颈部',en:'Neck'},{id:'shoulder',zh:'肩部',en:'Shoulder'},
+  {id:'lower_back',zh:'下背',en:'Lower back'},{id:'knee',zh:'膝盖',en:'Knee'},
+  {id:'wrist',zh:'手腕',en:'Wrist'},{id:'elbow',zh:'手肘',en:'Elbow'},
+];
 
-const THEMES = [
-  {id:'lavender', n:'薰衣草', acc:'#A87FEC', bg:'#F7F4FB'},
-  {id:'sage',     n:'鼠尾草', acc:'#7BA888', bg:'#F4F6F2'},
-  {id:'mist',     n:'雾蓝',   acc:'#7B9CC4', bg:'#F2F5F8'},
-  {id:'ochre',    n:'赭石',   acc:'#C8856B', bg:'#F8F4F1'},
-  {id:'ink',      n:'暗黑',   acc:'#B794F4', bg:'#1A1A1F'},
+/* ── Custom colors (client-side, localStorage only) ── */
+const CUSTOM_VARS = ['acc','acc2','bg','card','text','line'];
+let _customColors = {};   // keyed by var name (e.g. 'acc')
+
+function loadCustomColors(){
+  try{
+    const raw = localStorage.getItem('reset_custom_colors');
+    _customColors = raw ? JSON.parse(raw) : {};
+  }catch(e){ _customColors = {}; }
+}
+function applyCustomColors(colors){
+  const r = document.documentElement;
+  CUSTOM_VARS.forEach(k=>{
+    if(colors[k]) r.style.setProperty('--'+k, colors[k]);
+    else r.style.removeProperty('--'+k);
+  });
+}
+function saveCustomColors(){
+  // Read from pickers
+  CUSTOM_VARS.forEach(k=>{
+    const el = document.getElementById('cp-'+k);
+    if(el) _customColors[k] = el.value;
+  });
+  localStorage.setItem('reset_custom_colors', JSON.stringify(_customColors));
+  // Clear preset theme so custom takes full effect
+  localStorage.removeItem('reset_theme');
+  document.documentElement.removeAttribute('data-theme');
+  applyCustomColors(_customColors);
+  syncThemeSelection();
+}
+function clearCustomColors(){
+  _customColors = {};
+  localStorage.removeItem('reset_custom_colors');
+  applyCustomColors({});
+  // Reload preset swatches from current theme
+  populateCustomPickers();
+}
+function onCustomColorInput(key, val){
+  _customColors[key] = val;
+  document.documentElement.style.setProperty('--'+key, val);
+}
+function populateCustomPickers(){
+  // Fill pickers with either saved custom values or current computed CSS values
+  const style = getComputedStyle(document.documentElement);
+  CUSTOM_VARS.forEach(k=>{
+    const el = document.getElementById('cp-'+k);
+    if(!el) return;
+    const saved = _customColors[k];
+    if(saved){
+      el.value = saved;
+    } else {
+      // Try to get the current resolved value and convert to hex
+      const v = style.getPropertyValue('--'+k).trim();
+      if(v && v.startsWith('#') && v.length===7) el.value = v;
+      // If it's rgb() or other format, keep current picker value
+    }
+  });
+}
+
+const THEME_DEFS = [
+  {id:'lavender', nameZh:'薰衣草', nameEn:'Lavender', bg:'#F7F4FB', acc:'#A87FEC'},
+  {id:'sage',     nameZh:'鼠尾草', nameEn:'Sage',       bg:'#F4F6F2', acc:'#7BA888'},
+  {id:'mist',     nameZh:'雾蓝',   nameEn:'Mist',       bg:'#F2F5F8', acc:'#7B9CC4'},
+  {id:'ochre',    nameZh:'赭石',   nameEn:'Ochre',      bg:'#F8F4F1', acc:'#C8856B'},
+  {id:'ink',      nameZh:'暗黑',   nameEn:'Ink',        bg:'#1A1A1F', acc:'#B794F4'},
+  {id:'custom',   nameZh:'自定义', nameEn:'Custom',     bg:'',        acc:''},
 ];
 
 const FEATURE_DEFS = [
-  { key:'plan_today',    zhLbl:'规划今天',    enLbl:'Plan Today',         zhSub:'10分钟倒计时写今日计划',      enSub:'10-min countdown to write today\'s plan' },
-  { key:'away_tracking', zhLbl:'离开追踪',    enLbl:'Away Tracking',      zhSub:'暂停/恢复及离开记录',         enSub:'Pause/resume timer and log away periods' },
-  { key:'trigger_break', zhLbl:'立即触发休息', enLbl:'Trigger Break',      zhSub:'从菜单栏手动触发休息',        enSub:'Manually trigger a break from the menu bar' },
-  { key:'view_records',  zhLbl:'查看记录',    enLbl:'View Records',       zhSub:'打开今日记录面板',            enSub:'Open the daily records panel' },
-  { key:'end_of_day',    zhLbl:'下班',        enLbl:'End of Day',         zhSub:'停止提醒，结算今日得分',      enSub:'Stop reminders and finalise the daily score' },
+  { key:'plan_today',          zhLbl:'规划今天',    enLbl:'Plan Today',         zhSub:'10分钟倒计时写今日计划',      enSub:'10-min countdown to write today\'s plan' },
+  { key:'away_tracking',       zhLbl:'离开追踪',    enLbl:'Away Tracking',      zhSub:'暂停/恢复及离开记录',         enSub:'Pause/resume timer and log away periods' },
+  { key:'trigger_break',       zhLbl:'立即触发休息', enLbl:'Trigger Break',      zhSub:'从菜单栏手动触发休息',        enSub:'Manually trigger a break from the menu bar' },
+  { key:'view_records',        zhLbl:'查看记录',    enLbl:'View Records',       zhSub:'打开今日记录面板',            enSub:'Open the daily records panel' },
+  { key:'end_of_day',          zhLbl:'下班',        enLbl:'End of Day',         zhSub:'停止提醒，结算今日得分',      enSub:'Stop reminders and finalise the daily score' },
+  { key:'restroom_analytics',  zhLbl:'洗手间分析',  enLbl:'Restroom Analytics', zhSub:'在记录视图显示洗手间统计标签', enSub:'Show restroom stats tab in records view' },
 ];
 
 const ZH = {
-  navHdr:'偏好设置', gen:'通用', score:'分值', types:'活动类型', features:'功能', plan:'规划',
+  navHdr:'偏好设置', gen:'通用', score:'分值', types:'活动类型', features:'功能', plan:'规划', movement:'运动',
   interval:'休息间隔', lang:'语言',
+  secReminder:'休息提醒', secAppearance:'外观', secLang:'语言', secSound:'声音', secData:'数据',
+  lblReminderOn:'启用提醒', lblFocusInt:'专注间隔', lblWarnAdv:'预警时长', lblDark:'显示',
+  appLight:'浅色', appDark:'深色', appSys:'跟随系统',
+  lblRing:'提醒铃声', lblFx:'完成音效', ringOpt1:'清亮 ▾', fxOpt1:'柔和 ▾',
+  btnJson:'导出 JSON', btnCsv:'导出 CSV', btnClr:'清空数据',
+  clrConfirm:'确定？再次点击清空', clrData:'清空数据',
   weights:'各类活动专注分值权重',
   hint:'得分 = floor(分钟 × 权重 ÷ 5)，范围 −5 到 5，负值扣分。',
   save:'保存', saved:'已保存', typesMgr:'管理活动类型',
@@ -341,10 +627,17 @@ const ZH = {
   planPrefixLbl:'日期 / 时间前缀',
   pfxNone:'无', pfxDate:'日期', pfxTime:'时间', pfxDatetime:'日期 + 时间', pfxCustom:'自定义',
   customSub:'可用 {date} 和 {time} 作为占位符',
+  minUnit:'分钟', secUnit:'秒',
 };
 const EN = {
-  navHdr:'Preferences', gen:'General', score:'Scoring', types:'Activities', features:'Features', plan:'Plan',
+  navHdr:'Preferences', gen:'General', score:'Scoring', types:'Activities', features:'Features', plan:'Plan', movement:'Movement',
   interval:'Break interval', lang:'Language',
+  secReminder:'Reminders', secAppearance:'Appearance', secLang:'Language', secSound:'Sound', secData:'Data',
+  lblReminderOn:'Enable reminders', lblFocusInt:'Focus interval', lblWarnAdv:'Warning lead time', lblDark:'Appearance',
+  appLight:'Light', appDark:'Dark', appSys:'System',
+  lblRing:'Alert tone', lblFx:'Completion sound', ringOpt1:'Bright ▾', fxOpt1:'Soft ▾',
+  btnJson:'Export JSON', btnCsv:'Export CSV', btnClr:'Clear data',
+  clrConfirm:'Sure? Click again to confirm', clrData:'Clear data',
   weights:'Focus score weight per activity type',
   hint:'Score = floor(minutes × weight ÷ 5). Range −5 to 5; negative deducts points.',
   save:'Save', saved:'Saved', typesMgr:'Manage types',
@@ -356,10 +649,299 @@ const EN = {
   planPrefixLbl:'Date / time prefix',
   pfxNone:'None', pfxDate:'Date', pfxTime:'Time', pfxDatetime:'Date + Time', pfxCustom:'Custom',
   customSub:'Use {date} and {time} as placeholders',
+  minUnit:'min', secUnit:'s',
 };
 function L(k){ return (lang==='zh'?ZH:EN)[k]||k; }
 
-const FIXED = new Set(['work','entertainment','life','restroom']);
+const FIXED = new Set(['work','entertainment','life']);
+
+/* ── Movement tab helpers ── */
+function togglePill(key){
+  if(key==='standing') exStanding=!exStanding;
+  if(key==='props')    exProps=!exProps;
+  const p=document.getElementById('pill-'+key);
+  const v=key==='standing'?exStanding:exProps;
+  p.classList.toggle('on',v); p.classList.toggle('off',!v); p.setAttribute('aria-pressed',v);
+}
+function onDiffInput(){
+  exMaxDiff=parseInt(document.getElementById('rng-diff').value,10)||3;
+  const lbls=['','轻松','适中','挑战'];
+  document.getElementById('val-diff').textContent=exMaxDiff+' ('+lbls[exMaxDiff]+')';
+}
+function renderPainFlags(){
+  const grid=document.getElementById('pain-flags-grid');
+  if(!grid) return;
+  grid.innerHTML=PAIN_AREAS.map(a=>{
+    const sel=painFlags.has(a.id);
+    const nm=lang==='zh'?a.zh:a.en;
+    return`<button type="button" onclick="togglePainFlag('${a.id}')" style="padding:4px 12px;border-radius:99px;border:1.5px solid ${sel?'var(--acc)':'var(--line)'};background:${sel?'var(--acc-soft)':'var(--bg)'};color:${sel?'var(--acc2)':'var(--muted)'};font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">${nm}</button>`;
+  }).join('');
+}
+function togglePainFlag(id){
+  if(painFlags.has(id)) painFlags.delete(id); else painFlags.add(id);
+  renderPainFlags();
+}
+async function loadLibrary(){
+  try{
+    const all=await fetch('/api/exercises/library').then(r=>r.json());
+    const builtinIds=new Set(all.filter(e=>!e._user).map(e=>e.id));
+    _builtinLibrary=all.filter(e=>!e._user);
+    _userLibrary=all.filter(e=>e._user);
+    renderLibrary();
+  }catch(e){console.error(e);}
+}
+function renderLibrary(){
+  const el=document.getElementById('lib-list');
+  if(!el) return;
+  const cats={stretch:'拉伸',core:'核心',strength:'力量'};
+  const all=[..._builtinLibrary,..._userLibrary];
+  if(!all.length){el.innerHTML=`<div style="font-size:12px;color:var(--muted)">No exercises</div>`;return;}
+  el.innerHTML=all.map((e,i)=>{
+    const isUser=!!e._user;
+    return`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--line)">
+      <span style="font-size:10px;font-weight:700;color:var(--muted);width:20px">${e.id}</span>
+      <span style="flex:1;font-size:12px;color:var(--text)">${lang==='zh'?e.name:e.name_en||e.name}</span>
+      <span style="font-size:10px;color:var(--muted);background:var(--card);border:1px solid var(--line);padding:1px 7px;border-radius:99px">${cats[e.category]||e.category}</span>
+      ${isUser?(()=>{
+        const ui=i-_builtinLibrary.length;
+        const pending=_pendingDeleteIdx===ui;
+        return `<button onclick="editExercise(${ui})" style="border:none;background:none;cursor:pointer;color:var(--acc);font-size:12px;padding:2px 6px" title="Edit">✏️</button>`
+          + (pending
+            ? `<button onclick="deleteExercise(${ui})" style="border:none;background:var(--red);color:#fff;border-radius:4px;cursor:pointer;font-size:10.5px;font-weight:700;padding:2px 7px;font-family:inherit">Sure?</button><button onclick="_pendingDeleteIdx=-1;renderLibrary()" style="border:none;background:none;cursor:pointer;color:var(--muted);font-size:12px;padding:2px 4px">✕</button>`
+            : `<button onclick="deleteExercise(${ui})" style="border:none;background:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 6px" title="Delete">×</button>`);
+      })():`<span style="font-size:10px;color:var(--muted);opacity:.5">内置</span>`}
+    </div>`;
+  }).join('');
+}
+let _exFormEditIdx = -1;
+let _pendingDeleteIdx = -1;
+
+function showExForm(editIdx){
+  _exFormEditIdx = (editIdx === undefined) ? -1 : editIdx;
+  const form = document.getElementById('ex-form');
+  const btn  = document.getElementById('btn-add-ex');
+  const err  = document.getElementById('exf-err');
+  if(!form) return;
+  err.style.display = 'none';
+  if(_exFormEditIdx >= 0){
+    const ex = _userLibrary[_exFormEditIdx];
+    if(!ex) return;
+    document.getElementById('exf-id').value      = ex.id;
+    document.getElementById('exf-id').disabled   = true;
+    document.getElementById('exf-name').value    = ex.name;
+    document.getElementById('exf-name-en').value = ex.name_en || '';
+    document.getElementById('exf-desc').value    = ex.description || '';
+    document.getElementById('exf-cat').value     = ex.category || 'stretch';
+    document.getElementById('exf-score').value   = ex.score || 3;
+    document.getElementById('exf-sets').value    = ex.sets || 0;
+    document.getElementById('exf-dur-set').value = ex.duration_per_set || 0;
+    document.getElementById('exf-submit').textContent = 'Update';
+  } else {
+    document.getElementById('exf-id').value      = '';
+    document.getElementById('exf-id').disabled   = false;
+    document.getElementById('exf-name').value    = '';
+    document.getElementById('exf-name-en').value = '';
+    document.getElementById('exf-desc').value    = '';
+    document.getElementById('exf-cat').value     = 'stretch';
+    document.getElementById('exf-score').value   = '3';
+    document.getElementById('exf-sets').value    = '0';
+    document.getElementById('exf-dur-set').value = '0';
+    document.getElementById('exf-submit').textContent = 'Save';
+  }
+  form.style.display = 'block';
+  btn.style.display  = 'none';
+  document.getElementById('exf-name').focus();
+}
+
+function cancelExForm(){
+  document.getElementById('ex-form').style.display = 'none';
+  document.getElementById('btn-add-ex').style.display = 'block';
+  _exFormEditIdx = -1;
+}
+
+function submitExForm(){
+  const id    = document.getElementById('exf-id').value.trim();
+  const name  = document.getElementById('exf-name').value.trim();
+  const nameEn= document.getElementById('exf-name-en').value.trim();
+  const desc  = document.getElementById('exf-desc').value.trim();
+  const cat   = document.getElementById('exf-cat').value;
+  const score  = parseInt(document.getElementById('exf-score').value, 10) || 3;
+  const sets   = parseInt(document.getElementById('exf-sets').value, 10) || 0;
+  const durSet = parseInt(document.getElementById('exf-dur-set').value, 10) || 0;
+  const err    = document.getElementById('exf-err');
+  if(!id || !name){
+    err.textContent = 'ID and Chinese name are required.';
+    err.style.display = 'block';
+    return;
+  }
+  if(_exFormEditIdx < 0){
+    const dup = [..._builtinLibrary, ..._userLibrary].find(e => e.id === id);
+    if(dup){ err.textContent = `ID "${id}" already exists.`; err.style.display='block'; return; }
+    _userLibrary.push({id, name, name_en: nameEn||name, description: desc, description_en: desc,
+      category: cat, muscle_groups: [], score, difficulty: 1, illustration: null,
+      muscle_focus: [], pain_contraindications: [], requires_standing: false, requires_props: false,
+      duration_seconds: sets*durSet, sets, duration_per_set: durSet});
+  } else {
+    const ex = _userLibrary[_exFormEditIdx];
+    ex.name = name; ex.name_en = nameEn||name;
+    ex.description = desc; ex.description_en = desc;
+    ex.category = cat; ex.score = score;
+    ex.sets = sets; ex.duration_per_set = durSet;
+    ex.duration_seconds = sets * durSet;
+  }
+  cancelExForm();
+  saveLibrary();
+  renderLibrary();
+}
+
+function editExercise(idx){
+  showExForm(idx);
+}
+
+function deleteExercise(idx){
+  if(_pendingDeleteIdx === idx){
+    _pendingDeleteIdx = -1;
+    _userLibrary.splice(idx, 1);
+    saveLibrary();
+    renderLibrary();
+  } else {
+    _pendingDeleteIdx = idx;
+    renderLibrary(); // re-render to show "Sure?" state
+  }
+}
+async function saveLibrary(){
+  try{
+    await fetch('/api/exercises/library',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(_userLibrary.map(e=>{const c={...e};delete c._user;return c;}))});
+  }catch(e){console.error(e);}
+}
+
+/* ── Scheduled alerts ── */
+let _alerts = [];
+
+async function loadAlerts(){
+  try{
+    const r = await fetch('/api/alerts');
+    _alerts = await r.json();
+  }catch(e){ _alerts = []; }
+  renderAlertList();
+}
+
+async function saveAlerts(){
+  try{
+    await fetch('/api/alerts',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(_alerts)});
+  }catch(e){}
+}
+
+let _alertMode = 'daily';
+
+function _alertLabel(a){
+  if(a.type==='once'){
+    if(a.enabled===false) return `<span style="color:var(--muted);font-size:11px">已触发</span>`;
+    const fa = a.fire_at||'';
+    if(!fa) return '—';
+    try{
+      const diff = Math.round((new Date(fa.replace(' ','T')) - Date.now()) / 60000);
+      if(diff>0 && diff<120) return `<span style="color:var(--amber)">${diff}分钟后</span>`;
+    }catch(e){}
+    return `<span style="font-family:var(--mono,monospace)">${fa.slice(5)}</span>`;
+  }
+  return `<span style="font-family:var(--mono,monospace)">${a.time||'—'}</span>`;
+}
+
+function renderAlertList(){
+  const el = document.getElementById('alert-list');
+  if(!el) return;
+  if(!_alerts.length){
+    el.innerHTML=`<div style="font-size:11px;color:var(--muted);font-style:italic;padding:4px 0">暂无提醒</div>`;
+    return;
+  }
+  el.innerHTML = _alerts.map((a,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;${a.enabled===false?'opacity:.5':''}">
+      <div style="min-width:72px">${_alertLabel(a)}</div>
+      <span style="flex:1;font-size:12px;color:var(--text)">${a.message||'—'}</span>
+      <label class="sw" style="flex-shrink:0">
+        <input type="checkbox" ${a.enabled!==false?'checked':''} onchange="_alerts[${i}].enabled=this.checked;saveAlerts()">
+        <span class="sw-slider"></span>
+      </label>
+      <button onclick="deleteAlert(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:0 2px;line-height:1" title="删除">×</button>
+    </div>`).join('');
+}
+
+function deleteAlert(i){
+  _alerts.splice(i,1);
+  saveAlerts();
+  renderAlertList();
+}
+
+function setAlertMode(mode){
+  _alertMode = mode;
+  ['daily','once','rel'].forEach(m=>{
+    const body = document.getElementById(`af-body-${m}`);
+    const btn  = document.getElementById(`afm-${m}`);
+    if(body) body.style.display = m===mode ? '' : 'none';
+    if(btn){
+      if(m===mode){
+        btn.style.background = 'var(--acc2)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--acc)';
+      } else {
+        btn.style.background = 'none';
+        btn.style.color = 'var(--muted)';
+        btn.style.borderColor = 'var(--line)';
+      }
+    }
+  });
+}
+
+function showAlertForm(){
+  document.getElementById('alert-form').style.display='block';
+  document.getElementById('btn-add-alert').style.display='none';
+  setAlertMode('daily');
+  document.getElementById('af-time').value='';
+  document.getElementById('af-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('af-time-once').value='';
+  document.getElementById('af-mins').value='';
+  document.getElementById('af-msg').value='';
+}
+
+function cancelAlertForm(){
+  document.getElementById('alert-form').style.display='none';
+  document.getElementById('btn-add-alert').style.display='block';
+}
+
+function submitAlertForm(){
+  const msg = document.getElementById('af-msg').value.trim();
+  const id  = Date.now().toString();
+  let entry = null;
+
+  if(_alertMode==='daily'){
+    const t = document.getElementById('af-time').value;
+    if(!t) return;
+    entry = {id, type:'daily', time:t, message:msg, enabled:true};
+
+  } else if(_alertMode==='once'){
+    const d = document.getElementById('af-date').value || new Date().toISOString().slice(0,10);
+    const t = document.getElementById('af-time-once').value;
+    if(!t) return;
+    entry = {id, type:'once', fire_at:`${d} ${t}`, message:msg, enabled:true};
+
+  } else if(_alertMode==='rel'){
+    const mins = parseInt(document.getElementById('af-mins').value)||0;
+    if(mins<=0) return;
+    const fireDate = new Date(Date.now() + mins*60000);
+    const pad = n=>String(n).padStart(2,'0');
+    const fa = `${fireDate.getFullYear()}-${pad(fireDate.getMonth()+1)}-${pad(fireDate.getDate())} ${pad(fireDate.getHours())}:${pad(fireDate.getMinutes())}`;
+    entry = {id, type:'once', fire_at:fa, message:msg, enabled:true};
+  }
+
+  if(!entry) return;
+  _alerts.push(entry);
+  saveAlerts();
+  cancelAlertForm();
+  renderAlertList();
+}
 
 function setTab(id) {
   _curTab = id;
@@ -369,80 +951,223 @@ function setTab(id) {
   document.getElementById('panel-'+id).classList.add('active');
   if (id === 'score')    renderWeights();
   if (id === 'types')    renderPrefTypeManager();
-  if (id === 'features') renderFeatureToggles();
+  if (id === 'features') { renderFeatureToggles(); loadAlerts(); }
+  if (id === 'movement') { renderPainFlags(); loadLibrary(); }
 }
 
-/* ── Section 1: Reminder Logic ── */
-function toggleRem(){
-  curRemEnabled = !curRemEnabled;
-  updateRemUI();
-}
-function updateRemUI(){
-  const btn = document.getElementById('rem-enabled');
-  btn.classList.toggle('on', curRemEnabled);
-}
-function updateIntervalUI(val){
-  curInterval = parseInt(val);
-  document.getElementById('val-interval').textContent = curInterval + (lang==='zh'?' 分钟':'m');
-}
-function updateWarningUI(val){
-  curWarning = parseInt(val);
-  document.getElementById('val-warning').textContent = curWarning + (lang==='zh'?' 秒':'s');
+function renderLangSeg(){
+  document.getElementById('lang-zh').classList.toggle('sel', selLang==='zh');
+  document.getElementById('lang-en').classList.toggle('sel', selLang==='en');
 }
 
-/* ── Section 2: Theme Logic ── */
-function renderThemeGrid(){
-  const grid = document.getElementById('theme-grid');
-  const cur = localStorage.getItem('reset_theme') || 'lavender';
-  grid.innerHTML = THEMES.map(t=>(
-    `<button onclick="setTheme('${t.id}')" class="theme-card${cur===t.id?' active':''}" style="background:${t.bg}">
-      <div style="display:flex; gap:3px; margin-bottom:8px">
-        <div style="width:14px; height:14px; border-radius:50%; background:${t.acc}"></div>
-        <div style="width:14px; height:14px; border-radius:50%; background:#1a1a1a"></div>
-        <div style="width:14px; height:14px; border-radius:50%; background:#fff; border:1px solid var(--line)"></div>
-      </div>
-      <div style="font-size:12px; font-weight:600; color:${t.id==='ink'?'#fff':'#1a1a1a'}">${t.n}</div>
-    </button>`
-  )).join('');
+function syncReminderPill(){
+  const p = document.getElementById('pill-reminder');
+  if(!p) return;
+  p.classList.toggle('on', reminderEnabled);
+  p.classList.toggle('off', !reminderEnabled);
+  p.setAttribute('aria-pressed', reminderEnabled);
 }
-function setTheme(id){
-  localStorage.setItem('reset_theme', id);
-  if(id==='lavender') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', id);
-  renderThemeGrid();
-  document.dispatchEvent(new Event('themechange'));
+
+function toggleReminderPill(){
+  reminderEnabled = !reminderEnabled;
+  syncReminderPill();
 }
-function setDarkMode(mode){
-  const btns = ['light','dark','system'];
-  btns.forEach(b=>{
-    const el = document.getElementById('dm-'+b);
-    const active = b===mode;
-    el.style.background = active?'var(--text)':'var(--card)';
-    el.style.color = active?'var(--bg)':'var(--muted)';
+
+function onIntervalInput(){
+  curInterval = parseInt(document.getElementById('rng-interval').value,10)||30;
+  const u = L('minUnit');
+  document.getElementById('val-interval').textContent = curInterval + ' ' + u;
+}
+
+function onWarningInput(){
+  curWarningSec = parseInt(document.getElementById('rng-warning').value,10)||60;
+  const u = L('secUnit');
+  document.getElementById('val-warning').textContent = curWarningSec + ' ' + u;
+}
+
+function renderThemeCards(){
+  const grid = document.getElementById('theme-cards');
+  if(!grid) return;
+  grid.innerHTML = THEME_DEFS.map(t=>{
+    const name = lang==='zh' ? t.nameZh : t.nameEn;
+    if(t.id === 'custom'){
+      return `<div class="theme-card custom-card" data-theme-id="custom" onclick="selectTheme('custom')">
+        <div style="font-size:18px">✦</div>
+        <div class="name">${name}</div>
+      </div>`;
+    }
+    const nameCol = t.id==='ink' ? '#F0EBF7' : '#2A1B3D';
+    return `<div class="theme-card" data-theme-id="${t.id}" data-acc="${t.acc}" style="background:${t.bg};border:1px solid rgba(0,0,0,.1)" onclick="selectTheme('${t.id}')">
+      <div class="dots"><span style="background:${t.acc}"></span><span style="background:${t.id==='ink'?'#F0EBF7':'#2A1B3D'}"></span><span style="background:${t.id==='ink'?'#25252D':'#fff'}"></span></div>
+      <div class="name" style="color:${nameCol}">${name}</div>
+    </div>`;
+  }).join('');
+  syncThemeSelection();
+}
+
+function selectTheme(id){
+  if(id === 'custom'){
+    // Toggle the custom panel; don't change the preset theme
+    const panel = document.getElementById('custom-panel');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    if(!isOpen){
+      populateCustomPickers();
+      loadCustomColors();
+      applyCustomColors(_customColors);
+    }
+    syncThemeSelection();
+    return;
+  }
+  // Preset selected — clear any custom overrides
+  clearCustomColors();
+  document.getElementById('custom-panel').classList.remove('open');
+  if(id==='lavender'){
+    localStorage.removeItem('reset_theme');
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    localStorage.setItem('reset_theme', id);
+    document.documentElement.setAttribute('data-theme', id);
+  }
+  try { document.dispatchEvent(new Event('themechange')); } catch(e) {}
+  syncThemeSelection();
+}
+
+function syncThemeSelection(){
+  const raw = localStorage.getItem('reset_theme');
+  const hasCustom = Object.keys(_customColors).length > 0;
+  document.querySelectorAll('.theme-card').forEach(el=>{
+    const id = el.getAttribute('data-theme-id');
+    let sel = false;
+    if(id === 'custom'){
+      sel = hasCustom;
+      el.style.outline = sel ? '2px solid #A87FEC' : 'none';
+      el.style.outlineOffset = '2px';
+    } else {
+      const acc = el.getAttribute('data-acc') || '#A87FEC';
+      sel = !hasCustom && ((id==='lavender' && !raw) || (raw === id));
+      el.style.outline = sel ? ('2px solid ' + acc) : 'none';
+      el.style.outlineOffset = '2px';
+    }
   });
 }
 
-/* ── Section 3: Language Logic ── */
-function setLang(l){
-  selLang = l;
-  document.getElementById('lang-zh-btn').style.background = l==='zh'?'var(--acc)':'var(--card)';
-  document.getElementById('lang-zh-btn').style.color = l==='zh'?'#fff':'var(--muted)';
-  document.getElementById('lang-zh-btn').style.border = l==='zh'?'none':'1px solid var(--line)';
-  document.getElementById('lang-en-btn').style.background = l==='en'?'var(--acc)':'var(--card)';
-  document.getElementById('lang-en-btn').style.color = l==='en'?'#fff':'var(--muted)';
-  document.getElementById('lang-en-btn').style.border = l==='en'?'none':'1px solid var(--line)';
+function setPlanMode(mode){
+  const isDaily = mode === 'daily';
+  document.getElementById('plan-mode-fixed').classList.toggle('sel', !isDaily);
+  document.getElementById('plan-mode-daily').classList.toggle('sel', isDaily);
+  document.getElementById('plan-fixed-row').style.display = isDaily ? 'none' : '';
+  document.getElementById('plan-daily-rows').style.display = isDaily ? '' : 'none';
 }
 
-/* ── Section 5: Data Logic ── */
-function exportData(format){
-  // Endpoint stubs
-  console.log('Exporting as', format);
-  window.location.href = `/api/export?format=${format}`;
+function loadSound(){
+  const ring = localStorage.getItem('reset_sound_ring') || 'Ping';
+  const fx   = localStorage.getItem('reset_sound_fx')   || 'Pop';
+  const rEl = document.getElementById('dd-ring');
+  const fEl = document.getElementById('dd-fx');
+  if(rEl) rEl.value = ring;
+  if(fEl) fEl.value = fx;
 }
-function confirmReset(){
-  if(confirm(lang==='zh'?'确定要清空所有数据吗？此操作不可撤销。':'Are you sure you want to clear all data? This cannot be undone.')){
-    fetch('/api/reset-data', {method:'POST'}).then(()=>window.location.reload());
+function saveSound(){
+  const ring = document.getElementById('dd-ring').value;
+  const fx   = document.getElementById('dd-fx').value;
+  localStorage.setItem('reset_sound_ring', ring);
+  localStorage.setItem('reset_sound_fx',   fx);
+  fetch('/api/prefs', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({reminder_sound: ring, done_sound: fx}),
+  }).catch(()=>{});
+}
+
+function setAppearance(mode){
+  appearance = mode;
+  localStorage.setItem('reset_appearance', mode);
+  const html = document.documentElement;
+  if(mode === 'dark'){
+    html.setAttribute('data-appearance', 'dark');
+  } else if(mode === 'light'){
+    html.setAttribute('data-appearance', 'light');
+  } else {
+    html.removeAttribute('data-appearance');
   }
+  document.getElementById('app-light').classList.toggle('sel', mode==='light');
+  document.getElementById('app-dark').classList.toggle('sel', mode==='dark');
+  document.getElementById('app-sys').classList.toggle('sel', mode==='system');
+}
+
+function syncAppearance(){
+  const saved = localStorage.getItem('reset_appearance') || 'system';
+  appearance = saved;
+  document.getElementById('app-light').classList.toggle('sel', saved==='light');
+  document.getElementById('app-dark').classList.toggle('sel', saved==='dark');
+  document.getElementById('app-sys').classList.toggle('sel', saved==='system');
+}
+
+async function exportData(kind){
+  const url = kind==='json' ? '/api/export' : '/api/export?format=csv';
+  const btn = document.getElementById(kind==='json' ? 'btn-exp-json' : 'btn-exp-csv');
+  try{
+    const res = await fetch(url, {method:'GET'});
+    const data = await res.json();
+    if(data.success && data.path){
+      const short = data.path.replace(/\/Users\/[^/]+/, '~');
+      if(btn){ btn.textContent = '✓ 已保存'; btn.style.color='var(--green)'; }
+      setTimeout(()=>{
+        if(btn){ btn.textContent = kind==='json'?'导出 JSON':'导出 CSV'; btn.style.color=''; }
+      }, 3000);
+      console.log('[re.set] Exported to', data.path);
+      // Show toast
+      showToast('文件已保存至：' + short, 4000);
+    } else {
+      showToast('导出失败', 2000);
+    }
+  }catch(e){
+    showToast('导出失败：' + e.message, 2000);
+  }
+}
+
+let _resetConfirming = false, _resetTimer = null;
+async function resetData(){
+  const btn = document.getElementById('btn-reset-data');
+  if(!_resetConfirming){
+    _resetConfirming = true;
+    btn.textContent = L('clrConfirm');
+    btn.style.background = 'var(--red)';
+    btn.style.color = '#fff';
+    _resetTimer = setTimeout(()=>{
+      _resetConfirming = false;
+      btn.textContent = L('clrData');
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 3000);
+    return;
+  }
+  clearTimeout(_resetTimer);
+  _resetConfirming = false;
+  btn.textContent = L('clrData');
+  btn.style.background = '';
+  btn.style.color = '';
+  try{
+    const res = await fetch('/api/reset-data',{method:'POST'});
+    const data = await res.json();
+    if(data.success){ showToast('今日数据已清空'); }
+    else{ showToast('清空失败'); }
+  }catch(e){ showToast('请求失败'); }
+}
+
+function showToast(msg, duration){
+  let t = document.getElementById('_toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:12px;z-index:9999;pointer-events:none;transition:opacity .3s;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.opacity='0'; }, duration||2000);
 }
 
 function renderWeights(){
@@ -463,6 +1188,7 @@ function renderWeights(){
 function renderPrefTypeManager() {
   const el = document.getElementById('pref-type-manager');
   const topLevel = types.filter(t=>!t.parent_id);
+
   function parentOpts(curParentId, excludeId) {
     const none = `<option value="">— ${L('noParent')} —</option>`;
     const opts = topLevel
@@ -471,6 +1197,7 @@ function renderPrefTypeManager() {
       .join('');
     return none + opts;
   }
+
   function paint() {
     const rows = types.map((tp,i)=>{
       const locked = FIXED.has(tp.id);
@@ -485,8 +1212,10 @@ function renderPrefTypeManager() {
           ${locked?' style="opacity:.3;pointer-events:none"':''}>×</button>
       </div>`;
     }).join('');
+
     const newParentOpts = `<option value="">— ${L('noParent')} —</option>`
       + topLevel.map(t=>`<option value="${t.id}">${t.label}</option>`).join('');
+
     const addRow = `<div class="tm-add-row">
       <input class="tm-color" type="color" id="tm-new-color" value="#7C5CFC">
       <input class="tm-label" type="text" id="tm-new-label" placeholder="${L('newType')}">
@@ -494,7 +1223,9 @@ function renderPrefTypeManager() {
       <button type="button" class="tm-del" data-act="add"
         style="color:var(--acc2);font-size:18px;font-weight:700;opacity:1">+</button>
     </div>`;
+
     el.innerHTML = rows + addRow;
+
     el.oninput = function(e) {
       const t = e.target, act = t.dataset&&t.dataset.act, i = +(t.dataset&&t.dataset.i);
       if (act==='color')  { types[i].color=t.value; }
@@ -504,6 +1235,7 @@ function renderPrefTypeManager() {
         paint(); renderWeights();
       }
     };
+
     el.onclick = function(e) {
       const btn = e.target.closest('[data-act]');
       if (!btn||!el.contains(btn)) return;
@@ -534,6 +1266,7 @@ function renderPrefTypeManager() {
       }
     };
   }
+
   paint();
 }
 
@@ -564,10 +1297,32 @@ function applyLangUI(){
   document.getElementById('tab-types').textContent    = L('types');
   document.getElementById('tab-features').textContent = L('features');
   document.getElementById('tab-plan').textContent     = L('plan');
+  document.getElementById('tab-movement').textContent = L('movement');
+  document.getElementById('title-movement').textContent = L('movement');
+  document.getElementById('title-gen').textContent    = L('gen');
   document.getElementById('title-score').textContent  = L('score');
   document.getElementById('title-types').textContent  = L('types');
   document.getElementById('title-features').textContent = L('features');
   document.getElementById('title-plan').textContent   = L('plan');
+  document.getElementById('sec-reminder').textContent = L('secReminder');
+  document.getElementById('sec-appearance').textContent = L('secAppearance');
+  document.getElementById('sec-lang').textContent     = L('secLang');
+  document.getElementById('sec-sound').textContent    = L('secSound');
+  document.getElementById('sec-data').textContent     = L('secData');
+  document.getElementById('lbl-reminder-on').textContent = L('lblReminderOn');
+  document.getElementById('lbl-focus-interval').textContent = L('lblFocusInt');
+  document.getElementById('lbl-warning-advance').textContent = L('lblWarnAdv');
+  document.getElementById('lbl-dark-mode').textContent = L('lblDark');
+  document.getElementById('app-light').textContent = L('appLight');
+  document.getElementById('app-dark').textContent = L('appDark');
+  document.getElementById('app-sys').textContent = L('appSys');
+  document.getElementById('lbl-ring').textContent = L('lblRing');
+  document.getElementById('lbl-fx').textContent = L('lblFx');
+  document.getElementById('dd-ring').textContent = L('ringOpt1');
+  document.getElementById('dd-fx').textContent = L('fxOpt1');
+  document.getElementById('btn-exp-json').textContent = L('btnJson');
+  document.getElementById('btn-exp-csv').textContent = L('btnCsv');
+  document.getElementById('btn-reset-data').textContent = L('btnClr');
   document.getElementById('lbl-weights').textContent  = L('weights');
   document.getElementById('lbl-types-mgr').textContent= L('typesMgr');
   document.getElementById('lbl-features').textContent = L('featuresLbl');
@@ -590,9 +1345,10 @@ function applyLangUI(){
   const hint = document.getElementById('weight-hint');
   if (hint) hint.textContent = L('hint');
   if (_curTab === 'features') renderFeatureToggles();
-  updateIntervalUI(curInterval);
-  updateWarningUI(curWarning);
-  setLang(selLang);
+  renderThemeCards();
+  renderLangSeg();
+  onIntervalInput();
+  onWarningInput();
 }
 
 // Plan prefix custom input visibility
@@ -604,15 +1360,25 @@ document.querySelectorAll('input[name=plan-prefix]').forEach(r=>{
 });
 
 async function init(){
+  loadCustomColors();
+  applyCustomColors(_customColors);
+  loadSound();
   try{
     const r = await fetch('/api/prefs').then(x=>x.json());
     lang = r.lang||'zh'; selLang = r.lang||'zh';
-    curInterval = r.interval_minutes||30;
-    curWarning  = r.warning_advance_seconds||60;
-    curRemEnabled = r.reminder_enabled!==false;
+    let m = Number(r.interval_minutes);
+    if(!Number.isFinite(m)) m = 30;
+    curInterval = Math.max(20, Math.min(90, Math.round(m/5)*5));
+    document.getElementById('rng-interval').value = String(curInterval);
+    curWarningSec = r.warning_advance_seconds != null ? parseInt(r.warning_advance_seconds,10) : 60;
+    curWarningSec = Math.max(15, Math.min(120, Math.round(curWarningSec/5)*5));
+    document.getElementById('rng-warning').value = String(curWarningSec);
+    reminderEnabled = r.reminder_enabled !== false;
+    syncReminderPill();
     types = await RS.loadActivityTypes();
+    // Menu features
     if(r.menu_features) menuFeatures = {...menuFeatures, ...r.menu_features};
-    if(r.plan_file_path)    document.getElementById('plan-file-path').value    = r.plan_file_path;
+    // Plan settings
     if(r.plan_file_keyword) document.getElementById('plan-file-keyword').value = r.plan_file_keyword;
     const pfxType = r.plan_prefix_type || 'none';
     const pfxEl = document.getElementById('pfx-'+pfxType);
@@ -622,14 +1388,30 @@ async function init(){
     const nfVal = r.plan_keyword_not_found || 'append';
     const nfEl = document.getElementById('nf-'+nfVal);
     if(nfEl) nfEl.checked = true;
-
-    document.getElementById('in-interval').value = curInterval;
-    document.getElementById('in-warning').value = curWarning;
-    
+    // Plan file mode
+    if(r.plan_file_pattern){
+      document.getElementById('plan-file-pattern').value = r.plan_file_pattern;
+      document.getElementById('plan-file-path-daily').value = r.plan_file_path || '';
+      setPlanMode('daily');
+    } else {
+      if(r.plan_file_path) document.getElementById('plan-file-path').value = r.plan_file_path;
+      setPlanMode('fixed');
+    }
+    // Movement prefs
+    exStanding = r.exercise_standing !== false;
+    exProps     = r.exercise_props    !== false;
+    exMaxDiff   = parseInt(r.exercise_max_difficulty||3, 10);
+    painFlags   = new Set(Array.isArray(r.pain_flags)?r.pain_flags:[]);
+    document.getElementById('pill-standing').classList.toggle('on',exStanding);
+    document.getElementById('pill-standing').classList.toggle('off',!exStanding);
+    document.getElementById('pill-props').classList.toggle('on',exProps);
+    document.getElementById('pill-props').classList.toggle('off',!exProps);
+    document.getElementById('rng-diff').value=String(exMaxDiff);
+    onDiffInput();
+    syncAppearance();
     applyLangUI();
-    updateRemUI();
-    renderThemeGrid();
-    setDarkMode('light'); // default
+    renderLangSeg();
+    renderWeights();
   }catch(e){
     document.getElementById('msg').textContent = String(e);
   }
@@ -643,17 +1425,26 @@ async function saveAll(){
   const pfxType = document.querySelector('input[name=plan-prefix]:checked')?.value || 'none';
   const nfVal   = document.querySelector('input[name=plan-nf]:checked')?.value || 'append';
   const body = {
-    interval_minutes: curInterval,
-    warning_advance_seconds: curWarning,
-    reminder_enabled: curRemEnabled,
+    interval_minutes: parseInt(document.getElementById('rng-interval').value,10)||30,
+    warning_advance_seconds: parseInt(document.getElementById('rng-warning').value,10)||60,
+    reminder_enabled: reminderEnabled,
     lang: selLang,
     activity_types: types,
     menu_features: menuFeatures,
-    plan_file_path:         document.getElementById('plan-file-path').value.trim(),
+    plan_file_path: (document.getElementById('plan-mode-daily').classList.contains('sel')
+      ? document.getElementById('plan-file-path-daily').value.trim()
+      : document.getElementById('plan-file-path').value.trim()),
+    plan_file_pattern: (document.getElementById('plan-mode-daily').classList.contains('sel')
+      ? document.getElementById('plan-file-pattern').value.trim()
+      : ''),
     plan_file_keyword:      document.getElementById('plan-file-keyword').value.trim(),
     plan_prefix_type:       pfxType,
     plan_prefix_custom:     document.getElementById('plan-prefix-custom').value.trim(),
     plan_keyword_not_found: nfVal,
+    exercise_standing:      exStanding,
+    exercise_props:         exProps,
+    exercise_max_difficulty: exMaxDiff,
+    pain_flags:             [...painFlags],
   };
   try{
     await fetch('/api/prefs',{
@@ -661,6 +1452,7 @@ async function saveAll(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body),
     });
+    await saveAlerts();
     lang = selLang;
     applyLangUI();
     if (_curTab==='types')    renderPrefTypeManager();

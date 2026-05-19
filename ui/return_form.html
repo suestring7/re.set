@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script>(function(){var s=document.createElement('style');s.textContent=':root{--bg:#F4EFFA;--card:#fff;--line:#E8E0F0;--text:#2A1B3D;--sub:#4A3A5C;--muted:#8B7A9E;--acc:#A87FEC;--acc2:#6B4FA0;--acc-soft:#F0E6FB;--green:#059669;--amber:#D97706;--red:#DC2626}[data-theme="sage"]{--bg:#F2F5F2;--card:#fff;--line:#DDE6DD;--text:#1F2D24;--sub:#3A4A40;--muted:#7B8A80;--acc:#7BA888;--acc2:#4F7359;--acc-soft:#E5EFE6}[data-theme="mist"]{--bg:#EFF3F8;--card:#fff;--line:#DCE4EC;--text:#1B2A3D;--sub:#3A4A60;--muted:#7B8AA0;--acc:#7B9CC4;--acc2:#4D6E96;--acc-soft:#E5ECF5}[data-theme="ochre"]{--bg:#F8F2EC;--card:#fff;--line:#E8DDD0;--text:#2D1F14;--sub:#4A3A2A;--muted:#9A8472;--acc:#C8856B;--acc2:#8C5A40;--acc-soft:#F2E2D6}[data-theme="ink"],[data-appearance="dark"]{--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}@media(prefers-color-scheme:dark){:root:not([data-appearance="light"]):not([data-theme]){--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}button{font-family:inherit}input{font-family:inherit;color:inherit;outline:none}';document.head.insertBefore(s,document.head.firstChild);var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);var a=localStorage.getItem('reset_appearance');if(a==='dark')document.documentElement.setAttribute('data-appearance','dark');else if(a==='light')document.documentElement.setAttribute('data-appearance','light');var c=localStorage.getItem('reset_custom_colors');if(c)try{var o=JSON.parse(c),r=document.documentElement;Object.keys(o).forEach(function(k){r.style.setProperty('--'+k,o[k]);});}catch(e){}})()</script>
 <link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
-<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Return Log</title>
 <style>
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html,body { background:var(--bg); font-family:inherit; font-size:13px; color:var(--text); }
+html,body { background:var(--bg); font-family:-apple-system,system-ui,sans-serif; font-size:13px; color:var(--text); }
 body { display:flex; flex-direction:column; align-items:center; padding:16px; overflow-y:auto; min-height:100vh; }
 
 .card { background:var(--card); border:1px solid #e8e8ec; border-radius:14px; padding:20px 22px 18px; width:100%; max-width:380px; }
@@ -118,8 +118,11 @@ async function init() {
     lang = st.lang || 'zh';
     awayMins = st.away_seconds ? Math.round(st.away_seconds / 60) : 0;
     ACT_TYPES = await RS.loadActivityTypes();
+    // suggested_focus_minutes = elapsed since last check-in to NOW (includes away time)
+    // Before-leave duration = that total minus the away period
     const sug = st.suggested_focus_minutes || 0;
-    if (sug > 0) document.getElementById('before-fm').value = sug;
+    const beforeFm = Math.max(0, sug - awayMins);
+    if (beforeFm > 0) document.getElementById('before-fm').value = beforeFm;
   } catch(e) {
     ACT_TYPES = await RS.loadActivityTypes();
   }

@@ -2,13 +2,13 @@ from __future__ import annotations
 import time
 from datetime import datetime
 
-from ..models.app_config import AppConfig, INTERVAL_PRESETS, DAILY_MINIMUMS
+from ..models.app_config import AppConfig, DAILY_MINIMUMS
 from ..models.checkin import CheckIn
 from ..models.daily_record import DailyRecord
 from ..services.persistence import PersistenceService
 from ..services.scoring import all_minimums_met
 from ..timer.break_timer import BreakTimer, TimerState
-from ..utils.date_helpers import elapsed_minutes_since, now_hhmm
+from ..utils.date_helpers import elapsed_minutes_since, now_hhmm, today_str
 from ..utils.observable import Observable
 
 _MI: dict[str, dict] = {
@@ -34,6 +34,8 @@ class AppViewModel:
         self._timer       = timer
         self._config      = config
         self._skip_exercise = False
+        self._last_alert_fired: str = ""
+        self._fired_once_ids: set[str] = set()
 
         # Observable state — subscribed to by the platform layer
         self.timer_display_text: Observable[str]       = Observable("—")
@@ -41,6 +43,7 @@ class AppViewModel:
         self.is_end_of_day:      Observable[bool]      = Observable(False)
         self.show_break_window:  Observable[bool]      = Observable(False)
         self.show_warning_panel: Observable[bool]      = Observable(False)
+        self.show_custom_alert:  Observable[str]       = Observable("")
         self.today_record:       Observable[DailyRecord] = Observable(
             persistence.load_state()
         )
@@ -68,6 +71,49 @@ class AppViewModel:
         self.timer_display_text.value = text
         self.is_away_mode.value  = state.is_away_mode
         self.is_end_of_day.value = state.is_end_of_day
+        self._check_scheduled_alerts()
+
+    def _check_scheduled_alerts(self) -> None:
+        from datetime import datetime as _dt
+        alerts = self._config.scheduled_alerts
+        if not alerts:
+            return
+        now_t   = now_hhmm()
+        now_dt  = _dt.now()
+        needs_save = False
+
+        for alert in alerts:
+            if not alert.get("enabled", True):
+                continue
+            atype = alert.get("type", "daily")
+            msg   = alert.get("message", "")
+
+            if atype == "daily":
+                if alert.get("time") == now_t:
+                    key = f"{today_str()} {now_t} {alert.get('id', '')}"
+                    if self._last_alert_fired != key:
+                        self._last_alert_fired = key
+                        self.show_custom_alert.value = msg
+
+            elif atype == "once":
+                fire_at = alert.get("fire_at", "")
+                if not fire_at:
+                    continue
+                try:
+                    fire_dt = _dt.strptime(fire_at, "%Y-%m-%d %H:%M")
+                except ValueError:
+                    continue
+                aid = alert.get("id", fire_at)
+                if now_dt >= fire_dt and aid not in self._fired_once_ids:
+                    self._fired_once_ids.add(aid)
+                    self.show_custom_alert.value = msg
+                    alert["enabled"] = False
+                    needs_save = True
+
+        if needs_save:
+            self._persistence.update_config(
+                scheduled_alerts=list(alerts)
+            )
 
     def _on_warning(self) -> None:
         self.show_warning_panel.value = True
@@ -153,17 +199,26 @@ class AppViewModel:
         return new_state
 
     def update_interval(self, minutes: int) -> None:
-        if minutes not in INTERVAL_PRESETS:
+        try:
+            m = int(minutes)
+        except (TypeError, ValueError):
             return
-        self._timer.set_interval_seconds(minutes * 60)
-        self._config.interval_minutes = minutes
-        self._persistence.update_config(interval_minutes=minutes)
+        m = max(20, min(90, m))
+        m = max(20, (m // 5) * 5)
+        self._timer.set_interval_seconds(m * 60)
+        self._config.interval_minutes = m
+        self._persistence.update_config(interval_minutes=m)
 
     def update_lang(self, lang: str) -> None:
         if lang not in ("zh", "en"):
             return
         self._config.lang = lang
         self._persistence.update_config(lang=lang)
+
+    def sync_timer_from_config(self) -> None:
+        """Apply warning advance + reminder toggle from shared AppConfig to BreakTimer."""
+        self._timer.set_warning_advance_seconds(self._config.warning_advance_seconds)
+        self._timer.set_reminders_enabled(self._config.reminder_enabled)
 
     def commit_checkin(self, checkin: CheckIn) -> None:
         record = self._persistence.load_state()

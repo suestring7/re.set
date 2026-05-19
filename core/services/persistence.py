@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from ..models.activity_type import ActivityType
-from ..models.app_config import AppConfig, DAILY_MINIMUMS
+from ..models.app_config import AppConfig, DAILY_MINIMUMS, WARNING_ADVANCE
 from ..models.checkin import CheckIn
 from ..models.daily_record import DailyRecord
 from ..utils.date_helpers import today_str
@@ -79,8 +79,6 @@ class PersistenceService:
             features = {**_DEFAULT_MENU_FEATURES, **d.get("menu_features", {})}
             return AppConfig(
                 interval_minutes=int(d.get("interval_minutes", 30)),
-                warning_advance_seconds=int(d.get("warning_advance_seconds", 60)),
-                reminder_enabled=bool(d.get("reminder_enabled", True)),
                 lang=str(d.get("lang", "zh")),
                 menu_features=features,
                 plan_file_path=str(d.get("plan_file_path", "")),
@@ -88,6 +86,17 @@ class PersistenceService:
                 plan_prefix_type=str(d.get("plan_prefix_type", "none")),
                 plan_prefix_custom=str(d.get("plan_prefix_custom", "")),
                 plan_keyword_not_found=str(d.get("plan_keyword_not_found", "append")),
+                plan_file_pattern=str(d.get("plan_file_pattern", "")),
+                warning_advance_seconds=int(
+                    d.get("warning_advance_seconds", WARNING_ADVANCE)),
+                reminder_enabled=bool(d.get("reminder_enabled", True)),
+                reminder_sound=str(d.get("reminder_sound", "Ping")),
+                done_sound=str(d.get("done_sound", "Tink")),
+                exercise_standing=bool(d.get("exercise_standing", True)),
+                exercise_props=bool(d.get("exercise_props", True)),
+                exercise_max_difficulty=int(d.get("exercise_max_difficulty", 3)),
+                pain_flags=list(d.get("pain_flags", [])),
+                scheduled_alerts=list(d.get("scheduled_alerts", [])),
             )
         except Exception:
             return AppConfig()
@@ -137,11 +146,16 @@ class PersistenceService:
             return
         self._history_dir.mkdir(exist_ok=True)
         p = self._history_dir / f"{record.date}.json"
-        if not p.exists():
-            try:
-                p.write_text(json.dumps(record.to_dict(), ensure_ascii=False, indent=2))
-            except Exception:
-                pass
+        # Re-attempt if the file exists but is empty (previous write failed silently)
+        if p.exists() and p.stat().st_size > 0:
+            return
+        try:
+            p.write_text(
+                json.dumps(record.to_dict(), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
 
     def archive_today(self, record: DailyRecord) -> None:
         self._archive_state(record)
@@ -152,10 +166,16 @@ class PersistenceService:
         for f in self._history_dir.glob("*.json"):
             try:
                 d = json.loads(f.read_text(encoding="utf-8"))
+                counts = d.get("category_counts", {})
+                minimums_met = all(
+                    counts.get(c, 0) >= m for c, m in DAILY_MINIMUMS.items()
+                )
                 result[f.stem] = {
-                    "total_score":   d.get("total_score", 0),
-                    "focus_minutes": d.get("focus_minutes", 0),
-                    "checkins":      len(d.get("checkins", [])),
+                    "total_score":    d.get("total_score", 0),
+                    "focus_minutes":  d.get("focus_minutes", 0),
+                    "checkins":       len(d.get("checkins", [])),
+                    "category_counts": counts,
+                    "minimums_met":   minimums_met,
                 }
             except Exception:
                 pass

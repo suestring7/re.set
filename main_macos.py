@@ -73,13 +73,21 @@ def main() -> None:
         default_types_file=resource_dir / "activity_types.json",
     )
     config      = persistence.load_config()
-    timer       = BreakTimer(adapter=adapter, interval_seconds=config.interval_seconds())
+    timer       = BreakTimer(
+        adapter=adapter,
+        interval_seconds=config.interval_seconds(),
+        warning_advance_seconds=config.warning_advance_seconds,
+        reminders_enabled=config.reminder_enabled,
+    )
 
     app_vm      = AppViewModel(persistence=persistence, timer=timer, config=config)
     records_vm  = RecordsViewModel(persistence=persistence)
     prefs_vm    = PreferencesViewModel(persistence=persistence, config=config)
 
-    exercise_svc = ExerciseService(resource_dir / "exercises.json")
+    exercise_svc = ExerciseService(
+        resource_dir / "exercises.json",
+        user_file=data_dir / "user_exercises.json",
+    )
 
     # NSApplication must be created before any NSObject subclass
     app = NSApplication.sharedApplication()

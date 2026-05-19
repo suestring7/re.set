@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ..models.checkin import CheckIn
 from ..models.daily_record import DailyRecord
 from ..services.persistence import PersistenceService
 from ..utils.date_helpers import today_str
@@ -43,6 +44,10 @@ class RecordsViewModel:
             c.work_content = str(updates["work_content"])
         if "activity_type" in updates:
             c.activity_type = updates["activity_type"] or None
+        if "mood" in updates:
+            c.mood = updates["mood"] or None
+        if "note" in updates:
+            c.note = str(updates["note"] or "")
         if "focus_minutes" in updates:
             try:
                 new_fm = max(0, int(updates["focus_minutes"]))
@@ -57,6 +62,40 @@ class RecordsViewModel:
         else:
             self._persistence.save_history_date(record)
         return True
+
+    def add_checkin(self, date_str: str, data: dict) -> int:
+        """Append a new blank checkin and return its index, or -1 on failure."""
+        if date_str == today_str():
+            record = self._persistence.load_state()
+            is_today = True
+        else:
+            record = self._persistence.load_history_date(date_str)
+            if record is None:
+                return -1
+            is_today = False
+
+        fm = max(0, int(data.get("focus_minutes", 0) or 0))
+        t  = str(data.get("time", "") or "")[:5] or None
+        st = str(data.get("start_time", "") or "")[:5] or None
+        et = str(data.get("end_time", "") or "")[:5] or None
+        checkin = CheckIn(
+            time=t, start_time=st, end_time=et,
+            focus_minutes=fm,
+            work_content=str(data.get("work_content", "") or ""),
+            activity_type=data.get("activity_type") or None,
+            event_type=str(data.get("event_type", "checkin") or "checkin"),
+            score=0,
+            mood=data.get("mood") or None,
+            note=str(data.get("note", "") or ""),
+        )
+        record.checkins.append(checkin)
+        record.focus_minutes += fm
+        idx = len(record.checkins) - 1
+        if is_today:
+            self._persistence.save_state(record)
+        else:
+            self._persistence.save_history_date(record)
+        return idx
 
     def delete_checkin(self, date_str: str, index: int) -> bool:
         if date_str == today_str():

@@ -35,7 +35,7 @@ class BreakTimer:
     deadlocks.
     """
 
-    WARNING_ADVANCE  = 60      # seconds before break when warning fires
+    WARNING_ADVANCE  = 60      # default; instance uses _warning_advance
     IDLE_THRESHOLD   = 60      # Quartz idle seconds → user counts as inactive
     SNOOZE_DELAY     = 5 * 60
     POSTPONE_SECONDS = 5 * 60
@@ -46,10 +46,19 @@ class BreakTimer:
     on_break:   Callable[[str], None] | None = None  # "normal" | "snoozed"
     on_tick:    Callable[[TimerState], None] | None = None
 
-    def __init__(self, adapter: PlatformAdapter, interval_seconds: int = 1800) -> None:
+    def __init__(
+        self,
+        adapter: PlatformAdapter,
+        interval_seconds: int = 1800,
+        *,
+        warning_advance_seconds: int = WARNING_ADVANCE,
+        reminders_enabled: bool = True,
+    ) -> None:
         self._adapter  = adapter
         self._lock     = threading.Lock()
         self._interval = interval_seconds
+        self._warning_advance = int(warning_advance_seconds)
+        self._reminders_enabled = bool(reminders_enabled)
         self._active   = 0
         self._warning_shown    = False
         self._snooze_available = True
@@ -69,46 +78,46 @@ class BreakTimer:
         threading.Thread(target=self._loop, daemon=True).start()
 
     def _loop(self) -> None:
+        _last = time.monotonic()
         while self._running:
             time.sleep(1)
+            _now = time.monotonic()
+            _dt = max(1, round(_now - _last))
+            _last = _now
             snoozed_trigger = normal_trigger = show_warn = False
 
             with self._lock:
                 if self._break_locked or self._away_mode:
-                    continue
-
-                if self._done_for_today:
+                    pass  # skip accumulation; on_tick still fires below
+                elif self._done_for_today:
                     if self._done_for_date != _date.today().isoformat():
                         self._done_for_today = False
                         self._done_for_date  = ""
                         self._active         = 0
                         self._warning_shown  = False
-                    else:
-                        continue
-
-                if self._snooze_until > 0:
+                    # else: still done for today — skip accumulation, on_tick fires
+                elif self._snooze_until > 0:
                     if time.time() >= self._snooze_until:
                         self._snooze_until  = 0.0
                         self._break_locked  = True
                         snoozed_trigger = True
-                    continue  # don't accumulate during snooze
+                    # skip accumulation during snooze; on_tick fires
+                elif self._reminders_enabled:
+                    if self._adapter.idle_seconds() < self.IDLE_THRESHOLD:
+                        self._active += _dt
+                        remaining = self._interval - self._active
 
-                if self._adapter.idle_seconds() >= self.IDLE_THRESHOLD:
-                    continue
+                        if not self._warning_shown and remaining <= self._warning_advance:
+                            self._warning_shown = True
+                            show_warn = True
 
-                self._active += 1
-                remaining = self._interval - self._active
-
-                if not self._warning_shown and remaining <= self.WARNING_ADVANCE:
-                    self._warning_shown = True
-                    show_warn = True
-
-                if remaining <= 0:
-                    self._active           = 0
-                    self._warning_shown    = False
-                    self._snooze_available = True
-                    self._break_locked     = True
-                    normal_trigger = True
+                        if remaining <= 0:
+                            self._active           = 0
+                            self._warning_shown    = False
+                            self._snooze_available = True
+                            self._break_locked     = True
+                            normal_trigger = True
+                # reminders disabled: skip accumulation, on_tick still fires
 
             if show_warn and self.on_warning:
                 self.on_warning()
@@ -166,6 +175,8 @@ class BreakTimer:
 
     def trigger_break_now(self) -> None:
         with self._lock:
+            if self._break_locked:
+                return
             self._break_locked = True
         if self.on_break:
             cb = self.on_break
@@ -174,8 +185,23 @@ class BreakTimer:
     def set_interval_seconds(self, seconds: int) -> None:
         with self._lock:
             self._interval = seconds
-            self._active   = min(self._active, seconds - self.WARNING_ADVANCE - 5)
-            if seconds - self._active > self.WARNING_ADVANCE:
+            wa = self._warning_advance
+            self._active   = min(self._active, seconds - wa - 5)
+            if seconds - self._active > wa:
+                self._warning_shown = False
+
+    def set_warning_advance_seconds(self, seconds: int) -> None:
+        with self._lock:
+            self._warning_advance = max(1, int(seconds))
+            wa = self._warning_advance
+            self._active = min(self._active, self._interval - wa - 5)
+            if self._interval - self._active > wa:
+                self._warning_shown = False
+
+    def set_reminders_enabled(self, enabled: bool) -> None:
+        with self._lock:
+            self._reminders_enabled = bool(enabled)
+            if not self._reminders_enabled:
                 self._warning_shown = False
 
     def reset_cycle(self) -> None:

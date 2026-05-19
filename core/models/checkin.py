@@ -14,6 +14,8 @@ class CheckIn:
     event_type: str = "break"       # break | away_return | before_leave | away_session | restroom
     start_time: str | None = None
     end_time: str | None = None
+    mood: str | None = None         # great | good | okay | tired | stressed
+    note: str = ""                  # free-form feelings, optional
 
     @classmethod
     def from_dict(cls, d: dict) -> CheckIn:
@@ -27,6 +29,8 @@ class CheckIn:
             event_type=str(d.get("event_type", "break")),
             start_time=d.get("start_time") or None,
             end_time=d.get("end_time") or None,
+            mood=d.get("mood") or None,
+            note=str(d.get("note", "") or ""),
         )
 
     def to_dict(self) -> dict:
@@ -43,4 +47,8 @@ class CheckIn:
             d["start_time"] = self.start_time
         if self.end_time is not None:
             d["end_time"] = self.end_time
+        if self.mood is not None:
+            d["mood"] = self.mood
+        if self.note:
+            d["note"] = self.note
         return d

@@ -17,6 +17,10 @@ class Exercise:
     duration_seconds: int = 0
     sets: int = 0
     duration_per_set: int = 0
+    difficulty: int = 1  # 1=easy 2=moderate 3=hard
+    illustration: str | None = None  # relative path to image, e.g. "exercises/img/T01.png"
+    muscle_focus: list[str] = field(default_factory=list)  # detailed muscle targets for body graph
+    pain_contraindications: list[str] = field(default_factory=list)  # body areas to avoid
 
     @classmethod
     def from_dict(cls, d: dict) -> Exercise:
@@ -34,6 +38,10 @@ class Exercise:
             duration_seconds=int(d.get("duration_seconds", 0)),
             sets=int(d.get("sets", 0)),
             duration_per_set=int(d.get("duration_per_set", 0)),
+            difficulty=int(d.get("difficulty", 1)),
+            illustration=d.get("illustration") or None,
+            muscle_focus=list(d.get("muscle_focus", d.get("muscle_groups", []))),
+            pain_contraindications=list(d.get("pain_contraindications", [])),
         )
 
     def to_dict(self) -> dict:
@@ -51,4 +59,8 @@ class Exercise:
             "duration_seconds": self.duration_seconds,
             "sets": self.sets,
             "duration_per_set": self.duration_per_set,
+            "difficulty": self.difficulty,
+            "illustration": self.illustration,
+            "muscle_focus": self.muscle_focus,
+            "pain_contraindications": self.pain_contraindications,
         }

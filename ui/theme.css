@@ -63,6 +63,34 @@
   --acc-soft: rgba(183,148,244,.12);
 }
 
+/* ── Explicit dark appearance (overrides any selected preset theme) ── */
+[data-appearance="dark"] {
+  --bg:       #1A1A1F;
+  --card:     #25252D;
+  --line:     #34343F;
+  --text:     #F0EBF7;
+  --sub:      #C5BDD0;
+  --muted:    #8C849A;
+  --acc:      #B794F4;
+  --acc2:     #C8B4F0;
+  --acc-soft: rgba(183,148,244,.12);
+}
+
+/* ── System dark mode (only when no explicit override) ── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-appearance="light"]):not([data-appearance="dark"]):not([data-theme]) {
+    --bg:       #1A1A1F;
+    --card:     #25252D;
+    --line:     #34343F;
+    --text:     #F0EBF7;
+    --sub:      #C5BDD0;
+    --muted:    #8C849A;
+    --acc:      #B794F4;
+    --acc2:     #C8B4F0;
+    --acc-soft: rgba(183,148,244,.12);
+  }
+}
+
 *  { box-sizing: border-box; }
 body {
   margin: 0;

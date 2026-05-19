@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script>(function(){var s=document.createElement('style');s.textContent=':root{--bg:#F4EFFA;--card:#fff;--line:#E8E0F0;--text:#2A1B3D;--sub:#4A3A5C;--muted:#8B7A9E;--acc:#A87FEC;--acc2:#6B4FA0;--acc-soft:#F0E6FB;--green:#059669;--amber:#D97706;--red:#DC2626}[data-theme="sage"]{--bg:#F2F5F2;--card:#fff;--line:#DDE6DD;--text:#1F2D24;--sub:#3A4A40;--muted:#7B8A80;--acc:#7BA888;--acc2:#4F7359;--acc-soft:#E5EFE6}[data-theme="mist"]{--bg:#EFF3F8;--card:#fff;--line:#DCE4EC;--text:#1B2A3D;--sub:#3A4A60;--muted:#7B8AA0;--acc:#7B9CC4;--acc2:#4D6E96;--acc-soft:#E5ECF5}[data-theme="ochre"]{--bg:#F8F2EC;--card:#fff;--line:#E8DDD0;--text:#2D1F14;--sub:#4A3A2A;--muted:#9A8472;--acc:#C8856B;--acc2:#8C5A40;--acc-soft:#F2E2D6}[data-theme="ink"],[data-appearance="dark"]{--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}@media(prefers-color-scheme:dark){:root:not([data-appearance="light"]):not([data-theme]){--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}button{font-family:inherit}input{font-family:inherit;color:inherit;outline:none}';document.head.insertBefore(s,document.head.firstChild);var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);var a=localStorage.getItem('reset_appearance');if(a==='dark')document.documentElement.setAttribute('data-appearance','dark');else if(a==='light')document.documentElement.setAttribute('data-appearance','light');var c=localStorage.getItem('reset_custom_colors');if(c)try{var o=JSON.parse(c),r=document.documentElement;Object.keys(o).forEach(function(k){r.style.setProperty('--'+k,o[k]);});}catch(e){}})()</script>
 <link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
-<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Break</title>
 <style>
 /* ── Reset ── */
@@ -250,6 +250,13 @@ input[type="number"]:focus{border-color:var(--acc)}
 .score-est-label{font-size:11px;color:var(--muted);margin-bottom:3px}
 .score-est-val{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--acc2)}
 
+/* Mood picker */
+.mood-row{display:flex;gap:6px;margin-top:2px}
+.mood-btn{background:none;border:2px solid var(--line);border-radius:8px;padding:3px 7px;
+          font-size:18px;cursor:pointer;transition:all .15s;line-height:1.3}
+.mood-btn:hover{border-color:var(--acc)}
+.mood-btn.sel{border-color:var(--acc);background:var(--acc-soft)}
+
 /* Activity type chips */
 .type-chip{
   display:inline-flex;align-items:center;gap:5px;
@@ -435,6 +442,19 @@ input[type="number"]:focus{border-color:var(--acc)}
     <!-- Inline return form, shown after clicking "I'm back" -->
     <div class="away-return-form" id="away-return-form" style="display:none">
       <div class="divider" style="margin:16px 0"></div>
+      <!-- Before section -->
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--acc2);margin-bottom:6px" data-i="awayBeforeLabel">离开前在做</div>
+      <div class="away-chips" id="before-chips"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+        <input type="number" id="before-fm" min="0" placeholder="0"
+               style="width:52px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;text-align:center">
+        <span style="font-size:12px;color:var(--muted)" data-i="awayMinLabel">分钟</span>
+        <input type="text" id="before-wc" data-i-ph="awayBeforeWcPh" placeholder="简单描述一下…"
+               style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px"
+               onclick="this.focus()">
+      </div>
+      <!-- During section -->
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--acc2);margin-bottom:6px" data-i="awayDuringLabel">离开期间</div>
       <div class="away-chips" id="away-chips"></div>
       <div class="field-group" style="margin-bottom:14px">
         <input type="text" id="away-wc"
@@ -500,6 +520,20 @@ input[type="number"]:focus{border-color:var(--acc)}
       </div>
     </div>
 
+    <!-- Mood + Note (optional) -->
+    <div class="field-group" style="margin-bottom:14px">
+      <label data-i="moodLabel">心情</label>
+      <div class="mood-row" id="mood-row"></div>
+    </div>
+    <div class="field-group" style="margin-bottom:18px">
+      <label data-i="noteLabel">感受（选填）</label>
+      <input type="text" id="note-input"
+             placeholder="随便写写…"
+             data-i-ph="notePh"
+             autocomplete="off"
+             onclick="this.focus()">
+    </div>
+
     <button class="complete-btn" id="complete-btn" disabled onclick="doCheckin()" data-i="completeBtn">
       完成打卡 ✓
     </button>
@@ -535,11 +569,15 @@ const T = {
     loadErr:       '加载失败，请检查后端是否运行',
     skipEx:        '跳过动作',
     pauseBtn:      '暂停 / 去洗手间',
-    awayHeader:    '离开中',
-    awayLabel:     '记录这段时间做了什么',
-    awayBackBtn:   '我回来了，记录一下',
-    awayWcPh:      '做了什么…',
-    awaySubmitBtn: '记录并继续',
+    awayHeader:      '离开中',
+    awayLabel:       '记录这段时间做了什么',
+    awayBackBtn:     '我回来了，记录一下',
+    awayWcPh:        '做了什么…',
+    awaySubmitBtn:   '记录并继续',
+    awayBeforeLabel: '离开前在做',
+    awayMinLabel:    '分钟',
+    awayBeforeWcPh:  '简单描述一下…',
+    awayDuringLabel: '离开期间',
     backBtn:       '← 返回',
     checkinLabel:  '记录这段专注',
     eyeLabel:      '眺望 6m 外',
@@ -550,6 +588,9 @@ const T = {
     focusLabel:    '专注时长',
     focusUnit:     '分钟',
     estLabel:      '预计获得',
+    moodLabel:     '心情',
+    noteLabel:     '感受（选填）',
+    notePh:        '随便写写…',
     completeBtn:   '完成打卡 ✓',
     submitting:    '提交中...',
     successTitle:  '打卡成功',
@@ -576,11 +617,15 @@ const T = {
     loadErr:       'Failed to load. Is backend running?',
     skipEx:        'Skip exercise',
     pauseBtn:      'Pause / Restroom',
-    awayHeader:    'Away',
-    awayLabel:     'Log what you did',
-    awayBackBtn:   "I'm back — log it",
-    awayWcPh:      'What did you do?',
-    awaySubmitBtn: 'Log & Continue',
+    awayHeader:      'Away',
+    awayLabel:       'Log what you did',
+    awayBackBtn:     "I'm back — log it",
+    awayWcPh:        'What did you do?',
+    awaySubmitBtn:   'Log & Continue',
+    awayBeforeLabel: 'Before you left',
+    awayMinLabel:    'min',
+    awayBeforeWcPh:  'Brief description…',
+    awayDuringLabel: 'While away',
     backBtn:       '← Back',
     checkinLabel:  'Log Your Focus',
     eyeLabel:      'Look 6 m away',
@@ -591,6 +636,9 @@ const T = {
     focusLabel:    'Focus duration',
     focusUnit:     'min',
     estLabel:      'Est. score',
+    moodLabel:     'Mood',
+    noteLabel:     'How do you feel? (optional)',
+    notePh:        'Write anything…',
     completeBtn:   'Complete Check-In ✓',
     submitting:    'Submitting...',
     successTitle:  'Done',
@@ -654,6 +702,24 @@ let exercises = [];
 let selectedEx = null;
 let exSkipped    = false;
 let selectedType = null;
+let _mood = null;
+
+const MOODS = [
+  {id:'great',    icon:'🤩'},
+  {id:'good',     icon:'😊'},
+  {id:'okay',     icon:'😐'},
+  {id:'tired',    icon:'😔'},
+  {id:'stressed', icon:'😫'},
+];
+
+function renderMoodPicker() {
+  const row = document.getElementById('mood-row');
+  if (!row) return;
+  row.innerHTML = MOODS.map(m =>
+    `<button class="mood-btn${_mood===m.id?' sel':''}" title="${m.id}"
+       onclick="event.stopPropagation();_mood=_mood==='${m.id}'?null:'${m.id}';renderMoodPicker()">${m.icon}</button>`
+  ).join('');
+}
 let ACT_TYPES    = [];   // loaded from /api/activity-types
 let _tmOpen      = false;
 
@@ -1030,11 +1096,13 @@ function backToSelection() {
 async function goToCheckin() {
   clearInterval(setInterval_);
   selectedType = null;
+  _mood = null;
   _tmOpen = false;
   const tm = document.getElementById('type-manager');
   if (tm) tm.style.display = 'none';
   showView('checkin');
   renderTypeChips();
+  renderMoodPicker();
   startEyeTimer();
   // Refresh the suggested focus time at the moment the user reaches check-in
   // (more accurate than the value set at page-load, which might be minutes old)
@@ -1123,7 +1191,7 @@ function checkReady() {
   const fm    = fmRaw;
   // focus time can be 0 (e.g. quick restroom log); only require non-negative number
   const fmOk  = !isNaN(fm) && fm >= 0;
-  const ready = (selectedEx || exSkipped) && eyeDone && wc.length > 0 && fmOk;
+  const ready = (selectedEx || exSkipped) && eyeDone && fmOk;
   document.getElementById('complete-btn').disabled = !ready;
 }
 
@@ -1142,7 +1210,7 @@ async function doCheckin() {
     const res  = await fetch('/api/checkin', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({exercise: selectedEx, work_content: wc, focus_minutes: fm, activity_type: selectedType}),
+      body: JSON.stringify({exercise: selectedEx, work_content: wc, focus_minutes: fm, activity_type: selectedType, mood: _mood||null, note: document.getElementById('note-input')?.value?.trim()||''}),
     });
     const data = await res.json();
     if (data.success) {
@@ -1166,12 +1234,24 @@ async function doCheckin() {
    AWAY MODE (pause)
 ════════════════════════════════════════ */
 let awayReturnType = 'restroom';
+let awayRestroomSubtype = null;  // 'small' | 'big' | null
+let beforeLeaveType = null;
+let _beforeLeaveFm = 0;  // suggested focus minutes captured at departure time
 let awayTimerInterval = null;
 
 function initAwayView() {
   showView('away');
   renderAwayChips();
-  updateAwayElapsed();
+  // Capture suggested_focus_minutes NOW (= time from last check-in to departure)
+  // before the away timer starts accumulating, so we have the correct before-leave duration
+  fetch('/api/status').then(r=>r.json()).then(s=>{
+    _beforeLeaveFm = s.suggested_focus_minutes || 0;
+    // Also update the elapsed display immediately
+    const secs = s.away_seconds || 0;
+    const m = Math.floor(secs/60), se = secs%60;
+    const el = document.getElementById('away-elapsed');
+    if(el) el.textContent = `${String(m).padStart(2,'0')}:${String(se).padStart(2,'0')}`;
+  }).catch(()=>{});
   awayTimerInterval = setInterval(updateAwayElapsed, 60000);
 }
 
@@ -1191,31 +1271,67 @@ function renderAwayChips() {
   if (!c) return;
   const restroomLabel = lang === 'zh' ? '洗手间' : 'Restroom';
   const types = [{id:'restroom', label: restroomLabel, color:'#B794F4'}, ...ACT_TYPES];
-  c.innerHTML = types.map(tp => {
+  let html = types.map(tp => {
     const isSel = awayReturnType === tp.id;
     return `<span class="away-chip${isSel?' sel':''}"
       style="${isSel ? `background:${tp.color};border-color:${tp.color}` : `border-color:${tp.color}66;color:${tp.color}`}"
-      onclick="awayReturnType='${tp.id}';renderAwayChips()">${tp.label}</span>`;
+      onclick="awayReturnType='${tp.id}';awayRestroomSubtype=null;renderAwayChips()">${tp.label}</span>`;
+  }).join('');
+  if (awayReturnType === 'restroom') {
+    const subs = lang === 'zh'
+      ? [{id:'small', label:'小号'},{id:'big', label:'大号'}]
+      : [{id:'small', label:'Small'},{id:'big', label:'Large'}];
+    html += `<div style="margin-top:5px;display:flex;gap:5px">` +
+      subs.map(st => {
+        const isSel = awayRestroomSubtype === st.id;
+        return `<span class="away-chip${isSel?' sel':''}" style="font-size:11px;padding:3px 10px;${isSel?'background:#B794F4;border-color:#B794F4':'border-color:#B794F466;color:#B794F4'}"
+          onclick="awayRestroomSubtype='${st.id}';renderAwayChips()">${st.label}</span>`;
+      }).join('') + `</div>`;
+  }
+  c.innerHTML = html;
+}
+
+function renderBeforeChips() {
+  const c = document.getElementById('before-chips');
+  if (!c) return;
+  c.innerHTML = ACT_TYPES.map(tp => {
+    const isSel = beforeLeaveType === tp.id;
+    return `<span class="away-chip${isSel?' sel':''}"
+      style="${isSel ? `background:${tp.color};border-color:${tp.color}` : `border-color:${tp.color}66;color:${tp.color}`}"
+      onclick="beforeLeaveType='${tp.id}';renderBeforeChips()">${tp.label}</span>`;
   }).join('');
 }
 
 function showAwayReturn() {
   document.getElementById('away-back-btn').style.display = 'none';
   document.getElementById('away-return-form').style.display = 'block';
+  renderBeforeChips();
+  // Use focus minutes captured at departure time (not current time, which would include away duration)
+  const el = document.getElementById('before-fm');
+  if (el && _beforeLeaveFm > 0) el.value = _beforeLeaveFm;
   const wcEl = document.getElementById('away-wc');
-  if (wcEl) { wcEl.placeholder = T[lang].awayWcPh || '做了什么…'; wcEl.focus(); }
+  if (wcEl) { wcEl.placeholder = T[lang].awayWcPh || '做了什么…'; }
 }
 
 async function submitReturn() {
   const wc = (document.getElementById('away-wc')?.value || '').trim();
+  const beforeWc = (document.getElementById('before-wc')?.value || '').trim();
+  const beforeFm = Math.max(0, parseInt(document.getElementById('before-fm')?.value || 0) || 0);
   const btn = document.getElementById('away-submit-btn');
   if (btn) { btn.disabled = true; btn.textContent = T[lang].submitting || '…'; }
   try {
     await fetch('/api/return-log', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({activity_type: awayReturnType, work_content: wc}),
+      body: JSON.stringify({
+        activity_type: awayReturnType, work_content: wc,
+        restroom_subtype: awayReturnType === 'restroom' ? awayRestroomSubtype : null,
+        before_leave: {
+          activity_type: beforeLeaveType,
+          work_content: beforeWc,
+          focus_minutes: beforeFm,
+        },
+      }),
     });
-    // Backend closes the break window; clear local interval
     clearInterval(awayTimerInterval);
   } catch {
     if (btn) { btn.disabled = false; btn.textContent = T[lang].awaySubmitBtn || '记录并继续'; }

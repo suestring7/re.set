@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<script>(function(){var s=document.createElement('style');s.textContent=':root{--bg:#F4EFFA;--card:#fff;--line:#E8E0F0;--text:#2A1B3D;--sub:#4A3A5C;--muted:#8B7A9E;--acc:#A87FEC;--acc2:#6B4FA0;--acc-soft:#F0E6FB;--green:#059669;--amber:#D97706;--red:#DC2626}[data-theme="sage"]{--bg:#F2F5F2;--card:#fff;--line:#DDE6DD;--text:#1F2D24;--sub:#3A4A40;--muted:#7B8A80;--acc:#7BA888;--acc2:#4F7359;--acc-soft:#E5EFE6}[data-theme="mist"]{--bg:#EFF3F8;--card:#fff;--line:#DCE4EC;--text:#1B2A3D;--sub:#3A4A60;--muted:#7B8AA0;--acc:#7B9CC4;--acc2:#4D6E96;--acc-soft:#E5ECF5}[data-theme="ochre"]{--bg:#F8F2EC;--card:#fff;--line:#E8DDD0;--text:#2D1F14;--sub:#4A3A2A;--muted:#9A8472;--acc:#C8856B;--acc2:#8C5A40;--acc-soft:#F2E2D6}[data-theme="ink"],[data-appearance="dark"]{--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}@media(prefers-color-scheme:dark){:root:not([data-appearance="light"]):not([data-theme]){--bg:#1A1A1F;--card:#25252D;--line:#34343F;--text:#F0EBF7;--sub:#C5BDD0;--muted:#8C849A;--acc:#B794F4;--acc2:#C8B4F0;--acc-soft:rgba(183,148,244,.12)}}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}button{font-family:inherit}input{font-family:inherit;color:inherit;outline:none}';document.head.insertBefore(s,document.head.firstChild);var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);var a=localStorage.getItem('reset_appearance');if(a==='dark')document.documentElement.setAttribute('data-appearance','dark');else if(a==='light')document.documentElement.setAttribute('data-appearance','light');var c=localStorage.getItem('reset_custom_colors');if(c)try{var o=JSON.parse(c),r=document.documentElement;Object.keys(o).forEach(function(k){r.style.setProperty('--'+k,o[k]);});}catch(e){}})()</script>
 <link rel="stylesheet" href="/theme.css">
 <script src="/shared.js"></script>
-<script>(function(){var t=localStorage.getItem('reset_theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
 <title>re.set — Records</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -13,32 +13,34 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:-apple-system,
 body{display:flex;flex-direction:column}
 
 /* ── NAV BAR ── */
-.nav{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px}
-.nav-arrow{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;color:var(--muted);transition:all .15s}
+.nav{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:9px 16px;display:flex;align-items:center;gap:8px}
+.nav-arrow{background:none;border:1px solid var(--line);border-radius:6px;padding:3px 9px;cursor:pointer;font-size:15px;color:var(--muted);transition:all .15s;line-height:1.4}
 .nav-arrow:hover{border-color:var(--acc);color:var(--acc)}
 .nav-arrow:disabled{opacity:.3;cursor:default}
-.nav-date{font-size:14px;font-weight:700;color:var(--text);min-width:140px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s}
+.nav-date{font-size:13px;font-weight:700;color:var(--text);min-width:130px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s}
 .nav-date:hover{background:var(--bg)}
-.nav-today{font-size:11px;font-weight:600;color:var(--acc2);background:var(--acc-soft);border:1px solid var(--acc);border-radius:99px;padding:3px 10px;cursor:pointer;margin-left:4px}
+.nav-today{font-size:10.5px;font-weight:600;color:var(--acc2);background:var(--acc-soft);border:1px solid transparent;border-radius:99px;padding:2px 9px;cursor:pointer;margin-left:2px;transition:border-color .15s}
+.nav-today:hover{border-color:var(--acc)}
 .spacer{flex:1}
-.view-tabs{display:flex;gap:4px}
-.vtab{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;height:28px;display:inline-flex;align-items:center;justify-content:center}
+.view-tabs{display:flex;gap:3px}
+.vtab{background:none;border:1px solid transparent;border-radius:6px;padding:4px 9px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;height:26px;display:inline-flex;align-items:center;justify-content:center}
+.vtab:hover{color:var(--text);background:var(--bg)}
 .vtab.active{background:var(--acc);border-color:var(--acc);color:#fff}
 
 /* ── STATS STRIP ── */
-.score-row{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:0}
-.stat-cell{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 10px}
+.score-row{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);padding:11px 16px;display:flex;align-items:center;gap:0}
+.stat-cell{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 12px}
 .stat-cell:first-child{padding-left:0}
 .stat-val{font-family:var(--mono);font-size:20px;font-weight:300;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
-.stat-lbl{font-size:10.5px;color:var(--muted);letter-spacing:.4px;margin-top:3px}
-.stat-sep{width:1px;height:36px;background:var(--line);flex-shrink:0}
+.stat-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:4px}
+.stat-sep{width:1px;height:34px;background:var(--line);flex-shrink:0}
 
 /* ── SCROLL AREA ── */
-.scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:0}
 
 /* ── EMPTY ── */
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;gap:8px}
-.empty-icon{font-size:36px}.empty-text{font-size:13px;color:var(--muted)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:8px}
+.empty-icon{font-size:32px;opacity:.5}.empty-text{font-size:12.5px;color:var(--muted)}
 
 /* ══ VIEW 1: EVENT TIMELINE ══ */
 .timeline{position:relative;padding-left:26px}
@@ -46,15 +48,15 @@ body{display:flex;flex-direction:column}
 .ev{position:relative;margin-bottom:14px}
 .ev-dot{position:absolute;left:-26px;top:12px;width:12px;height:12px;border-radius:50%;background:var(--card);border:2px solid var(--acc);z-index:1}
 .ev-dot.away{border-color:var(--line);background:var(--line)}
-.ecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
-.ecard.away-card{border-style:dashed}
+.ecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;border-left-width:3px}
+.ecard.away-card{border-style:dashed;border-left-style:dashed}
 .ec-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
 .etime{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--muted)}
 .ebadge{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:1px 7px;border-radius:99px}
 .act-pill{font-size:11px;padding:1px 8px;border-radius:99px;font-weight:600}
-.score-pill{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc2);background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.15);padding:1px 7px;border-radius:99px;margin-left:auto}
-.ex-name{font-size:13px;font-weight:600;margin-bottom:3px}
-.wc{font-size:12px;color:var(--sub);font-style:italic;margin-bottom:5px}
+.score-pill{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc2);background:var(--acc-soft);border:1px solid var(--line);padding:1px 7px;border-radius:99px;margin-left:auto}
+.ex-name{font-size:11px;color:var(--muted);margin-bottom:3px}
+.wc{font-size:13px;font-weight:600;margin-bottom:3px}
 .chips-row{display:flex;gap:6px;flex-wrap:wrap}
 .chip{font-size:10.5px;color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:1px 7px;border-radius:99px}
 
@@ -65,9 +67,9 @@ body{display:flex;flex-direction:column}
 .edit-time-hint:hover{color:var(--acc)}
 
 /* ── HOVER + CLICK TO EDIT ── */
-.ecard:not(.ecard-editing){cursor:pointer;transition:border-color .18s,box-shadow .18s}
-.ecard:not(.ecard-editing):hover{border-color:var(--acc)!important;box-shadow:0 2px 12px rgba(0,0,0,.06),0 0 0 2.5px rgba(183,148,244,.18)}
-.ecard-editing{border-color:var(--acc)!important;border-left-width:3px!important;cursor:default}
+.ecard:not(.ecard-editing){cursor:pointer;transition:border-color .18s,box-shadow .18s,border-left-color .18s}
+.ecard:not(.ecard-editing):hover{border-color:var(--line)!important;border-left-color:var(--acc)!important;box-shadow:0 2px 14px rgba(0,0,0,.06)}
+.ecard-editing{border-color:var(--acc)!important;border-left-width:4px!important;cursor:default}
 .edit-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .edit-time{font-family:var(--mono);font-size:12px;font-weight:600;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);outline:none;width:90px}
 .edit-time:focus{border-color:var(--acc)}
@@ -76,24 +78,45 @@ body{display:flex;flex-direction:column}
 .edit-dur-unit{font-size:11px;color:var(--muted);margin-left:-2px}
 .edit-overlap-err{font-size:11px;color:var(--red);margin-left:6px;display:none}
 .edit-overlap-err.show{display:inline}
+.ev-conflict .ecard{outline:2px solid var(--red);background:rgba(220,38,38,.06)}
 .edit-cancel-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:0;transition:color .15s}
 .edit-cancel-btn:hover{color:var(--red)}
 .edit-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .edit-type-chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);cursor:pointer;transition:all .15s}
 .edit-type-chip:hover{border-color:var(--acc);color:var(--text)}
 .edit-type-chip.sel{color:#fff;border-color:transparent}
-.edit-wc{width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;margin-bottom:10px}
+.edit-wc{width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;margin-bottom:8px}
 .edit-wc:focus{border-color:var(--acc)}
+.edit-mood-row{display:flex;gap:5px;margin-bottom:8px}
+.edit-mood-btn{background:none;border:2px solid var(--line);border-radius:7px;padding:2px 6px;font-size:16px;cursor:pointer;transition:all .15s;line-height:1.3}
+.edit-mood-btn:hover{border-color:var(--acc)}
+.edit-mood-btn.sel{border-color:var(--acc);background:var(--acc-soft)}
+.edit-note{width:100%;padding:5px 9px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;margin-bottom:8px}
+.edit-note:focus{border-color:var(--acc)}
+.ev-mood{font-size:13px;margin-right:3px}
+.ev-note{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic}
 .edit-actions{display:flex;justify-content:flex-end}
 .edit-save-btn{padding:5px 14px;background:var(--acc2);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .edit-save-btn:hover{opacity:.85}
 
+/* ── GAP INSERT ── */
+.ev-gap{display:flex;align-items:center;gap:7px;padding:2px 0 8px;margin-bottom:2px;cursor:pointer;opacity:.45;transition:opacity .15s}
+.ev-gap:hover{opacity:1}
+.ev-gap-dot{width:18px;height:18px;border-radius:50%;border:1.5px dashed var(--acc);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:300;color:var(--acc);flex-shrink:0;margin-left:-3px;line-height:1}
+.ev-gap-lbl{font-size:11px;color:var(--muted)}
+
 /* ══ VIEW 2: 24H PROPORTIONAL ══ */
 .view24{padding:8px 0}
-.h24-track{position:relative;height:56px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
-.h24-tick-row{display:flex;justify-content:space-between;padding:0 0 4px;color:var(--muted);font-size:10px;font-family:var(--mono)}
-.h24-block{position:absolute;top:4px;height:48px;border-radius:4px;opacity:.85;transition:opacity .15s;cursor:default}
-.h24-block:hover{opacity:1}
+.h24-track{position:relative;height:72px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.h24-tick-row{display:flex;justify-content:space-between;padding:0 0 5px;color:var(--muted);font-size:10px;font-family:var(--mono)}
+.h24-block{position:absolute;top:4px;height:64px;border-radius:4px;opacity:.85;transition:opacity .15s;cursor:default}
+.h24-block:hover{opacity:1;z-index:2}
+#h24-tooltip{position:fixed;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;font-size:12px;box-shadow:0 4px 20px rgba(0,0,0,.12);pointer-events:none;z-index:200;display:none;min-width:160px;max-width:220px}
+.h24-tip-time{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px}
+.h24-tip-act{display:flex;align-items:center;gap:5px;font-weight:600;margin-bottom:4px}
+.h24-tip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.h24-tip-wc{color:var(--sub);font-size:12px;line-height:1.4;margin-bottom:5px}
+.h24-tip-meta{display:flex;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .h24-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
 .leg-dot{width:8px;height:8px;border-radius:2px}
@@ -122,8 +145,9 @@ body{display:flex;flex-direction:column}
 .bar-range-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;height:28px;display:inline-flex;align-items:center;justify-content:center}
 .bar-range-btn.active{border-color:var(--acc);color:var(--acc2)}
 .bar-spacer{flex:1}
-.bar-wrap{display:flex;justify-content:center;overflow-x:auto;padding-bottom:4px}
+.bar-wrap{flex:1;display:flex;justify-content:center;overflow-x:auto;padding-bottom:4px}
 .bar-chart{display:flex;align-items:flex-end;gap:0;min-height:160px;min-width:min-content}
+#bar-chart-area{width:100%}
 .bar-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
 .bar-stack{display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden;min-height:4px;width:100%;transition:height .3s}
 .bar-seg{width:100%;transition:height .3s}
@@ -139,14 +163,23 @@ body{display:flex;flex-direction:column}
 
 /* ══ VIEW: HEATMAP (GitHub style) ══ */
 .heatmap{padding:4px 0}
-.hm-cell-gh{width:12px;height:12px;border-radius:3px;cursor:pointer;transition:opacity .15s}
-.hm-cell-gh:hover{opacity:.8}
+[data-region]:hover{opacity:.8;cursor:pointer}
 
 /* ── BOTTOM STATS ── */
 .bottom-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 .bstat{display:flex;flex-direction:column;gap:1px}
 .bstat-val{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text)}
 .bstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+
+/* ══ VIEW 5: MUSCLE BODY GRAPH ══ */
+#view-muscles{padding:8px 0}
+.muscle-wrap{display:flex;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.muscle-side{display:flex;flex-direction:column;align-items:center;gap:6px}
+.muscle-side-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.muscle-legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9.5px;color:var(--muted);font-family:var(--mono)}
+.muscle-legend-dot{width:10px;height:10px;border-radius:2px}
+.muscle-region{cursor:pointer;transition:opacity .15s;rx:4}
+.muscle-region:hover{opacity:.75}
 </style>
 </head>
 <body>
@@ -163,6 +196,8 @@ body{display:flex;flex-direction:column}
     <button class="vtab ns" onclick="setView('24h')" id="vtab-24h">24h</button>
     <button class="vtab ns" onclick="setView('bars')" id="vtab-bars">趋势</button>
     <button class="vtab ns" onclick="setView('heatmap')" id="vtab-heatmap">热图</button>
+    <button class="vtab ns" onclick="setView('muscles')" id="vtab-muscles">肌群</button>
+    <button class="vtab ns" onclick="setView('restroom')" id="vtab-restroom" style="display:none">洗手间</button>
   </div>
 </div>
 
@@ -190,15 +225,24 @@ body{display:flex;flex-direction:column}
   </div>
 
   <!-- View 2: 24h proportional bar -->
+  <!-- Hover tooltip for 24h blocks -->
+  <div id="h24-tooltip"></div>
+
   <div id="view-24h" style="display:none">
     <div class="view24">
       <div class="h24-tick-row" id="h24-ticks"></div>
       <div class="h24-track" id="h24-track"></div>
       <div class="h24-legend" id="h24-legend"></div>
-      <div style="margin-top:20px">
-        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px;margin-bottom:10px">占比</div>
-        <div id="h24-bar" style="display:flex;border-radius:6px;overflow:hidden;height:20px;margin-bottom:10px"></div>
-        <div id="h24-breakdown" style="display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px"></div>
+      <!-- Pie chart + breakdown -->
+      <div class="pie-row" id="pie-row" style="margin-top:16px">
+        <div class="pie-wrap">
+          <canvas id="pie-canvas" width="120" height="120"></canvas>
+          <div class="pie-center">
+            <div class="pie-cval" id="pie-cval">0</div>
+            <div class="pie-clbl" id="pie-clbl">min</div>
+          </div>
+        </div>
+        <div class="pie-legend" id="pie-legend"></div>
       </div>
     </div>
   </div>
@@ -208,30 +252,17 @@ body{display:flex;flex-direction:column}
     <div class="bars-inner">
       <div class="bar-toolbar">
         <div class="bar-toggle">
-          <button class="bar-toggle-btn active" id="bar-mode-day" onclick="setBarMode('day')">Day</button>
-          <button class="bar-toggle-btn" id="bar-mode-stack" onclick="setBarMode('stack')">Stacked View</button>
+          <button class="bar-toggle-btn active" id="bar-mode-stack" onclick="setBarMode('stack')">Stacked View</button>
           <button class="bar-toggle-btn" id="bar-mode-tl" onclick="setBarMode('tl')">Timeline View</button>
         </div>
         <div class="bar-spacer"></div>
-        <div id="bar-range-wrap" style="display:none;gap:4px">
+        <div id="bar-range-wrap" style="display:flex;gap:4px">
           <button class="bar-range-btn active" id="bar-range-7" onclick="setBarRange(7)">Week</button>
           <button class="bar-range-btn" id="bar-range-30" onclick="setBarRange(30)">Month</button>
         </div>
       </div>
-      <!-- Day mode: current-day 24h track + pie -->
-      <div id="bar-day-view">
-        <div class="h24-tick-row" id="bd-ticks"></div>
-        <div class="h24-track" id="bd-track"></div>
-        <div class="h24-legend" id="bd-legend"></div>
-        <div class="pie-row">
-          <div class="pie-wrap"><canvas id="bd-pie-canvas" width="240" height="240"></canvas>
-            <div class="pie-center"><div class="pie-cval" id="bd-pie-cval">0</div><div class="pie-clbl" id="bd-pie-clbl">min</div></div>
-          </div>
-          <div class="pie-legend" id="bd-pie-legend"></div>
-        </div>
-      </div>
       <!-- Stacked + Timeline (shared column x-axis) -->
-      <div id="bar-chart-area" style="display:none">
+      <div id="bar-chart-area">
         <div class="chart-area">
           <div class="tl-y-axis" id="tl-y-axis" style="display:none"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
           <div class="bar-wrap" id="bar-wrap">
@@ -246,6 +277,16 @@ body{display:flex;flex-direction:column}
   <!-- View 4: Heatmap (GitHub style) -->
   <div id="view-heatmap" style="display:none">
     <div class="heatmap" id="hm-grid-gh"></div>
+  </div>
+
+  <!-- View 5: Muscle body graph -->
+  <div id="view-muscles" style="display:none">
+    <div id="muscle-content"></div>
+  </div>
+
+  <!-- View 6: Restroom analytics -->
+  <div id="view-restroom" style="display:none">
+    <div id="restroom-content"></div>
   </div>
 </div>
 
@@ -298,8 +339,53 @@ async function loadActivityTypes() {
 }
 const CAT_COLORS={stretch:'#059669',core:'#D97706',strength:'#DC2626'};
 
-let lang='zh', curDate=todayStr(), curView='events', hmYear=0, hmMonth=0;
+let lang='zh', curDate=todayStr(), curView='events';
 let histList={}, curData=null;
+
+/* ══ ACHIEVEMENT DEFINITIONS ══════════════════════════════════════════════
+ * Each entry: { icon, zh, en, condition(stats) → string|null }
+ * stats = { streak, totalResets, totalDays, totalFocusMin, maxDailyScore }
+ * Return a subtitle string if earned, null if not yet unlocked.
+ * ─────────────────────────────────────────────────────────────────────── */
+const ACHIEVEMENT_DEFS = [
+  {
+    icon: '🌱',
+    zh: '连续打卡',
+    en: 'Daily streak',
+    condition: s => s.streak > 0 ? (lang==='zh' ? `${s.streak}天连续` : `${s.streak}d streak`) : null,
+  },
+  {
+    icon: '🔥',
+    zh: '坚持一周',
+    en: 'One full week',
+    condition: s => s.streak >= 7 ? (lang==='zh' ? `已连续${s.streak}天` : `${s.streak}d and counting`) : null,
+  },
+  {
+    icon: '⚡',
+    zh: 'Reset 计数',
+    en: 'Reset count',
+    condition: s => s.totalResets > 0 ? (lang==='zh' ? `累计${s.totalResets}次` : `${s.totalResets} total`) : null,
+  },
+  {
+    icon: '💪',
+    zh: '小有所成',
+    en: 'Getting traction',
+    condition: s => s.totalResets >= 100 ? (lang==='zh' ? `已满100次reset` : `100+ resets`) : null,
+  },
+  {
+    icon: '🎯',
+    zh: '专注达人',
+    en: 'Focus champion',
+    condition: s => s.totalFocusMin >= 3000 ? (lang==='zh' ? `累计${Math.round(s.totalFocusMin/60)}h专注` : `${Math.round(s.totalFocusMin/60)}h focused`) : null,
+  },
+  {
+    icon: '🏆',
+    zh: '月度活跃',
+    en: 'Monthly active',
+    condition: s => s.totalDays >= 20 ? (lang==='zh' ? `${s.totalDays}天有记录` : `${s.totalDays} active days`) : null,
+  },
+  // ── Add new achievements below this line ──
+];
 
 const t=(k,...a)=>{const v=TXT[lang][k];return typeof v==='function'?v(...a):(v??k)};
 function todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -312,20 +398,23 @@ function fmtDate(iso){
 }
 
 /* ── VIEW SWITCHING ── */
+let menuFeatures = {};
 function setView(v){
   curView=v;
-  ['events','24h','bars','heatmap'].forEach(n=>{
-    const el = document.getElementById(`view-${n}`);
+  ['events','24h','bars','heatmap','muscles','restroom'].forEach(n=>{
+    const el=document.getElementById(`view-${n}`);
     if(el) el.style.display=n===v?'':'none';
-    const tab = document.getElementById(`vtab-${n}`);
+    const tab=document.getElementById(`vtab-${n}`);
     if(tab) tab.classList.toggle('active',n===v);
   });
   if(v==='heatmap') renderHeatmap();
   else if(v==='bars'){
     if(_barMode==='stack') renderBars();
-    else renderTimeline(); 
-  } 
+    else renderTimeline();
+  }
   else if(v==='24h') render24h();
+  else if(v==='muscles') renderMuscles();
+  else if(v==='restroom') renderRestroom();
 }
 
 /* ── DATE NAVIGATION ── */
@@ -361,56 +450,19 @@ function renderHeader(data){
   if(fEl) fEl.textContent = focusStr;
   if(rEl) rEl.textContent = resets;
   if(sEl) sEl.textContent = '★ ' + score;
-  // Streak: count consecutive days with score>0 going backward from today
   const streakEl = document.getElementById('stat-streak');
   if(streakEl){
     let streak=0;
     const d=new Date();
     while(true){
       const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      if(!histList[iso]||(histList[iso].total_score||0)===0) break;
+      if(!histList[iso]||!histList[iso].minimums_met) break;
       streak++;
       d.setDate(d.getDate()-1);
-    } 
+    }
     streakEl.textContent = streak + (lang==='zh'?'天':'d');
-  } 
+  }
 }
-
-function render24h(){
-  if(!curData) return;
-  const ckins=(curData.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
-  document.getElementById('h24-ticks').innerHTML=
-    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
-  document.getElementById('h24-track').innerHTML=ckins.map(c=>{
-    const endMin=timeToMin(c.time); if(endMin<0)return'';
-    const fm=Math.max(c.focus_minutes||15,15);
-    const startMin=Math.max(endMin-fm,0);
-    const left=(startMin/1440)*100, w=Math.max((fm/1440)*100,1.5);
-    const col=ACT_COLORS(c.activity_type||'other');
-    const label=c.work_content||ACT_LABEL(c.activity_type||'other')||'';
-    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
-    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}"
-      title="${startStr}–${c.time} ${label}"></div>`;
-  }).join('');
-  // Stacked breakdown bar
-  const byAct={};
-  ckins.forEach(c=>{const a=c.activity_type||'other';byAct[a]=(byAct[a]||0)+(c.focus_minutes||0);});
-  const totalMin=Object.values(byAct).reduce((a,b)=>a+b,0)||1;
-  const entries=Object.entries(byAct).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('h24-bar').innerHTML=entries.map(([act,min])=>{
-    const pct=(min/totalMin*100).toFixed(1);
-    return`<div style="width:${pct}%;background:${ACT_COLORS(act)};display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:#1a1a1a;overflow:hidden;white-space:nowrap">${min>totalMin*0.08?ACT_LABEL(act):''}</div>`;
-  }).join('');
-  document.getElementById('h24-breakdown').innerHTML=entries.map(([act,min])=>
-    `<div style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:2px;background:${ACT_COLORS(act)};display:inline-block"></span><span
-    style="color:var(--sub)">${ACT_LABEL(act)}</span><span
-    style="font-family:var(--mono);font-size:11px;color:var(--muted)">${min}m</span></div>`
-  ).join('');
-  document.getElementById('h24-legend').innerHTML=entries.map(([act,])=>
-    `<div class="leg-item"><div class="leg-dot" 
-    style="background:${ACT_COLORS(act)}"></div><span>${ACT_LABEL(act)}</span></div>`
-  ).join('');
-} 
 
 /* ── BOTTOM STATS ── */
 function renderBottom(data){
@@ -427,8 +479,18 @@ function renderBottom(data){
 }
 
 /* ══ VIEW 1: EVENT TIMELINE ══ */
-let _editIdx = -1;                // which checkin is in edit mode
-let _editAct = null;              // activity type being edited
+let _editIdx = -1;
+let _editAct = null;
+let _editMood = null;
+
+const MOODS = [
+  {id:'great',    icon:'🤩'},
+  {id:'good',     icon:'😊'},
+  {id:'okay',     icon:'😐'},
+  {id:'tired',    icon:'😔'},
+  {id:'stressed', icon:'😫'},
+];
+const MOOD_ICON = Object.fromEntries(MOODS.map(m=>[m.id, m.icon]));
 
 /* Return inferred [startTime, endTime] strings for checkin at index i
    within the sorted array. startTime = previous record's time (or same if first).
@@ -463,7 +525,7 @@ function renderEvents(data){
   if(!ckins.length){em.style.display='flex';tl.innerHTML='';return;}
   em.style.display='none';
 
-  tl.innerHTML=ckins.map((c,i)=>{
+  const _cs=ckins.map((c,i)=>{
     const isAway=c.event_type==='restroom'||c.event_type==='away_return';
     const ex=c.exercise, act=c.activity_type;
     const ss=c.score||0;
@@ -486,9 +548,9 @@ function renderEvents(data){
           onclick="event.stopPropagation();_editAct=_editAct==='${tp.id}'?null:'${tp.id}';renderEvents(curData)">${tp.label}</span>`;
       }).join('');
       const fillHint = lang==='zh'?'自动填充':'auto-fill';
-      return`<div class="ev">
+      return`<div class="ev" id="ev-${i}">
         <div class="ev-dot${isAway?' away':''}" style="${act&&!isAway?`border-color:${ACT_COLORS(act)}`:''}" ></div>
-        <div class="ecard ecard-editing" style="border-left:3px solid ${borderCol}">
+        <div class="ecard ecard-editing" style="border-left-color:${borderCol}">
           <div class="edit-time-range">
             <input class="edit-time" id="ets-${i}" type="time" value="${showStart}"
               title="${lang==='zh'?'开始时间':'Start time'}"
@@ -514,9 +576,15 @@ function renderEvents(data){
             value="${(c.work_content||'').replace(/"/g,'&quot;')}"
             placeholder="${lang==='zh'?'这段时间在做什么…':'What were you working on?'}"
             onclick="event.stopPropagation()">
+          <div class="edit-mood-row">${MOODS.map(m=>`<button class="edit-mood-btn${_editMood===m.id?' sel':''}"
+            onclick="event.stopPropagation();_editMood=_editMood==='${m.id}'?null:'${m.id}';renderEvents(curData)">${m.icon}</button>`).join('')}</div>
+          <input class="edit-note" id="enote-${i}" type="text"
+            value="${(c.note||'').replace(/"/g,'&quot;')}"
+            placeholder="${lang==='zh'?'感受（选填）':'Feelings (optional)'}"
+            onclick="event.stopPropagation()">
           <div class="edit-actions" style="justify-content:space-between">
-            <button class="edit-save-btn" style="background:var(--red)"
-              onclick="event.stopPropagation();deleteRecord(${i})">${lang==='zh'?'删除':'Delete'}</button>
+            <button class="edit-save-btn" style="${c._phantom?'':'background:var(--red)'}"
+              onclick="event.stopPropagation();deleteRecord(${i})">${c._phantom?(lang==='zh'?'取消':'Cancel'):(lang==='zh'?'删除':'Delete')}</button>
             <button class="edit-save-btn" onclick="event.stopPropagation();saveEdit(${i})">${lang==='zh'?'保存':'Save'}</button>
           </div>
         </div></div>`;
@@ -528,13 +596,13 @@ function renderEvents(data){
     const actP = act ? `'${act}'` : 'null';
     if(isAway) return`<div class="ev">
       <div class="ev-dot away"></div>
-      <div class="ecard away-card" style="border-left:3px solid ${borderCol}"
+      <div class="ecard away-card" style="border-left-color:${borderCol}"
            onclick="startEdit(${i},${actP})">
         <div class="ec-top">
           <span class="etime">${c.time||''}</span>
           <span class="ebadge" style="background:rgba(156,163,175,.1);color:var(--muted)">↩</span>
           <span style="font-size:12px;color:var(--muted)">${t('away')}</span>
-          <span class="score-pill">+${ss||1}</span>
+          <span class="score-pill">${(ss||1)>=0?'+':''}${ss||1}</span>
         </div>
         ${c.work_content?`<div class="wc">"${c.work_content}"</div>`:''}
       </div></div>`;
@@ -549,25 +617,53 @@ function renderEvents(data){
     if(fm>0) chips.push(`<span class="chip">${RS.fmtMin(fm, lang)}</span>`);
     if(ex?.sets) chips.push(`<span class="chip">${ex.sets}${t('sets')}×${ex.duration_per_set}s</span>`);
 
-    return`<div class="ev">
+    const moodIcon = c.mood ? MOOD_ICON[c.mood] : '';
+    return`<div class="ev" id="ev-${i}">
       <div class="ev-dot" style="${dotStyle}"></div>
-      <div class="ecard" style="border-left:3px solid ${borderCol}"
+      <div class="ecard" style="border-left-color:${borderCol}"
            onclick="startEdit(${i},${actP})">
         <div class="ec-top">
           <span class="etime">${c.time||''}</span>
+          ${moodIcon?`<span class="ev-mood">${moodIcon}</span>`:''}
           ${catBadge}
-          <span class="score-pill">+${ss}</span>
+          <span class="score-pill">${ss>=0?'+':''}${ss}</span>
         </div>
-        ${exName?`<div class="ex-name">${exName}<span style="font-size:10px;color:var(--muted);margin-left:6px;font-family:var(--mono)">${exId}</span></div>`:''}
-        ${c.work_content?`<div class="wc">"${c.work_content}"</div>`:''}
+        ${c.work_content?`<div class="wc">${c.work_content}</div>`:''}
+        ${c.note?`<div class="ev-note">${c.note}</div>`:''}
+        ${exName?`<div class="ex-name">${exName}<span style="margin-left:5px;font-family:var(--mono)">${exId}</span></div>`:''}
         ${chips.length?`<div class="chips-row">${chips.join('')}</div>`:''}
       </div></div>`;
-  }).join('');
+  });
+  // Insert gap buttons between events with unrecorded time (≥15 min)
+  const _ps=[];
+  for(let _g=0;_g<_cs.length;_g++){
+    _ps.push(_cs[_g]);
+    if(_g<ckins.length-1&&ckins[_g].time&&ckins[_g+1].time&&!ckins[_g]._phantom&&!ckins[_g+1]._phantom){
+      const _pe=timeToMin(ckins[_g].time);
+      const _nfm=ckins[_g+1].focus_minutes||0;
+      const _ne=timeToMin(ckins[_g+1].time);
+      const _ns=Math.max(0,_ne-_nfm);
+      const _gap=_ns-_pe;
+      if(_pe>=0&&_ne>=0&&_gap>=15){
+        const _gh=Math.floor(_ns/60),_gm=_ns%60;
+        const _gef=`${String(_gh).padStart(2,'0')}:${String(_gm).padStart(2,'0')}`;
+        const _gl=lang==='zh'?`未记录 ${_gap} 分钟`:`${_gap} min unlogged`;
+        _ps.push(`<div class="ev-gap" onclick="addGapRecord('${ckins[_g].time}','${_gef}')"><span class="ev-gap-dot">+</span><span class="ev-gap-lbl">${_gl}</span></div>`);
+      }
+    }
+  }
+  tl.innerHTML=_ps.join('');
 }
 
 function startEdit(idx, act){
   if(_editIdx===idx) return;
   _editIdx=idx; _editAct=act||null;
+  // Pre-populate mood from the record being edited
+  const _sc=[...curData.checkins||[]].sort((a,b)=>{
+    if(!a.time&&!b.time)return 0; if(!a.time)return 1; if(!b.time)return-1;
+    return a.time.localeCompare(b.time);
+  });
+  _editMood = _sc[idx]?.mood || null;
   renderEvents(curData);
   requestAnimationFrame(()=>{
     const el=document.getElementById(`ets-${idx}`);
@@ -588,7 +684,19 @@ function autoFillTimes(idx){
 }
 
 function cancelEdit(){
-  _editIdx=-1; _editAct=null;
+  // If editing a phantom record, remove it from the local array
+  if(_editIdx>=0){
+    const sorted=[...curData.checkins].sort((a,b)=>{
+      if(!a.time&&!b.time)return 0; if(!a.time)return 1; if(!b.time)return-1;
+      return a.time.localeCompare(b.time);
+    });
+    const c=sorted[_editIdx];
+    if(c?._phantom){
+      const realIdx=curData.checkins.indexOf(c);
+      if(realIdx>=0) curData.checkins.splice(realIdx,1);
+    }
+  }
+  _editIdx=-1; _editAct=null; _editMood=null;
   renderEvents(curData);
 }
 
@@ -608,47 +716,93 @@ async function saveEdit(idx){
   const newTime  = newEnd || newStart;
   const newDur   = Math.max(0,parseInt(durEl?.value||0)||0);
 
+  // Resolve the record being edited by sorted index (used for overlap check + phantom detection)
+  const _sortedCkins=[...curData.checkins].sort((a,b)=>{
+    if(!a.time&&!b.time)return 0; if(!a.time)return 1; if(!b.time)return-1;
+    return a.time.localeCompare(b.time);
+  });
+  const _editedRec = _sortedCkins[idx];
+  const _isPhantom = _editedRec?._phantom;
+
+  // Clear any previous conflict highlights
+  document.querySelectorAll('.ev-conflict').forEach(el=>el.classList.remove('ev-conflict'));
+
   // Overlap check using start/end if both provided
   if(newStart && newEnd){
     const st=timeToMinutes(newStart), en=timeToMinutes(newEnd);
     const ckins=curData.checkins||[];
-    let hasOverlap=false;
+    const conflicts=[];
     for(let j=0;j<ckins.length;j++){
-      if(j===idx) continue;
+      if(ckins[j]===_editedRec) continue;  // skip the record being edited (by reference)
+      if(ckins[j]._phantom) continue;       // skip other phantoms
       const oc=ckins[j];
       if(!oc.time) continue;
       const oEn=timeToMinutes(oc.end_time||oc.time);
       const oSt=oc.start_time?timeToMinutes(oc.start_time):oEn-(oc.focus_minutes||0);
-      if(st<oEn && oSt<en){hasOverlap=true;break;}
+      if(st<oEn && oSt<en){
+        const si=_sortedCkins.indexOf(oc);
+        conflicts.push({si, label: oc.end_time||oc.time});
+      }
     }
-    if(errEl) errEl.classList.toggle('show',hasOverlap);
-    if(hasOverlap) return;
+    if(conflicts.length){
+      const times=conflicts.map(c=>c.label).join(', ');
+      if(errEl){
+        errEl.textContent=(lang==='zh'?`与 ${times} 重叠`:`Overlaps ${times}`);
+        errEl.classList.add('show');
+      }
+      conflicts.forEach(c=>{
+        const el=document.getElementById(`ev-${c.si}`);
+        if(el) el.classList.add('ev-conflict');
+      });
+      return;
+    }
   }
-  if(errEl) errEl.classList.remove('show');
+  if(errEl){ errEl.textContent=(lang==='zh'?'时间块重叠':'Overlap!'); errEl.classList.remove('show'); }
 
+  const _endpoint = _isPhantom ? '/api/records/add' : '/api/records/edit';
+  // For phantom adds, remove it from the local array first (server will create the real one)
+  if(_isPhantom){
+    const _pi=curData.checkins.indexOf(_editedRec);
+    if(_pi>=0) curData.checkins.splice(_pi,1);
+  }
   try{
-    const res=await fetch('/api/records/edit',{
+    const res=await fetch(_endpoint,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        date:curDate, index:idx,
+        date:curDate, ...(_isPhantom?{}:{index:idx}),
         time:newTime,
         start_time:newStart||null,
         end_time:newEnd||null,
         work_content:wcEl.value,
         activity_type:_editAct||null,
         focus_minutes:newDur,
+        event_type:'checkin',
+        mood:_editMood||null,
+        note:(document.getElementById(`enote-${idx}`)?.value||'').trim(),
       }),
     });
     const r=await res.json();
     if(r.success){
-      _editIdx=-1; _editAct=null;
+      _editIdx=-1; _editAct=null; _editMood=null;
       await loadDate(curDate);
     }
   }catch(e){console.error(e);}
 }
 
 async function deleteRecord(idx){
+  // Check if it's a phantom (not yet saved to server)
+  const _sc=[...curData.checkins].sort((a,b)=>{
+    if(!a.time&&!b.time)return 0; if(!a.time)return 1; if(!b.time)return-1;
+    return a.time.localeCompare(b.time);
+  });
+  if(_sc[idx]?._phantom){
+    const _pi=curData.checkins.indexOf(_sc[idx]);
+    if(_pi>=0) curData.checkins.splice(_pi,1);
+    _editIdx=-1; _editAct=null;
+    renderEvents(curData);
+    return;
+  }
   try{
     const res=await fetch('/api/records/delete',{
       method:'POST',
@@ -660,85 +814,275 @@ async function deleteRecord(idx){
   }catch(e){console.error(e);}
 }
 
+async function addGapRecord(prevTime, gapEnd) {
+  // Create a phantom record spanning the gap, open in edit mode
+  if(!curData) return;
+  const startMin=timeToMin(prevTime), endMin=timeToMin(gapEnd);
+  const fm=Math.max(0,endMin-startMin);
+  const phantom={
+    time:gapEnd, start_time:prevTime, end_time:gapEnd,
+    focus_minutes:fm, work_content:'', activity_type:null,
+    event_type:'checkin', score:0, _phantom:true
+  };
+  curData.checkins.push(phantom);
+  // Re-sort and find the new index
+  const sorted=[...curData.checkins].sort((a,b)=>{
+    if(!a.time&&!b.time)return 0; if(!a.time)return 1; if(!b.time)return-1;
+    return a.time.localeCompare(b.time);
+  });
+  const newIdx=sorted.indexOf(phantom);
+  _editIdx=newIdx; _editAct=null;
+  renderEvents(curData);
+  requestAnimationFrame(()=>{
+    const el=document.getElementById(`ets-${newIdx}`);
+    if(el) el.focus();
+  });
+}
+
 /* ══ SHARED: time helper ══ */
 function timeToMin(t){if(!t)return-1;const[h,m]=t.split(':').map(Number);return h*60+m;}
 
-/* ══ VIEW 3: HEATMAP ══ */
-function scoreToColor(score){
-  if(!score) return'var(--line)';
-  const intensity=Math.min(score/50,1);
-  const r=Math.round(183+(124-183)*intensity);
-  const g=Math.round(148+(58-148)*intensity);
-  const b=Math.round(244+(237-244)*intensity);
-  return`rgb(${r},${g},${b})`;
+/* ══ VIEW 2: 24H (proportional) ══ */
+function render24h(){
+  if(!curData) return;
+  const ckins=(curData.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
+  document.getElementById('h24-ticks').innerHTML=
+    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
+  document.getElementById('h24-track').innerHTML=ckins.map(c=>{
+    const endMin=timeToMin(c.time); if(endMin<0)return'';
+    const fm=Math.max(c.focus_minutes||15,15);
+    const startMin=Math.max(endMin-fm,0);
+    const left=(startMin/1440)*100, w=Math.max((fm/1440)*100,1.5);
+    const col=ACT_COLORS(c.activity_type||'other');
+    const label=c.work_content||'';
+    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
+    const escWc=(label+'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+    const escAct=(c.activity_type||'').replace(/'/g,'&#39;');
+    return`<div class="h24-block"
+      style="left:${left}%;width:${w}%;background:${col}"
+      data-act="${escAct}" data-wc="${escWc}"
+      data-time="${startStr}–${c.time}" data-score="${c.score||0}" data-fm="${c.focus_minutes||0}"
+      onmouseenter="showH24Tip(event,this)" onmouseleave="hideH24Tip()" onmousemove="posH24Tip(event)">
+    </div>`;
+  }).join('');
+  document.getElementById('h24-legend').innerHTML=''; // cleared; pie chart handles breakdown
+  renderPieChart(curData);
 }
 
+/* ══ 24H TOOLTIP ══ */
+function showH24Tip(e, el) {
+  const tip = document.getElementById('h24-tooltip');
+  const act = el.dataset.act;
+  const wc = el.dataset.wc;
+  const time = el.dataset.time;
+  const score = el.dataset.score;
+  const fm = el.dataset.fm;
+  const actLabel = ACT_LABEL(act||'other') || (lang==='zh'?'其他':'Other');
+  const col = ACT_COLORS(act||'other');
+  const scoreStr = parseInt(score) >= 0 ? `+${score}` : `${score}`;
+  tip.innerHTML =
+    `<div class="h24-tip-time">${time}</div>` +
+    `<div class="h24-tip-act"><span class="h24-tip-dot" style="background:${col}"></span>${actLabel}</div>` +
+    (wc ? `<div class="h24-tip-wc">${wc}</div>` : '') +
+    `<div class="h24-tip-meta"><span>${fm} min</span><span>${scoreStr}</span></div>`;
+  tip.style.display = 'block';
+  posH24Tip(e);
+}
+function posH24Tip(e) {
+  const tip = document.getElementById('h24-tooltip');
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 230 > vw) x = e.clientX - 230;
+  if (y + 130 > vh) y = e.clientY - 130;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+function hideH24Tip() {
+  document.getElementById('h24-tooltip').style.display = 'none';
+}
+
+/* ══ PIE CHART (canvas, shown inside 24h view) ══ */
+function renderPieChart(data){
+  const ckins = (data.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.focus_minutes>0);
+  const byAct = {};
+  ckins.forEach(c=>{
+    const a = c.activity_type||'other';
+    byAct[a] = (byAct[a]||0) + (c.focus_minutes||0);
+  });
+  const entries = Object.entries(byAct).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((s,[,v])=>s+v, 0);
+
+  const canvas = document.getElementById('pie-canvas');
+  const cval   = document.getElementById('pie-cval');
+  const clbl   = document.getElementById('pie-clbl');
+  const legend = document.getElementById('pie-legend');
+  const row    = document.getElementById('pie-row');
+
+  if(!total){ row.style.display='none'; return; }
+  row.style.display='flex';
+  cval.textContent = total;
+  clbl.textContent = t('pieLbl');
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,120,120);
+  const cx=60, cy=60, r=54, gap=0.025;
+  let angle = -Math.PI/2;
+  entries.forEach(([act,min])=>{
+    const slice = (min/total)*Math.PI*2 - gap;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r, angle+gap/2, angle+gap/2+slice);
+    ctx.closePath();
+    ctx.fillStyle = ACT_COLORS(act);
+    ctx.fill();
+    angle += (min/total)*Math.PI*2;
+  });
+  // Donut hole
+  ctx.beginPath();
+  ctx.arc(cx,cy,32,0,Math.PI*2);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card').trim()||'#fff';
+  ctx.fill();
+
+  legend.innerHTML = entries.map(([act,min])=>`
+    <div class="pie-leg-item">
+      <div class="pie-leg-dot" style="background:${ACT_COLORS(act)}"></div>
+      <span class="pie-leg-label">${ACT_LABEL(act)}</span>
+      <span class="pie-leg-val">${min}m</span>
+    </div>`).join('');
+}
+
+/* ══ VIEW: HEATMAP (GitHub style) ══ */
 function renderHeatmap(){
   const today=todayStr();
-  const todayDate=new Date(today+'T12:00:00');                                   
-  // Start from Monday 83 days before today (ensuring 12 complete weeks)
+  const todayDate=new Date(today+'T12:00:00');
+
+  // Start: Monday of the week 52 weeks before today
   const startDate=new Date(todayDate);
-  startDate.setDate(startDate.getDate()-83);
-  const startDow=(startDate.getDay()+6)%7; // Mon=0
+  startDate.setDate(startDate.getDate()-52*7);
+  const startDow=(startDate.getDay()+6)%7; // 0=Mon
   startDate.setDate(startDate.getDate()-startDow);
 
-  const cells=[];
-  for(let w=0;w<12;w++) for(let d=0;d<7;d++){
-    const dt=new Date(startDate);
-    dt.setDate(dt.getDate()+w*7+d);
-    const iso=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-    const isFuture=iso>today;
-    const score=(histList[iso]||{}).total_score||0;
-    cells.push({iso,score,isFuture});
-  }                                                                           
+  const NUM_WEEKS=53, SZ=11, GAP=3, STEP=SZ+GAP;
 
-  const HM_C=['var(--acc-soft)','rgba(168,127,236,.25)','rgba(168,127,236,.45)','rgba(168,127,236,.7)','var(--acc)'];
-  function lvl(s){if(!s)return 0;if(s<20)return 1;if(s<50)return 2;if(s<80)return 3;return 4;}
-  const dayLbls=lang==='zh'?['一','二','三','四','五','六','日']:['Mo','Tu','We','Th','Fr','Sa','Su'];
+  // Build grid: weeks[w][d]
+  const weeks=[];
+  for(let w=0;w<NUM_WEEKS;w++){
+    const col=[];
+    for(let d=0;d<7;d++){
+      const dt=new Date(startDate);
+      dt.setDate(dt.getDate()+w*7+d);
+      const iso=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+      const isFuture=iso>today, isToday=iso===today;
+      const score=(histList[iso]||{}).total_score||0;
+      const minimums_met=(histList[iso]||{}).minimums_met===true;
+      col.push({dt,iso,isFuture,isToday,score,minimums_met});
+    }
+    weeks.push(col);
+  }
 
-  // Streak count
+  // Month labels: mark first week of each new month
+  const MN_ZH=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const MN_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MN=lang==='zh'?MN_ZH:MN_EN;
+  const monthLabels=[];
+  let lastM=-1;
+  weeks.forEach((col,wi)=>{
+    const m=col[0].dt.getMonth();
+    if(m!==lastM){monthLabels.push({wi,label:MN[m]});lastM=m;}
+  });
+
+  // 12-month total resets
+  const cutoffDate=new Date(todayDate);
+  cutoffDate.setFullYear(cutoffDate.getFullYear()-1);
+  const cutoffStr=`${cutoffDate.getFullYear()}-${String(cutoffDate.getMonth()+1).padStart(2,'0')}-${String(cutoffDate.getDate()).padStart(2,'0')}`;
+  let total12m=0;
+  Object.entries(histList).forEach(([iso,d])=>{if(iso>=cutoffStr)total12m+=(d.checkins||0);});
+
+  // Streak
   let streak=0;const sd=new Date();
   while(true){
-    const iso=`${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}-${String(sd.getDate()).padStart(2,'0')}`;
-    if(!histList[iso]||(histList[iso].total_score||0)===0) break;
+    const siso=`${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}-${String(sd.getDate()).padStart(2,'0')}`;
+    if(!histList[siso]||!histList[siso].minimums_met)break;
     streak++;sd.setDate(sd.getDate()-1);
   }
-  let totalResets=0;
-  Object.values(histList).forEach(d=>{totalResets+=(d.checkins||0);});
 
-  const achievements=[
-    streak>=7?['🌱','坚持一周',`${streak}天连续打卡`]:streak>0?['📅','连续打卡',`${streak}天`]:null,
-    totalResets>=100?['💪','小有所成',`累计${totalResets}次reset`]:['⚡','Reset计数',`累计${totalResets}次`],
-  ].filter(Boolean);
+  // Colors: level 0 = neutral gray, levels 1–4 = accent or green shades
+  const HM_C=['rgba(168,127,236,.2)','rgba(168,127,236,.45)','rgba(168,127,236,.7)','var(--acc)'];
+  const HM_G=['rgba(5,150,105,.2)','rgba(5,150,105,.45)','rgba(5,150,105,.7)','var(--green)'];
+  function lvl(s){if(!s)return 0;if(s<20)return 1;if(s<50)return 2;if(s<80)return 3;return 4;}
+
+  // Day labels: only Mon / Wed / Fri shown
+  const DAY_LBL=lang==='zh'?['一','','三','','五','','']:['Mon','','Wed','','Fri','',''];
+
+  // Build cell HTML (column-major)
+  const cellsHtml=[];
+  for(let w=0;w<NUM_WEEKS;w++) for(let d=0;d<7;d++){
+    const c=weeks[w][d];
+    const l=c.isFuture?-1:lvl(c.score);
+    let bg;
+    if(l<0) bg='transparent';
+    else if(l===0) bg='var(--line)';
+    else if(c.minimums_met) bg=HM_G[l-1];
+    else bg=HM_C[l-1];
+    const todayRing=c.isToday?'outline:1.5px solid var(--text);outline-offset:-1.5px;':'';
+    const tip=`${c.iso}${c.score?' · '+c.score+'分':''}${c.minimums_met?' ✓':''}`;
+    cellsHtml.push(
+      `<div style="width:${SZ}px;height:${SZ}px;background:${bg};border-radius:2px;${todayRing}${c.isFuture?'':'cursor:pointer'}"` +
+      ` title="${tip}"${c.isFuture?'':` onclick="hmSelectDay('${c.iso}')"`}></div>`
+    );
+  }
+
+  const gridW=NUM_WEEKS*STEP-GAP;
+  const mlHtml=monthLabels.map(({wi,label})=>
+    `<span style="position:absolute;left:${wi*STEP}px;font-size:9.5px;color:var(--muted);font-family:var(--mono);white-space:nowrap">${label}</span>`
+  ).join('');
+
+  // Achievements
+  let totalResets=0,totalFocusMin=0,totalDays=0,maxDailyScore=0;
+  Object.values(histList).forEach(d=>{
+    totalResets+=(d.checkins||0);totalFocusMin+=(d.focus_minutes||0);
+    if((d.total_score||0)>0)totalDays++;
+    if((d.total_score||0)>maxDailyScore)maxDailyScore=(d.total_score||0);
+  });
+  const _stats={streak,totalResets,totalFocusMin,totalDays,maxDailyScore};
+  const achievements=ACHIEVEMENT_DEFS
+    .map(def=>{const sub=def.condition(_stats);return sub?[def.icon,lang==='zh'?def.zh:def.en,sub]:null;})
+    .filter(Boolean);
 
   document.getElementById('hm-grid-gh').innerHTML=`
-    <div style="display:flex;gap:8px;align-items:flex-start">                  
-      <div style="display:flex;flex-direction:column;gap:3px;padding-top:18px">
-        ${dayLbls.map(l=>`<div style="height:12px;font-size:9.5px;color:var(--muted);font-family:var(--mono);line-height:12px">${l}</div>`).join('')}
-      </div>
-      <div style="flex:1">
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);font-family:var(--mono);margin-bottom:4px">
-          <span>${lang==='zh'?'12周前':'12w ago'}</span><span>${lang==='zh'?'9周前':'9w'}</span><span>${lang==='zh'?'6周前':'6w'}</span><span>${lang==='zh'?'3周前':'3w'}</span><span>${lang==='zh'?'本周':'now'}</span>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:400">
+      ${lang==='zh'
+        ?`过去 12 个月 <strong style="color:var(--text);font-weight:600">${total12m}</strong> 次 Reset`
+        :`<strong style="color:var(--text);font-weight:600">${total12m}</strong> resets in the last 12&nbsp;months`}
+    </div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px">
+      <div style="display:inline-flex;align-items:flex-start">
+        <!-- Day labels -->
+        <div style="display:grid;grid-template-rows:repeat(7,${SZ}px);gap:${GAP}px;margin-top:18px;margin-right:5px;flex-shrink:0">
+          ${DAY_LBL.map(l=>`<div style="height:${SZ}px;font-size:9px;color:var(--muted);font-family:var(--mono);line-height:${SZ}px;text-align:right">${l}</div>`).join('')}
         </div>
-        <div style="display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(7,12px);gap:3px;grid-auto-flow:column">
-          ${cells.map(c=>{
-            const l=c.isFuture?-1:lvl(c.score);
-            const bg=l<0?'transparent':HM_C[l];
-            const border=l<=0?'1px solid var(--line)':'1px solid transparent';
-            return`<div 
-              style="background:${bg};border:${border};border-radius:3px;${c.isFuture?'':'cursor:pointer'}"
-              title="${c.iso}: ${c.score}分"
-              ${c.isFuture?'':` onclick="hmSelectDay('${c.iso}')"`}></div>`;
-          }).join('')}
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;font-size:10px;color:var(--muted);font-family:var(--mono)">
-          <span>${lang==='zh'?'少':'less'}</span>
-          ${HM_C.map((c,i)=>`<div 
-            style="width:12px;height:12px;background:${c};border-radius:3px;border:${i===0?'1px solid var(--line)':'1px solid transparent'}"></div>`).join('')}
-          <span>${lang==='zh'?'多':'more'}</span>
+        <!-- Month labels + cell grid -->
+        <div style="position:relative;flex-shrink:0">
+          <div style="position:relative;height:16px;width:${gridW}px;margin-bottom:3px">
+            ${mlHtml}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(${NUM_WEEKS},${SZ}px);grid-template-rows:repeat(7,${SZ}px);gap:${GAP}px;grid-auto-flow:column">
+            ${cellsHtml.join('')}
+          </div>
         </div>
       </div>
     </div>
+    <!-- Legend -->
+    <div style="display:flex;align-items:center;gap:5px;margin-top:20px;justify-content:flex-end;font-size:10px;color:var(--muted);font-family:var(--mono);flex-wrap:wrap">
+      <span>${lang==='zh'?'少':'Less'}</span>
+      <div style="width:${SZ}px;height:${SZ}px;background:var(--line);border-radius:2px"></div>
+      ${HM_C.map(c=>`<div style="width:${SZ}px;height:${SZ}px;background:${c};border-radius:2px"></div>`).join('')}
+      <span>${lang==='zh'?'多':'More'}</span>
+      <span style="margin-left:10px;color:var(--green)">✓</span>
+      ${HM_G.map(c=>`<div style="width:${SZ}px;height:${SZ}px;background:${c};border-radius:2px"></div>`).join('')}
+      <span style="color:var(--green)">${lang==='zh'?'保底达标':'min met'}</span>
+    </div>
+    <!-- Milestones -->
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
       <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px;margin-bottom:10px">
         ${lang==='zh'?'里程碑':'Milestones'}
@@ -747,12 +1091,13 @@ function renderHeatmap(){
         ${achievements.map(([icon,title,sub])=>`
           <div style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
             <div style="font-size:22px">${icon}</div>
-            <div><div style="font-size:12px;font-weight:600;color:var(--text)">${title}</div><div
-            style="font-size:10.5px;color:var(--muted);margin-top:1px">${sub}</div></div>
+            <div><div style="font-size:12px;font-weight:600;color:var(--text)">${title}</div><div style="font-size:10.5px;color:var(--muted);margin-top:1px">${sub}</div></div>
           </div>`).join('')}
       </div>
     </div>
   `;
+  const _hmScroll=document.getElementById('hm-grid-gh').querySelector('[style*="overflow-x"]');
+  if(_hmScroll) _hmScroll.scrollLeft=_hmScroll.scrollWidth;
 }
 
 function hmSelectDay(iso){
@@ -762,85 +1107,37 @@ function hmSelectDay(iso){
   setView('events');
 }
 
-/* ══ VIEW 4: BARS (Stacked / Timeline) ══ */
-let _barMode  = 'stack';  // 'stack' | 'tl'
-let _barRange = 7;       // 7 | 30
+/* ══ VIEW: BARS (Stacked / Timeline) ══ */
+let _barMode  = 'stack';
+let _barRange = 7;
 
 function setBarMode(m){
   _barMode = m;
-  ['stack','tl'].forEach(id=>{
-    const el = document.getElementById('bar-mode-'+id);
-    if(el) el.classList.toggle('active', m===id);
-  });
-  const bdView = document.getElementById('bar-day-view');
-  if(bdView) bdView.style.display = 'none';
-  const brWrap = document.getElementById('bar-range-wrap');
-  if(brWrap) brWrap.style.display = 'flex';
-  const bcArea = document.getElementById('bar-chart-area');
-  if(bcArea) bcArea.style.display = '';
-  
-  const tlY = document.getElementById('tl-y-axis');
-  if(tlY) tlY.style.display = m==='tl'?'':'none';
-  const bc = document.getElementById('bar-chart');
-  if(bc) bc.style.alignItems = m==='tl'?'flex-start':'flex-end';
-
-  if(m==='stack') renderBars(); 
+  ['stack','tl'].forEach(id=>
+    document.getElementById('bar-mode-'+id).classList.toggle('active', m===id));
+  document.getElementById('tl-y-axis').style.display      = m==='tl'?'':'none';
+  document.getElementById('bar-chart').style.alignItems   = m==='tl'?'flex-start':'flex-end';
+  if(m==='stack') renderBars();
   else renderTimeline();
 }
 
-function setBarRange(r){
-  _barRange = r;
-  document.getElementById('bar-range-7').classList.toggle('active', r===7);
-  document.getElementById('bar-range-30').classList.toggle('active', r===30);
-  if(_barMode==='stack') renderBars(); else renderTimeline();
-}
-
-function renderDay(){
-  if(!curData) return;
-  const ckins=(curData.checkins||[]).filter(c=>c.event_type!=='restroom'&&c.time);
-  document.getElementById('bd-ticks').innerHTML=
-    [0,6,12,18,24].map(h=>`<span>${String(h).padStart(2,'0')}:00</span>`).join('');
-  document.getElementById('bd-track').innerHTML=ckins.map(c=>{
-    const endMin=timeToMin(c.time);
-    if(endMin<0)return'';
-    const fm=Math.max(c.focus_minutes||15,15);
-    const startMin=Math.max(endMin-fm,0);
-    const left=(startMin/1440)*100;
-    const w=Math.max((fm/1440)*100,1.5);
-    const col=ACT_COLORS(c.activity_type||'other');
-    const label=c.work_content||ACT_LABEL(c.activity_type||'other')||'';
-    const startStr=`${String(Math.floor(startMin/60)).padStart(2,'0')}:${String(startMin%60).padStart(2,'0')}`;
-    return`<div class="h24-block" style="left:${left}%;width:${w}%;background:${col}" title="${startStr}–${c.time} ${label} +${c.score}pts"></div>`;
-  }).join('');
-  const byAct={};
-  ckins.forEach(c=>{const a=c.activity_type||'other';byAct[a]=(byAct[a]||0)+(c.focus_minutes||0);});
-  const totalMin=Object.values(byAct).reduce((a,b)=>a+b,0)||1;
-  document.getElementById('bd-pie-cval').textContent=totalMin;
-  document.getElementById('bd-pie-clbl').textContent=t('pieLbl');
-  const canvas=document.getElementById('bd-pie-canvas');
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,240,240);
-  let angle=-Math.PI/2;
-  const entries=Object.entries(byAct).filter(([,v])=>v>0);
-  entries.forEach(([act,min])=>{
-    const sweep=(min/totalMin)*Math.PI*2;
-    ctx.beginPath();ctx.moveTo(120,120);ctx.arc(120,120,100,angle,angle+sweep);ctx.closePath();
-    ctx.fillStyle=ACT_COLORS(act);ctx.fill();angle+=sweep;
+function setBarRange(n){
+  _barRange = n;
+  [7,30].forEach(r=>{
+    const btn = document.getElementById('bar-range-'+r);
+    if(btn) btn.classList.toggle('active', r===n);
   });
-  ctx.beginPath();ctx.arc(120,120,60,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
-  document.getElementById('bd-pie-legend').innerHTML=entries.map(([act,min])=>
-    `<div class="pie-leg-item"><div class="pie-leg-dot" style="background:${ACT_COLORS(act)}"></div><div class="pie-leg-label">${ACT_LABEL(act)}</div><div class="pie-leg-val">${min}m</div></div>`
-  ).join('');
-  document.getElementById('bd-legend').innerHTML=entries.map(([act,])=>
-    `<div class="leg-item"><div class="leg-dot" style="background:${ACT_COLORS(act)}"></div><span>${ACT_LABEL(act)}</span></div>`
-  ).join('');
+  if(_barMode==='stack') renderBars();
+  else renderTimeline();
 }
 
 async function renderTimeline(){
   const today=todayStr();
+  // Anchor range to curDate so past dates are visible
+  const refDate = curDate <= today ? curDate : today;
   const dates=[];
   for(let i=_barRange-1;i>=0;i--){
-    const d=new Date();d.setDate(d.getDate()-i);
+    const d=new Date(refDate+'T12:00:00');d.setDate(d.getDate()-i);
     dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
   }
   const dayData={};
@@ -889,9 +1186,11 @@ async function renderTimeline(){
 
 async function renderBars(){
   const today = todayStr();
+  // Anchor range to curDate so past dates are visible
+  const refDate = curDate <= today ? curDate : today;
   const dates = [];
   for(let i=_barRange-1; i>=0; i--){
-    const d=new Date(); d.setDate(d.getDate()-i);
+    const d=new Date(refDate+'T12:00:00'); d.setDate(d.getDate()-i);
     dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
   }
 
@@ -963,6 +1262,357 @@ async function renderBars(){
     : '';
 }
 
+/* ══ VIEW 5: MUSCLE BODY GRAPH ══ */
+const MG_TO_REGION = {
+  neck:'neck',cervical_spine:'neck',
+  upper_trapezius:'trapezius',trapezius:'trapezius',
+  mid_trapezius:'mid_back',rhomboids:'mid_back',
+  pectorals:'chest',
+  anterior_deltoid:'shoulders',lateral_deltoid:'shoulders',deltoids:'shoulders',shoulders:'shoulders',
+  posterior_deltoid:'shoulders_back',rotator_cuff:'shoulders_back',
+  biceps:'biceps',
+  triceps:'triceps',
+  wrist_flexors:'forearms',wrist_extensors:'forearms',forearms:'forearms',
+  latissimus_dorsi:'lats',
+  erector_spinae:'lower_back',multifidus:'lower_back',quadratus_lumborum:'lower_back',
+  rectus_abdominis:'abs',lower_abdominals:'abs',transverse_abdominis:'abs',diaphragm:'abs',
+  obliques:'obliques',thoracic_rotators:'obliques',thoracic_spine:'obliques',
+  hip_flexors:'hip_flexors',iliopsoas:'hip_flexors',hip_external_rotators:'hip_flexors',
+  glutes:'glutes',piriformis:'glutes',
+  gluteus_medius:'glutes_med',
+  quadriceps:'quads',
+  hamstrings:'hamstrings',
+  adductors:'adductors',inner_thigh:'adductors',
+  calves:'calves',soleus:'calves',tibialis_anterior:'calves',
+};
+const REGION_ZH = {
+  neck:'颈部',trapezius:'斜方肌',mid_back:'背中·菱形肌',chest:'胸肌',
+  shoulders:'三角肌(前)',shoulders_back:'三角肌(后)',biceps:'肱二头肌',triceps:'肱三头肌',
+  forearms:'前臂',lats:'背阔肌',lower_back:'竖脊肌',abs:'腹直肌',obliques:'腹斜肌',
+  hip_flexors:'髋屈肌',glutes:'臀大肌',glutes_med:'臀中肌',
+  quads:'股四头肌',hamstrings:'腘绳肌',adductors:'内收肌',calves:'小腿',
+};
+const REGION_EN = {
+  neck:'Neck',trapezius:'Trapezius',mid_back:'Mid Back',chest:'Chest',
+  shoulders:'Deltoid (front)',shoulders_back:'Deltoid (rear)',biceps:'Biceps',triceps:'Triceps',
+  forearms:'Forearms',lats:'Lats',lower_back:'Erector Spinae',abs:'Abs',obliques:'Obliques',
+  hip_flexors:'Hip Flexors',glutes:'Glutes',glutes_med:'Glute Med.',
+  quads:'Quads',hamstrings:'Hamstrings',adductors:'Adductors',calves:'Calves',
+};
+const REGION_GROUPS = {
+  core:  ['abs','obliques','lower_back','hip_flexors'],
+  upper: ['neck','trapezius','chest','mid_back','lats','shoulders','shoulders_back','biceps','triceps','forearms'],
+  lower: ['glutes','glutes_med','quads','hamstrings','adductors','calves'],
+};
+const GROUP_ZH = { core:'核心', upper:'上肢', lower:'下肢' };
+const GROUP_EN = { core:'Core', upper:'Upper Body', lower:'Lower Body' };
+
+let _muscleCounts = {};
+let _muscleRange = 'all';
+let _regionExercises = {};
+let _exerciseStats = {};
+
+function getAccRgba(alpha){
+  const hex=getComputedStyle(document.documentElement).getPropertyValue('--acc').trim();
+  const r=parseInt(hex.slice(1,3),16)||168, g=parseInt(hex.slice(3,5),16)||127, b=parseInt(hex.slice(5,7),16)||236;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function mgColor(count){
+  if(!count) return 'var(--line)';
+  if(count===1) return getAccRgba(0.28);
+  if(count<=3) return getAccRgba(0.50);
+  if(count<=7) return getAccRgba(0.75);
+  return 'var(--acc)';
+}
+function regionLabel(r){ return lang==='zh'?(REGION_ZH[r]||r):(REGION_EN[r]||r); }
+
+function regionCount(regionId){
+  let total=0;
+  for(const[mg,rid] of Object.entries(MG_TO_REGION)){
+    if(rid===regionId && _muscleCounts[mg]) total+=_muscleCounts[mg];
+  }
+  return total;
+}
+
+function mkShape(region, shapeHtml){
+  const cnt=regionCount(region);
+  const fill=mgColor(cnt);
+  const tip=lang==='zh'?`${regionLabel(region)}: 训练${cnt}次`:`${regionLabel(region)}: ${cnt}×`;
+  return shapeHtml
+    .replace(/FILL/g, fill)
+    .replace(/TIP/g, tip)
+    .replace(/class="muscle-region"/g,
+      `class="muscle-region" data-region="${region}" onmouseenter="hoverRegion('${region}')" onmouseleave="leaveRegion()"`);
+}
+
+async function loadMuscleCounts(){
+  try{
+    const q=_muscleRange==='all'?'':`?range=${_muscleRange==='week'?7:30}`;
+    const r=await fetch('/api/muscle-stats'+q);
+    _muscleCounts=await r.json();
+  }catch(e){_muscleCounts={};}
+}
+
+async function loadExerciseStats(){
+  try{
+    const r=await fetch('/api/exercise-stats');
+    _exerciseStats=await r.json();
+  }catch(e){_exerciseStats={};}
+}
+
+function exStars(count){
+  if(!count||count<10) return count?`<span style="font-size:9px;color:var(--muted)">☆</span>`:'';
+  if(count<100) return`<span style="font-size:9px;color:var(--amber)">★</span>`;
+  if(count<1000) return`<span style="font-size:9px;color:var(--amber)">★★</span>`;
+  return`<span style="font-size:9px;color:var(--amber)">★★★</span>`;
+}
+
+function exProgress(count){
+  if(!count) return 0;
+  if(count<10) return count/10;
+  if(count<100) return count/100;
+  if(count<1000) return count/1000;
+  return 1;
+}
+
+async function loadRegionExercises(){
+  if(Object.keys(_regionExercises).length>0) return;
+  try{
+    const exs=await fetch('/api/exercises/library').then(r=>r.json());
+    _regionExercises={};
+    for(const ex of exs){
+      const mgs=[...(ex.muscle_groups||[]),...(ex.muscle_focus||[])];
+      const regions=new Set(mgs.map(mg=>MG_TO_REGION[mg]).filter(Boolean));
+      for(const rid of regions){
+        if(!_regionExercises[rid]) _regionExercises[rid]=[];
+        if(!_regionExercises[rid].find(e=>e.id===ex.id))
+          _regionExercises[rid].push({id:ex.id,name:ex.name,name_en:ex.name_en,category:ex.category});
+      }
+    }
+  }catch(e){console.error(e);}
+}
+
+function hoverRegion(regionId){
+  const panel=document.getElementById('muscle-hover-panel');
+  if(!panel) return;
+  const cnt=regionCount(regionId);
+  const name=regionLabel(regionId);
+  const exs=(_regionExercises[regionId]||[]);
+  const CAT_C={stretch:'var(--green)',core:'var(--amber)',strength:'var(--red)'};
+  const CAT_ZH={stretch:'拉伸',core:'核心',strength:'力量'};
+  const CAT_EN={stretch:'Stretch',core:'Core',strength:'Strength'};
+  const countStr=lang==='zh'?(cnt?`训练 ${cnt} 次`:'尚未训练'):(cnt?`${cnt}× trained`:'Not trained');
+  panel.style.opacity='1';
+  panel.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${name}</div>
+    <div style="font-size:11px;font-family:var(--mono);color:${cnt>0?'var(--acc2)':'var(--muted)'};padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)">${countStr}</div>
+    <div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">${lang==='zh'?'相关动作':'Exercises'}</div>
+    ${exs.length?exs.map(ex=>{
+      const nm=lang==='zh'?ex.name:(ex.name_en||ex.name);
+      const cat=lang==='zh'?(CAT_ZH[ex.category]||ex.category):(CAT_EN[ex.category]||ex.category);
+      const ec=_exerciseStats[ex.id]||0;
+      const prog=(exProgress(ec)*100).toFixed(0);
+      return`<div style="position:relative;overflow:hidden;display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--line)">
+        <div style="position:absolute;left:0;top:0;height:100%;width:${prog}%;background:var(--acc-soft);pointer-events:none"></div>
+        <span style="position:relative;font-size:9px;font-weight:700;color:var(--muted);min-width:22px;flex-shrink:0">${ex.id}</span>
+        <span style="position:relative;flex:1;font-size:11px;color:var(--text);line-height:1.3">${nm}</span>
+        ${exStars(ec)}
+        ${ec?`<span style="position:relative;font-size:9px;font-family:var(--mono);color:var(--muted)">${ec}</span>`:''}
+        <span style="position:relative;font-size:9px;padding:1px 5px;border-radius:99px;border:1px solid var(--line);color:${CAT_C[ex.category]||'var(--muted)'};flex-shrink:0">${cat}</span>
+      </div>`;
+    }).join(''):`<div style="font-size:11px;color:var(--muted);font-style:italic;padding-top:2px">${lang==='zh'?'暂无':'—'}</div>`}`;
+}
+
+function leaveRegion(){
+  const panel=document.getElementById('muscle-hover-panel');
+  if(panel) panel.style.opacity='0.25';
+}
+
+async function setMuscleRange(r){
+  _muscleRange=r;
+  ['week','month','all'].forEach(k=>{
+    const b=document.getElementById('mrange-'+k);
+    if(b){ b.classList.toggle('active',k===r); }
+  });
+  await loadMuscleCounts();
+  document.querySelectorAll('#muscle-content [data-region]').forEach(el=>{
+    el.setAttribute('fill', mgColor(regionCount(el.getAttribute('data-region'))));
+  });
+  renderMuscleDistribution();
+}
+
+function renderMuscleDistribution(){
+  const el=document.getElementById('muscle-dist');
+  if(!el) return;
+  el.innerHTML=Object.entries(REGION_GROUPS).map(([gk,regions])=>{
+    const gLabel=lang==='zh'?GROUP_ZH[gk]:GROUP_EN[gk];
+    const items=regions.map(r=>{
+      const cnt=regionCount(r);
+      if(!cnt) return'';
+      return`<div onclick="hoverRegion('${r}')" onmouseenter="this.style.borderColor='var(--acc)'" onmouseleave="this.style.borderColor='var(--line)'"
+        style="display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:3px 10px 3px 7px;font-size:11px;cursor:pointer;transition:border-color .15s">
+        <div style="width:8px;height:8px;border-radius:2px;background:${mgColor(cnt)};flex-shrink:0"></div>
+        <span style="color:var(--sub)">${regionLabel(r)}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${cnt}</span>
+      </div>`;
+    }).join('');
+    if(!items.trim()) return'';
+    return`<div style="margin-bottom:11px">
+      <div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">${gLabel}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${items}</div>
+    </div>`;
+  }).join('');
+}
+
+async function renderMuscles(){
+  await Promise.all([loadMuscleCounts(), loadRegionExercises(), loadExerciseStats()]);
+  const el=document.getElementById('muscle-content');
+  if(!el) return;
+
+  function frontSVG(){
+    const S=`stroke="var(--line)" stroke-width=".8"`;
+    const SB=`stroke="var(--line)" stroke-width="1.1"`;
+    return`<svg viewBox="0 0 90 210" width="110" style="overflow:visible">
+    <!-- body silhouette -->
+    <ellipse cx="45" cy="12" rx="11" ry="11" fill="var(--card)" ${SB}/>
+    <rect x="41" y="22" width="8" height="9" rx="2" fill="var(--card)" ${SB}/>
+    <path d="M21,31 L69,31 L74,39 L73,62 L65,84 L25,84 L17,62 L16,39 Z" fill="var(--card)" ${SB}/>
+    <rect x="4"  y="33" width="12" height="58" rx="6" fill="var(--card)" ${SB}/>
+    <rect x="74" y="33" width="12" height="58" rx="6" fill="var(--card)" ${SB}/>
+    <rect x="24" y="85" width="17" height="63" rx="8" fill="var(--card)" ${SB}/>
+    <rect x="49" y="85" width="17" height="63" rx="8" fill="var(--card)" ${SB}/>
+    <rect x="26" y="147" width="14" height="60" rx="7" fill="var(--card)" ${SB}/>
+    <rect x="50" y="147" width="14" height="60" rx="7" fill="var(--card)" ${SB}/>
+    <!-- muscles (shapes traced from muscle_distribution.png) -->
+    ${mkShape('neck',`<rect x="41" y="22" width="8" height="9" rx="2" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('trapezius',`<path d="M41,23 L17,32 L14,39 L40,32 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M49,23 L73,32 L76,39 L50,32 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('shoulders',`<path d="M20.7,45.8 L12.1,55.2 L12.9,71.5 L22.7,56.2 L21.7,45.8 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M69.3,45.8 L77.9,55.2 L77.1,71.5 L67.3,56.2 L68.3,45.8 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('chest',`<path d="M23.7,30.5 L13.1,42.9 L13.6,50.3 L31.6,54.7 L21.5,62.6 L43.5,48.3 L42.7,35.4 L26.0,30.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M66.3,30.5 L76.9,42.9 L76.4,50.3 L58.4,54.7 L68.5,62.6 L46.5,48.3 L47.3,35.4 L64.0,30.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('biceps',`<rect x="5" y="51" width="10" height="21" rx="5" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect><rect x="75" y="51" width="10" height="21" rx="5" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('forearms',`<path d="M9.1,69.5 L2.0,94.2 L6.5,100.2 L17.9,75.5 L10.8,69.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M80.9,69.5 L88.0,94.2 L83.5,100.2 L72.1,75.5 L79.2,69.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('abs',`<path d="M42.5,54.2 L28.8,55.2 L27.3,82.9 L43.2,102.6 L63.0,83.4 L61.2,54.7 L47.5,54.2 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('obliques',`<path d="M42.5,54.2 L28.3,55.2 L26.8,61.6 L27.5,69.0 L26.8,79.9 L42.0,83.9 L43.5,65.1 L43.2,54.2 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M47.5,54.2 L61.7,55.2 L63.2,61.6 L62.5,69.0 L63.2,79.9 L48.0,83.9 L46.5,65.1 L46.8,54.2 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('hip_flexors',`<rect x="26" y="84" width="38" height="8" rx="3" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('quads',`<path d="M29.6,92.7 L22.7,125.8 L27.0,140.2 L34.9,142.1 L36.4,117.0 L43.0,109.5 L30.3,92.7 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M60.4,92.7 L67.3,125.8 L63.0,140.2 L55.1,142.1 L53.6,117.0 L47.0,109.5 L59.7,92.7 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('adductors',`<path d="M43,93 L47,93 L49,134 L45,138 L41,134 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('calves',`<path d="M25.0,150.5 L26.8,187.6 L32.9,178.7 L34.9,169.3 L27.5,165.4 L27.0,155.0 L26.0,150.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M65.0,150.5 L63.2,187.6 L57.1,178.7 L55.1,169.3 L62.5,165.4 L63.0,155.0 L64.0,150.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    </svg>`;
+  }
+
+  function backSVG(){
+    const S=`stroke="var(--line)" stroke-width=".8"`;
+    const SB=`stroke="var(--line)" stroke-width="1.1"`;
+    return`<svg viewBox="0 0 90 210" width="110" style="overflow:visible">
+    <!-- body silhouette -->
+    <ellipse cx="45" cy="12" rx="11" ry="11" fill="var(--card)" ${SB}/>
+    <rect x="41" y="22" width="8" height="9" rx="2" fill="var(--card)" ${SB}/>
+    <path d="M21,31 L69,31 L74,39 L73,62 L65,84 L25,84 L17,62 L16,39 Z" fill="var(--card)" ${SB}/>
+    <rect x="4"  y="33" width="12" height="58" rx="6" fill="var(--card)" ${SB}/>
+    <rect x="74" y="33" width="12" height="58" rx="6" fill="var(--card)" ${SB}/>
+    <rect x="24" y="85" width="17" height="63" rx="8" fill="var(--card)" ${SB}/>
+    <rect x="49" y="85" width="17" height="63" rx="8" fill="var(--card)" ${SB}/>
+    <rect x="26" y="147" width="14" height="60" rx="7" fill="var(--card)" ${SB}/>
+    <rect x="50" y="147" width="14" height="60" rx="7" fill="var(--card)" ${SB}/>
+    <!-- muscles (shapes traced from muscle_distribution.png) -->
+    ${mkShape('neck',`<rect x="41" y="22" width="8" height="9" rx="2" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('trapezius',`<path d="M42.5,22 L36.9,25.1 L23.5,31.0 L36.1,43.8 L18.7,44.3 L37.4,46.8 L53.6,46.8 L56.6,36.4 L67.3,31.0 L54.1,25.1 L47.8,22 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('mid_back',`<rect x="30" y="48" width="30" height="18" rx="3" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('shoulders_back',`<path d="M4,34 L16,36 L16,49 L4,51 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M86,34 L74,36 L74,49 L86,51 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('triceps',`<path d="M21.5,31.0 L13.6,38.9 L13.6,49.3 L26.0,50.8 L21.5,31.0 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M68.5,31.0 L76.4,38.9 L76.4,49.3 L64.0,50.8 L68.5,31.0 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('forearms',`<rect x="5" y="74" width="9" height="17" rx="4" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect><rect x="76" y="74" width="9" height="17" rx="4" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('lats',`<path d="M20.0,31.5 L13.6,48.8 L26.3,49.8 L27.5,68.5 L34.4,72.5 L28.0,81.4 L41.5,60.6 L33.4,37.4 L22.0,31.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M70.0,31.5 L76.4,48.8 L63.7,49.8 L62.5,68.5 L55.6,72.5 L62.0,81.4 L48.5,60.6 L56.6,37.4 L68.0,31.5 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('lower_back',`<rect x="37" y="66" width="7" height="20" rx="3" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect><rect x="46" y="66" width="7" height="20" rx="3" fill="FILL" ${S} class="muscle-region"><title>TIP</title></rect>`)}
+    ${mkShape('glutes',`<path d="M33.6,84.4 L25.3,102.1 L31.3,111.0 L39.7,111.0 L44.5,103.1 L41.7,88.3 L35.1,84.4 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M56.4,84.4 L64.7,102.1 L58.7,111.0 L50.3,111.0 L45.5,103.1 L48.3,88.3 L54.9,84.4 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('glutes_med',`<path d="M20,84 C14,86 12,94 17,99 C20,103 26,102 27,97 L25,85 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M70,84 C76,86 78,94 73,99 C70,103 64,102 63,97 L65,85 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('hamstrings',`<path d="M38.9,111.0 L26.0,115.5 L26.3,145.6 L35.9,145.1 L38.9,111.0 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M51.1,111.0 L64.0,115.5 L63.7,145.6 L54.1,145.1 L51.1,111.0 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    ${mkShape('calves',`<path d="M25.0,141.2 L38.2,144.6 L23.5,150.1 L21.2,162.9 L26.5,188.1 L33.1,193.0 L34.4,169.8 L38.2,144.6 L25.0,141.2 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path><path d="M65.0,141.2 L51.8,144.6 L66.5,150.1 L68.8,162.9 L63.5,188.1 L56.9,193.0 L55.6,169.8 L51.8,144.6 L65.0,141.2 Z" fill="FILL" ${S} class="muscle-region"><title>TIP</title></path>`)}
+    </svg>`;
+  }
+
+  const rLbls=lang==='zh'?{week:'近一周',month:'近一月',all:'全部'}:{week:'Week',month:'Month',all:'All'};
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:4px;margin-bottom:14px">
+      <div class="bar-toggle" style="gap:2px">
+        ${['week','month','all'].map(k=>`<button class="bar-toggle-btn${_muscleRange===k?' active':''}" id="mrange-${k}" onclick="setMuscleRange('${k}')">${rLbls[k]}</button>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="display:flex;gap:12px;flex-shrink:0">
+        <div class="muscle-side">
+          <div class="muscle-side-label">${lang==='zh'?'正面':'Front'}</div>
+          ${frontSVG()}
+        </div>
+        <div class="muscle-side">
+          <div class="muscle-side-label">${lang==='zh'?'背面':'Back'}</div>
+          ${backSVG()}
+        </div>
+      </div>
+      <div id="muscle-hover-panel" style="flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;opacity:.3;transition:opacity .25s;min-height:100px;overflow-y:auto;max-height:240px">
+        <div style="font-size:11px;color:var(--muted);font-style:italic">${lang==='zh'?'悬停肌肉查看详情':'Hover a region'}</div>
+      </div>
+    </div>
+    <div class="muscle-legend" style="justify-content:center;margin-top:14px">
+      <span>${lang==='zh'?'未练':'—'}</span>
+      <div class="muscle-legend-dot" style="background:var(--line)"></div>
+      <div class="muscle-legend-dot" style="background:${getAccRgba(0.28)}"></div><span>1×</span>
+      <div class="muscle-legend-dot" style="background:${getAccRgba(0.50)}"></div><span>2–3×</span>
+      <div class="muscle-legend-dot" style="background:${getAccRgba(0.75)}"></div><span>4–7×</span>
+      <div class="muscle-legend-dot" style="background:var(--acc)"></div><span>8+</span>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)" id="muscle-dist"></div>`;
+
+  renderMuscleDistribution();
+}
+
+/* ── RESTROOM ANALYTICS ── */
+async function renderRestroom(){
+  const el=document.getElementById('restroom-content');
+  if(!el) return;
+  el.innerHTML=`<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">加载中…</div>`;
+  let stats={today:{total:0,small:0,big:0,times:[]},week:{total:0,small:0,big:0},all:{total:0,small:0,big:0},avg_interval_min:null};
+  try{
+    const r=await fetch('/api/restroom-stats');
+    stats=await r.json();
+  }catch(e){}
+
+  const T=lang==='zh';
+  const row=(label,val)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)">
+    <span style="font-size:12px;color:var(--sub)">${label}</span>
+    <span style="font-size:13px;font-weight:600;font-family:var(--mono);color:var(--text)">${val}</span>
+  </div>`;
+
+  const todayTimes=(stats.today.times||[]).join('  ');
+  const avgStr=stats.avg_interval_min!=null
+    ?`${stats.avg_interval_min}${T?'分钟':'min'}`
+    :(T?'—':'—');
+
+  el.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px">${T?'今日':'Today'}</div>
+        ${row(T?'合计':'Total', stats.today.total||0)}
+        ${row(T?'小号':'Small', stats.today.small||0)}
+        ${row(T?'大号':'Large', stats.today.big||0)}
+        ${stats.today.times?.length?row(T?'时间':'Times', todayTimes):''}
+      </div>
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px">${T?'近7天':'Last 7 days'}</div>
+        ${row(T?'合计':'Total', stats.week.total||0)}
+        ${row(T?'小号':'Small', stats.week.small||0)}
+        ${row(T?'大号':'Large', stats.week.big||0)}
+        ${row(T?'日均':'Daily avg', stats.week.total?Math.round(stats.week.total/7*10)/10:0)}
+      </div>
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px">${T?'全部':'All time'}</div>
+        ${row(T?'合计':'Total', stats.all.total||0)}
+        ${row(T?'小号':'Small', stats.all.small||0)}
+        ${row(T?'大号':'Large', stats.all.big||0)}
+        ${row(T?'今日平均间隔':'Avg interval today', avgStr)}
+      </div>
+    </div>`;
+}
+
 /* ── DATA LOADING ── */
 async function loadDate(iso){
   _editIdx=-1; _editAct=null;   // reset edit state on date change
@@ -984,16 +1634,21 @@ async function loadHistList(){
   try{
     const r=await fetch('/api/history/list');
     histList=await r.json();
-    // make sure today is in list
     if(!histList[todayStr()]) histList[todayStr()]={total_score:0,focus_minutes:0,checkins:0};
-    // also set heatmap to current month
-    const now=new Date();
-    hmYear=now.getFullYear();hmMonth=now.getMonth();
   }catch(e){}
 }
 
 async function init(){
-  try{const r=await fetch('/api/config');const cfg=await r.json();lang=cfg.lang||'zh';}catch(e){}
+  try{
+    const r=await fetch('/api/config');
+    const cfg=await r.json();
+    lang=cfg.lang||'zh';
+    menuFeatures=cfg.menu_features||{};
+    if(menuFeatures.restroom_analytics!==false){
+      const t=document.getElementById('vtab-restroom');
+      if(t) t.style.display='';
+    }
+  }catch(e){}
   await Promise.all([loadActivityTypes(), loadHistList()]);
   await loadDate(curDate);
   updateNavButtons();

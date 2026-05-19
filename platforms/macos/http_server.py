@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 from core.models.app_config import (
     DAILY_MINIMUMS, EYE_TIMER_SECONDS, IDLE_THRESHOLD,
-    PORT, WARNING_ADVANCE,
+    PORT,
 )
 from core.models.checkin import CheckIn
 from core.services.scoring import focus_score
@@ -77,14 +77,22 @@ def make_handler(
                 "/warning":             lambda: self._serve_file("warning.html"),
                 "/preferences":         lambda: self._serve_file("preferences.html"),
                 "/plan-today":          lambda: self._serve_file("plan_today.html"),
+                "/custom-alert":        lambda: self._serve_custom_alert(p.query),
                 "/shared.js":           self._serve_shared_js,
-                "/api/status":          self._api_status,
-                "/api/exercises":       self._api_exercises,
-                "/api/records":         self._api_records,
-                "/api/config":          self._api_config,
-                "/api/history/list":    self._api_history_list,
-                "/api/activity-types":  self._api_activity_types_get,
-                "/api/prefs":           self._api_prefs_get,
+                "/theme.css":           lambda: self._serve_css("theme.css"),
+                "/api/status":             self._api_status,
+                "/api/exercises":          self._api_exercises,
+                "/api/exercises/library":  self._api_exercises_library_get,
+                "/api/records":            self._api_records,
+                "/api/config":             self._api_config,
+                "/api/history/list":       self._api_history_list,
+                "/api/muscle-stats":       self._api_muscle_stats,
+                "/api/exercise-stats":     self._api_exercise_stats,
+                "/api/restroom-stats":     self._api_restroom_stats,
+                "/api/alerts":             self._api_alerts_get,
+                "/api/activity-types":     self._api_activity_types_get,
+                "/api/prefs":              self._api_prefs_get,
+                "/api/export":             lambda: self._api_export(p.query),
             }
             handler = routes.get(p.path)
             if handler:
@@ -92,6 +100,8 @@ def make_handler(
             elif p.path == "/api/history/date":
                 qs = parse_qs(p.query)
                 self._api_history_date(qs.get("d", [today_str()])[0])
+            elif p.path.startswith("/exercises/img/"):
+                self._serve_exercise_img(p.path)
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -110,11 +120,15 @@ def make_handler(
                 "/api/pause":                self._api_pause,
                 "/api/end-of-day":           self._api_end_of_day,
                 "/api/activity-types":       self._api_activity_types_post,
+                "/api/records/add":          self._api_records_add,
                 "/api/records/edit":         self._api_records_edit,
                 "/api/records/delete":       self._api_records_delete,
                 "/api/prefs":                self._api_prefs_post,
+                "/api/reset-data":           self._api_reset_data,
                 "/api/postpone-warning":     self._api_postpone_warning,
                 "/api/plan/save":            self._api_plan_save,
+                "/api/exercises/library":    self._api_exercises_library_post,
+                "/api/alerts":               self._api_alerts_post,
             }
             handler = routes.get(urlparse(self.path).path)
             if handler:
@@ -124,6 +138,24 @@ def make_handler(
                 self.end_headers()
 
         # ── Static file helpers ───────────────────────────────────────────────
+
+        def _serve_css(self, name: str) -> None:
+            try:
+                b = (resource_dir / name).read_bytes()
+            except Exception as e:
+                msg = f"/* Error: {e} */".encode()
+                self.send_response(500)
+                self.send_header("Content-Type", "text/css; charset=utf-8")
+                self.send_header("Content-Length", str(len(msg)))
+                self.end_headers()
+                self.wfile.write(msg)
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/css; charset=utf-8")
+            self.send_header("Content-Length", str(len(b)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b)
 
         def _serve_shared_js(self) -> None:
             try:
@@ -146,12 +178,13 @@ def make_handler(
         # ── GET handlers ──────────────────────────────────────────────────────
 
         def _api_config(self) -> None:
-            from core.services.persistence import PersistenceService
             self._json({
                 "daily_minimums":          DAILY_MINIMUMS,
                 "eye_timer_seconds":       EYE_TIMER_SECONDS,
                 "warning_advance_seconds": app_vm.config.warning_advance_seconds,
                 "idle_threshold_seconds":  IDLE_THRESHOLD,
+                "lang":                    app_vm.config.lang,
+                "menu_features":           app_vm.config.menu_features,
             })
 
         def _api_status(self) -> None:
@@ -159,7 +192,7 @@ def make_handler(
 
         def _api_exercises(self) -> None:
             record = app_vm.today_record.value
-            exs = exercise_svc.pick_exercises(record)
+            exs = exercise_svc.pick_exercises(record, app_vm.config)
             self._json([e.to_dict() for e in exs])
 
         def _api_records(self) -> None:
@@ -181,13 +214,18 @@ def make_handler(
             self._json([t.to_dict() for t in prefs_vm.load_activity_types()])
 
         def _api_history_list(self) -> None:
+            from core.models.app_config import DAILY_MINIMUMS
+            from core.services.scoring import all_minimums_met
             result = records_vm.load_history_list()
-            # Always include today
+            # Always include today with live data
             today = app_vm.today_record.value
+            counts = today.category_counts
             result[today_str()] = {
-                "total_score":   today.total_score,
-                "focus_minutes": today.focus_minutes,
-                "checkins":      len(today.checkins),
+                "total_score":    today.total_score,
+                "focus_minutes":  today.focus_minutes,
+                "checkins":       len(today.checkins),
+                "category_counts": counts,
+                "minimums_met":   all_minimums_met(counts),
             }
             self._json(result)
 
@@ -232,6 +270,8 @@ def make_handler(
             checkin  = CheckIn(
                 time=now_hhmm(), focus_minutes=fm, score=fs + xs,
                 exercise=ex, work_content=wc, activity_type=act_id,
+                mood=body.get("mood") or None,
+                note=str(body.get("note", "") or ""),
             )
             app_vm.commit_checkin(checkin)
             record = app_vm.today_record.value
@@ -242,6 +282,7 @@ def make_handler(
                 "focus_score":   fs,
                 "exercise_score": xs,
             })
+            dispatch_fn("playDoneSound:", None)
 
         def _api_away_checkin(self) -> None:
             body   = self._body()
@@ -263,6 +304,7 @@ def make_handler(
             act_id   = body.get("activity_type") or None
             wc       = str(body.get("work_content", "")).strip()
             before   = body.get("before_leave")
+            restroom_subtype = body.get("restroom_subtype") or None
 
             # Exit away mode and get elapsed seconds
             away_secs = app_vm.resume_from_away()
@@ -280,9 +322,14 @@ def make_handler(
                     work_content=bl_wc, activity_type=bl_id, event_type="before_leave",
                 )
 
+            is_restroom = act_id == "restroom"
+            away_event  = "restroom" if is_restroom else "away_return"
+            away_wc     = (restroom_subtype or wc) if is_restroom else wc
+            away_act    = self._lookup_act(act_id)
+            away_fs     = focus_score(fm, away_act)
             away_checkin = CheckIn(
-                time=now_hhmm(), focus_minutes=fm, score=1,
-                work_content=wc, activity_type=act_id, event_type="away_return",
+                time=now_hhmm(), focus_minutes=fm, score=away_fs,
+                work_content=away_wc, activity_type=act_id, event_type=away_event,
             )
             app_vm.commit_return_log(before_checkin, away_checkin)
             self._json({"success": True, "away_minutes": fm})
@@ -371,16 +418,12 @@ def make_handler(
                     app_vm.update_interval(int(body["interval_minutes"]))
                 except (TypeError, ValueError):
                     pass
-            if "warning_advance_seconds" in body:
-                try:
-                    body["warning_advance_seconds"] = max(15, min(300, int(body["warning_advance_seconds"])))
-                except (TypeError, ValueError):
-                    pass
             if "lang" in body:
                 app_vm.update_lang(str(body["lang"]))
             if "activity_types" in body and isinstance(body["activity_types"], list):
                 prefs_vm.save_activity_types(body["activity_types"])
             prefs_vm.save_plan_settings(body)
+            app_vm.sync_timer_from_config()
             self._json({"success": True})
             dispatch_fn("updateMenuAfterPrefs:", None)
 
@@ -392,12 +435,13 @@ def make_handler(
                 self._json({"success": False, "error": "empty"})
                 return
             p_prefs = prefs_vm.get_prefs()
-            file_path         = p_prefs.get("plan_file_path", "").strip()
-            keyword           = p_prefs.get("plan_file_keyword", "").strip()
-            prefix_type       = p_prefs.get("plan_prefix_type", "none")
-            prefix_custom     = p_prefs.get("plan_prefix_custom", "")
-            not_found_action  = p_prefs.get("plan_keyword_not_found", "append")
-            if not file_path:
+            file_path        = p_prefs.get("plan_file_path", "").strip()
+            file_pattern     = p_prefs.get("plan_file_pattern", "").strip()
+            keyword          = p_prefs.get("plan_file_keyword", "").strip()
+            prefix_type      = p_prefs.get("plan_prefix_type", "none")
+            prefix_custom    = p_prefs.get("plan_prefix_custom", "")
+            not_found_action = p_prefs.get("plan_keyword_not_found", "append")
+            if not file_path and not file_pattern:
                 self._json({"success": False, "error": "no_path"})
                 return
             today_s = _date.today().strftime("%Y-%m-%d")
@@ -414,10 +458,24 @@ def make_handler(
                 prefix = ""
             insert_text = prefix + text + "\n"
             try:
-                p = Path(file_path).expanduser()
-                if not p.exists():
-                    self._json({"success": False, "error": "file_not_found"})
-                    return
+                # Resolve target file path
+                if file_pattern:
+                    py_pattern = (file_pattern
+                        .replace("YYYY", "%Y").replace("YY", "%y")
+                        .replace("MM", "%m").replace("DD", "%d")
+                        .replace("HH", "%H").replace("mm", "%M"))
+                    filename = _date.today().strftime(py_pattern)
+                    base_dir = (Path(file_path).expanduser()
+                                if file_path else Path.home() / "Documents")
+                    base_dir.mkdir(parents=True, exist_ok=True)
+                    p = base_dir / filename
+                    if not p.exists():
+                        p.write_text("", encoding="utf-8")
+                else:
+                    p = Path(file_path).expanduser()
+                    if not p.exists():
+                        self._json({"success": False, "error": "file_not_found"})
+                        return
                 content = p.read_text(encoding="utf-8")
                 if keyword:
                     lines = content.splitlines(keepends=True)
@@ -466,6 +524,7 @@ def make_handler(
             updates = {k: body[k] for k in (
                 "time", "start_time", "end_time",
                 "work_content", "activity_type", "focus_minutes",
+                "mood", "note",
             ) if k in body}
             ok = records_vm.edit_checkin(date_str, idx, updates)
             if ok and date_str == today_str():
@@ -485,6 +544,260 @@ def make_handler(
             if ok and date_str == today_str():
                 app_vm.today_record.value = records_vm.load_today()
             self._json({"success": ok})
+
+        def _api_records_add(self) -> None:
+            body     = self._body()
+            date_str = body.get("date", today_str())
+            new_idx  = records_vm.add_checkin(date_str, body)
+            if new_idx >= 0 and date_str == today_str():
+                app_vm.today_record.value = records_vm.load_today()
+            self._json({"success": new_idx >= 0, "index": new_idx})
+
+        def _api_export(self, query_string: str) -> None:
+            import csv, io
+            from pathlib import Path as _Path
+            fmt = "csv" if "csv" in (query_string or "") else "json"
+            try:
+                # Load full records per date (load_history_list only has count summaries)
+                date_keys = sorted(records_vm.load_history_list().keys())
+                full_records: dict[str, dict] = {}
+                for d in date_keys:
+                    rec = records_vm.load_date(d)
+                    if rec:
+                        full_records[d] = rec.to_dict()
+                # Always include today's live data
+                full_records[today_str()] = app_vm.today_record.value.to_dict()
+
+                desktop = _Path.home() / "Desktop"
+                if not desktop.exists():
+                    desktop = _Path.home() / "Downloads"
+                ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+                if fmt == "json":
+                    dest = desktop / f"reset-backup-{ts}.json"
+                    dest.write_text(
+                        json.dumps(full_records, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                else:
+                    dest = desktop / f"reset-backup-{ts}.csv"
+                    out = io.StringIO()
+                    w = csv.writer(out)
+                    w.writerow(["date", "time", "focus_minutes", "score",
+                                "activity_type", "work_content", "event_type"])
+                    for date_s, rec in sorted(full_records.items()):
+                        for c in rec.get("checkins", []):
+                            w.writerow([
+                                date_s,
+                                c.get("time", ""),
+                                c.get("focus_minutes", ""),
+                                c.get("score", ""),
+                                c.get("activity_type", ""),
+                                c.get("work_content", ""),
+                                c.get("event_type", "break"),
+                            ])
+                    dest.write_text(out.getvalue(), encoding="utf-8")
+
+                self._json({"success": True, "path": str(dest)})
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+
+        def _api_muscle_stats(self) -> None:
+            """Aggregate muscle_groups counts; supports ?range=7 or ?range=30."""
+            from datetime import datetime, timedelta
+            from urllib.parse import parse_qs, urlparse
+            qs = parse_qs(urlparse(self.path).query)
+            range_days = qs.get("range", [None])[0]
+            cutoff: str | None = None
+            if range_days:
+                cutoff = (datetime.now() - timedelta(days=int(range_days))).strftime("%Y-%m-%d")
+            counts: dict = {}
+            for date_str in records_vm.load_history_list():
+                if cutoff and date_str < cutoff:
+                    continue
+                rec = records_vm.load_date(date_str)
+                if rec:
+                    for c in rec.checkins:
+                        if c.exercise and isinstance(c.exercise, dict):
+                            for mg in c.exercise.get("muscle_groups", []):
+                                counts[mg] = counts.get(mg, 0) + 1
+            today = datetime.now().strftime("%Y-%m-%d")
+            if not cutoff or today >= cutoff:
+                for c in app_vm.today_record.value.checkins:
+                    if c.exercise and isinstance(c.exercise, dict):
+                        for mg in c.exercise.get("muscle_groups", []):
+                            counts[mg] = counts.get(mg, 0) + 1
+            self._json(counts)
+
+        def _api_exercise_stats(self) -> None:
+            """Count how many times each exercise id has appeared in check-ins."""
+            counts: dict = {}
+            for date_str in records_vm.load_history_list():
+                rec = records_vm.load_date(date_str)
+                if rec:
+                    for c in rec.checkins:
+                        if c.exercise and isinstance(c.exercise, dict):
+                            ex_id = c.exercise.get("id")
+                            if ex_id:
+                                counts[ex_id] = counts.get(ex_id, 0) + 1
+            for c in app_vm.today_record.value.checkins:
+                if c.exercise and isinstance(c.exercise, dict):
+                    ex_id = c.exercise.get("id")
+                    if ex_id:
+                        counts[ex_id] = counts.get(ex_id, 0) + 1
+            self._json(counts)
+
+        def _api_restroom_stats(self) -> None:
+            """Aggregate restroom visit data across all history."""
+            from datetime import datetime, timedelta
+
+            def is_restroom(c) -> bool:
+                return c.event_type in ("restroom",) or c.activity_type == "restroom"
+
+            def subtype(c) -> str:
+                wc = (c.work_content or "").strip().lower()
+                if wc in ("big", "small"):
+                    return wc
+                return "unknown"
+
+            today = datetime.now().strftime("%Y-%m-%d")
+            week_cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+
+            result = {"today": {"total": 0, "small": 0, "big": 0, "times": []},
+                      "week":  {"total": 0, "small": 0, "big": 0},
+                      "all":   {"total": 0, "small": 0, "big": 0},
+                      "avg_interval_min": None}
+            all_times: list[str] = []
+
+            hist = sorted(records_vm.load_history_list().keys())
+            all_dates = [d for d in hist if d != today] + [today]
+            for date_str in all_dates:
+                if date_str == today:
+                    checkins = app_vm.today_record.value.checkins
+                else:
+                    rec = records_vm.load_date(date_str)
+                    checkins = rec.checkins if rec else []
+                for c in checkins:
+                    if not is_restroom(c):
+                        continue
+                    st = subtype(c)
+                    result["all"]["total"] += 1
+                    if st == "small": result["all"]["small"] += 1
+                    if st == "big":   result["all"]["big"] += 1
+                    if date_str >= week_cutoff:
+                        result["week"]["total"] += 1
+                        if st == "small": result["week"]["small"] += 1
+                        if st == "big":   result["week"]["big"] += 1
+                    if date_str == today:
+                        result["today"]["total"] += 1
+                        if st == "small": result["today"]["small"] += 1
+                        if st == "big":   result["today"]["big"] += 1
+                        if c.time:
+                            result["today"]["times"].append(c.time)
+                            all_times.append(f"{date_str} {c.time}")
+
+            if len(all_times) >= 2:
+                all_times.sort()
+                intervals = []
+                for i in range(1, len(all_times)):
+                    def _min(t):
+                        parts = t.split()
+                        h, m = map(int, parts[1].split(":"))
+                        return h * 60 + m
+                    intervals.append(_min(all_times[i]) - _min(all_times[i - 1]))
+                pos = [x for x in intervals if x > 0]
+                if pos:
+                    result["avg_interval_min"] = round(sum(pos) / len(pos))
+            self._json(result)
+
+        def _api_alerts_get(self) -> None:
+            self._json(app_vm.config.scheduled_alerts)
+
+        def _api_alerts_post(self) -> None:
+            body = self._body()
+            if not isinstance(body, list):
+                self._json({"error": "expected list"}, 400)
+                return
+            alerts = []
+            for item in body:
+                if not isinstance(item, dict):
+                    continue
+                atype = str(item.get("type", "daily"))
+                if atype == "daily" and not item.get("time"):
+                    continue
+                if atype == "once" and not item.get("fire_at"):
+                    continue
+                entry: dict = {
+                    "id":      str(item.get("id", "")),
+                    "type":    atype,
+                    "message": str(item.get("message", "")),
+                    "enabled": bool(item.get("enabled", True)),
+                }
+                if atype == "daily":
+                    entry["time"] = str(item.get("time", ""))
+                else:
+                    entry["fire_at"] = str(item.get("fire_at", ""))
+                alerts.append(entry)
+            persistence.update_config(scheduled_alerts=alerts)
+            app_vm.config.scheduled_alerts = alerts
+            self._json({"success": True})
+
+        def _serve_custom_alert(self, _query: str) -> None:
+            self._serve_file("custom_alert.html")
+
+        def _api_exercises_library_get(self) -> None:
+            """Return all exercises (built-in + user-contributed) for the library editor."""
+            all_exs = exercise_svc.load()
+            self._json([e.to_dict() for e in all_exs])
+
+        def _api_exercises_library_post(self) -> None:
+            """Save user-contributed exercises to the user exercises file."""
+            body = self._body()
+            if not isinstance(body, list):
+                self.send_response(400)
+                self.end_headers()
+                return
+            try:
+                from core.models.exercise import Exercise
+                cleaned = [Exercise.from_dict(d).to_dict() for d in body if isinstance(d, dict) and d.get("id")]
+                if exercise_svc._user_file is None:
+                    self._json({"success": False, "error": "no_user_file"}, 400)
+                    return
+                exercise_svc._user_file.parent.mkdir(parents=True, exist_ok=True)
+                exercise_svc._user_file.write_text(
+                    json.dumps(cleaned, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                exercise_svc.invalidate_cache()
+                self._json({"success": True, "count": len(cleaned)})
+            except Exception as e:
+                self._json({"success": False, "error": str(e)}, 500)
+
+        def _serve_exercise_img(self, path: str) -> None:
+            """Serve images from ui/exercises/img/."""
+            import mimetypes
+            rel = path.lstrip("/")  # e.g. "exercises/img/T01.png"
+            img_path = resource_dir / rel
+            if not img_path.exists():
+                self.send_response(404)
+                self.end_headers()
+                return
+            mime = mimetypes.guess_type(str(img_path))[0] or "application/octet-stream"
+            b = img_path.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", mime)
+            self.send_header("Content-Length", str(len(b)))
+            self.send_header("Cache-Control", "max-age=3600")
+            self.end_headers()
+            self.wfile.write(b)
+
+        def _api_reset_data(self) -> None:
+            from core.models.daily_record import DailyRecord
+            try:
+                empty = DailyRecord(date=today_str())
+                app_vm._persistence.save_state(empty)  # type: ignore[attr-defined]
+                app_vm.today_record.value = empty
+                self._json({"success": True})
+            except Exception as e:
+                self._json({"success": False, "error": str(e)}, 500)
 
     return Handler
 

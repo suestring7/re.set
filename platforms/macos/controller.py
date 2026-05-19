@@ -6,7 +6,7 @@ import objc
 from AppKit import (
     NSApp, NSApplication, NSColor, NSEvent, NSEventModifierFlagCommand,
     NSFloatingWindowLevel,
-    NSMenu, NSMenuItem, NSScreen, NSStatusBar, NSStatusWindowLevel,
+    NSMenu, NSMenuItem, NSScreen, NSSound, NSStatusBar, NSStatusWindowLevel,
     NSVariableStatusItemLength, NSWindow,
     NSWindowCollectionBehaviorCanJoinAllSpaces,
     NSWindowCollectionBehaviorIgnoresCycle,
@@ -104,6 +104,7 @@ class MacOSController(NSObject):
 
     def applicationDidFinishLaunching_(self, _):
         self._setup_status_bar()
+        self._setup_edit_menu()
         self._setup_subscriptions()
         self._setup_key_monitor()
         ws_nc = NSWorkspace.sharedWorkspace().notificationCenter()
@@ -128,8 +129,17 @@ class MacOSController(NSObject):
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
                 sel, None, False)
 
+        def on_custom_alert(msg: str) -> None:
+            if msg:
+                import urllib.parse
+                alert_url = f"http://localhost:{PORT}/custom-alert?msg={urllib.parse.quote(msg)}"
+                self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                    "showBreakWindow:", alert_url, False)
+                self._app_vm.show_custom_alert.value = ""
+
         self._app_vm.show_break_window.subscribe(on_break)
         self._app_vm.show_warning_panel.subscribe(on_warning)
+        self._app_vm.show_custom_alert.subscribe(on_custom_alert)
 
     @objc.python_method
     def _setup_key_monitor(self) -> None:
@@ -149,6 +159,35 @@ class MacOSController(NSObject):
 
         self._key_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
             NSEventMaskKeyDown, handler)
+
+    @objc.python_method
+    def _setup_edit_menu(self) -> None:
+        """Add Edit menu so Cmd+C/V/X/A work in all WKWebView text inputs."""
+        main_menu = NSApp.mainMenu()
+        if main_menu is None:
+            main_menu = NSMenu.alloc().init()
+            NSApp.setMainMenu_(main_menu)
+        edit_menu = NSMenu.alloc().initWithTitle_("Edit")
+        for spec in [
+            ("Undo",       "undo:",      "z"),
+            ("Redo",       "redo:",      "Z"),
+            None,
+            ("Cut",        "cut:",       "x"),
+            ("Copy",       "copy:",      "c"),
+            ("Paste",      "paste:",     "v"),
+            ("Select All", "selectAll:", "a"),
+        ]:
+            if spec is None:
+                edit_menu.addItem_(NSMenuItem.separatorItem())
+            else:
+                title, action, key = spec
+                it = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                    title, action, key)
+                edit_menu.addItem_(it)
+        edit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Edit", None, "")
+        edit_item.setSubmenu_(edit_menu)
+        main_menu.addItem_(edit_item)
 
     # ── Status bar setup ──────────────────────────────────────────────────────
 
@@ -348,11 +387,13 @@ class MacOSController(NSObject):
 
     @objc.python_method
     def _make_cover_window(self, frame) -> NSWindow:
+        """Blank cover window for secondary screens — background color only, no web content."""
         win = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
             frame, NSWindowStyleMaskBorderless, NSBackingStoreBuffered, False)
         win.setLevel_(BREAK_WINDOW_LEVEL)
-        win.setBackgroundColor_(NSColor.blackColor())
         win.setOpaque_(True)
+        win.setBackgroundColor_(NSColor.colorWithRed_green_blue_alpha_(
+            0.969, 0.969, 0.976, 1.0))
         win.setReleasedWhenClosed_(False)
         win.setCollectionBehavior_(
             NSWindowCollectionBehaviorCanJoinAllSpaces
@@ -370,6 +411,11 @@ class MacOSController(NSObject):
         self._bw.makeKeyAndOrderFront_(None)
         self._bw.makeFirstResponder_(self._bwv)
         NSApp.activateIgnoringOtherApps_(True)
+        snd_name = self._app_vm.config.reminder_sound
+        if snd_name:
+            snd = NSSound.soundNamed_(snd_name)
+            if snd:
+                snd.play()
         # Cover additional screens
         screens = list(NSScreen.screens() or [])
         main_fr = NSScreen.mainScreen().frame()
@@ -382,8 +428,15 @@ class MacOSController(NSObject):
                     abs(fr.origin.y - main_fr.origin.y) < 1):
                 continue
             cover = self._make_cover_window(fr)
-            cover.makeKeyAndOrderFront_(None)
+            cover.orderFront_(None)
             self._bw_extra.append(cover)
+
+    def playDoneSound_(self, _):
+        snd_name = self._app_vm.config.done_sound
+        if snd_name:
+            snd = NSSound.soundNamed_(snd_name)
+            if snd:
+                snd.play()
 
     def hideBreakWindow_(self, _):
         if self._bw:
@@ -401,7 +454,7 @@ class MacOSController(NSObject):
         sw = NSScreen.mainScreen().frame().size.width
         sh = NSScreen.mainScreen().frame().size.height
         pw, ph = 380.0, 114.0
-        pf = NSMakeRect(sw - pw - 20, sh - ph - 20, pw, ph)
+        pf = NSMakeRect(sw - pw - 20, sh * 0.35, pw, ph)
         if not self._ww:
             self._ww = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
                 pf, NSWindowStyleMaskBorderless, NSBackingStoreBuffered, False)
@@ -511,7 +564,7 @@ class MacOSController(NSObject):
         if not self._wp:
             sw = NSScreen.mainScreen().frame().size.width
             sh = NSScreen.mainScreen().frame().size.height
-            pw, ph = 520.0, 560.0
+            pw, ph = 720.0, 620.0
             pf = NSMakeRect((sw - pw) / 2, (sh - ph) / 2, pw, ph)
             mask = (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
                     | NSWindowStyleMaskMiniaturizable)
